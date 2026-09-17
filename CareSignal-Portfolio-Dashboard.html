@@ -158,6 +158,24 @@ details.more .body{padding:0 18px 16px}
 .note{background:var(--brandt);border:1px solid #C9DAF3;border-radius:10px;padding:13px 16px;font-size:13px;color:var(--ink2)}
 .note b{color:var(--ink)}
 .pending{border:1.5px dashed #C2CFE3;background:#F7FAFF;border-radius:12px;padding:16px 18px}
+/* ---------- ฐานข้อมูลการดูแลก่อนเกิดเคลม ---------- */
+.chain{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.chain .stp{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:13px 14px;box-shadow:var(--sh);position:relative}
+.chain .stp .no{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--brand)}
+.chain .stp b{display:block;font-size:14px;margin:2px 0 4px;line-height:1.35}
+.chain .stp p{margin:0 0 9px;font-size:12.5px;color:var(--ink2);line-height:1.55}
+.chain .stp::after{content:"→";position:absolute;right:-13px;top:50%;transform:translateY(-50%);color:var(--ink3);font-size:15px;z-index:1}
+.chain .stp:last-child::after{content:none}
+@media(max-width:820px){.chain{grid-template-columns:1fr}.chain .stp::after{content:"↓";right:auto;left:50%;top:auto;bottom:-13px;transform:translateX(-50%)}}
+.tag.live{background:#DCFCE7;color:#166534}
+.vt td:first-child{font-weight:600}
+.vt td small{display:block;color:var(--ink3);font-size:12px;margin-top:2px}
+.vt .st{white-space:nowrap}
+.lvl{display:grid;gap:10px;grid-template-columns:repeat(3,1fr)}
+@media(max-width:820px){.lvl{grid-template-columns:1fr}}
+.lvl .card h3{margin:0 0 4px}
+.lvl .card p{font-size:13px;color:var(--ink2);line-height:1.6;margin:0 0 8px}
+.lvl .card ul{margin:0;padding-left:17px;font-size:12.5px;color:var(--ink2);line-height:1.7}
 .tag{display:inline-block;font-size:11.5px;font-weight:700;padding:3px 11px;border-radius:99px}
 .tag.wait{background:#E4EBF6;color:#3A4A66}
 .tiny{font-size:12px;color:var(--ink3);margin:8px 0 0;line-height:1.6}
@@ -232,6 +250,63 @@ footer{padding:26px 0 40px;color:var(--ink3);font-size:12.5px;text-align:center;
         <div class="body" id="change"></div></details>
       <details class="more" id="d-ops"><summary>ตัวชี้วัดการดำเนินงาน <span>ทบทวนยา · แผนดูแล · การติดตาม</span></summary>
         <div class="body" id="ops"></div></details>
+
+
+      <!-- ชั้นที่ 5: ข้อมูลชุดนี้มีค่าอย่างไรกับบริษัทประกัน -->
+      <h2 style="margin-top:26px" id="s-value">ฐานข้อมูลการดูแลก่อนเกิดเคลม</h2>
+      <p class="sub">ข้อมูลชุดนี้มีไว้<b>ออกแบบบริการและลดความรุนแรงของเหตุสุขภาพ</b>ในกลุ่มผู้เอาประกันสูงอายุ
+        ไม่ใช่ไว้ตัดสินว่าใครควรจ่ายเบี้ยแพงขึ้นหรือควรถูกปฏิเสธ</p>
+
+      <div class="chain">
+        <div class="stp"><span class="no">1</span><b>ความเสี่ยงก่อนได้รับการดูแล</b>
+          <p>ผลประเมิน สัญญาณที่พบ ยา และกิจวัตรประจำวัน</p><span class="tag live">มีแล้วในหน้านี้</span></div>
+        <div class="stp"><span class="no">2</span><b>บริการที่ได้รับจริง</b>
+          <p>เปิดเคส ติดต่อ ส่งต่อ และคำตอบกลับของผู้เชี่ยวชาญ</p><span class="tag live">มีแล้วในหน้านี้</span></div>
+        <div class="stp"><span class="no">3</span><b>ผลประเมินซ้ำ</b>
+          <p>ดีขึ้น คงที่ หรือแย่ลงเมื่อเทียบกับตัวเองในอดีต</p><span class="tag live">มีแล้วในหน้านี้</span></div>
+        <div class="stp"><span class="no">4</span><b>เหตุการณ์จริงและค่าสินไหม</b>
+          <p>หกล้ม เข้าโรงพยาบาล และค่าสินไหมที่ตามมา</p><span class="tag wait">ต้องเชื่อมข้อมูลเคลมก่อน</span></div>
+      </div>
+      <p class="tiny" style="margin:0 0 16px">คะแนนครั้งเดียวบอกได้แค่ว่า<b>อาจเสี่ยง</b>
+        ข้อมูลที่ต่อกันครบสายเท่านั้นที่บอกได้ว่า<b>บริการแบบไหนได้ผล</b> — สามช่วงแรกเก็บอยู่แล้วในหน้านี้
+        ช่วงสุดท้ายอยู่ที่ระบบสินไหมของบริษัท จึงต้องเชื่อมข้อมูลก่อนจึงจะวัดผลได้</p>
+
+      <details class="more" id="d-value"><summary>บริษัทประกันได้ข้อมูลอะไรบ้าง <span>และดูได้จากส่วนไหนของหน้านี้</span></summary>
+        <div class="body tblwrap">
+          <table class="vt"><thead><tr><th>สิ่งที่ได้</th><th>ดูได้จาก</th><th>สถานะ</th></tr></thead>
+          <tbody><tr><td>รู้ว่าใครเริ่มเสี่ยง<small>จัดลำดับว่าควรติดต่อและดูแลใครก่อน</small></td><td>ความเสี่ยงในพอร์ต · แนวโน้มรายเดือน</td><td class="st"><span class="tag live">มีแล้วในหน้านี้</span></td></tr><tr><td>รู้ว่าเสี่ยงจากอะไร<small>แยกได้ว่าเป็นการล้ม กำลังขา การเดิน การทรงตัว ยา กิจวัตรประจำวัน หรือความปลอดภัยในบ้าน ใช้เลือกว่าจะลงทุนกับบริการแบบไหนก่อน</small></td><td>ชนิดสัญญาณที่พบ</td><td class="st"><span class="tag live">มีแล้วในหน้านี้</span></td></tr><tr><td>รู้ว่าควรส่งบริการอะไร<small>ส่งต่อนักกายภาพบำบัด เภสัชกร พยาบาล แพทย์ หรือบริการปรับบ้าน ให้ตรงกับปัญหาที่พบจริง</small></td><td>วงจรการดูแล</td><td class="st"><span class="tag live">มีแล้วในหน้านี้</span></td></tr><tr><td>รู้ว่าการดูแลเกิดขึ้นจริงหรือไม่<small>เห็นการเปิดเคส การติดต่อภายในเวลาที่กำหนด การส่งต่อ คำตอบกลับของผู้เชี่ยวชาญ และการประเมินซ้ำ</small></td><td>วงจรการดูแล · ตัวชี้วัดการดำเนินงาน</td><td class="st"><span class="tag live">มีแล้วในหน้านี้</span></td></tr><tr><td>รู้ผลระดับพอร์ต<small>อัตราการหกล้ม การเข้าโรงพยาบาลหรือห้องฉุกเฉิน และกิจวัตรที่ลดลง — <b>มาจากที่สมาชิกและครอบครัวรายงานเอง ไม่ใช่ข้อมูลเคลม</b></small></td><td>เหตุการณ์ที่รายงานเข้ามา</td><td class="st"><span class="tag live">มีแล้วในหน้านี้</span></td></tr><tr><td>รู้ว่าบริการไหนคุ้ม<small>เทียบค่าสินไหมและผลลัพธ์ระหว่างกลุ่มที่ใช้กับไม่ใช้โปรแกรม</small></td><td>ต้องให้บริษัทเชื่อมข้อมูลเคลมและมีกลุ่มเปรียบเทียบ</td><td class="st"><span class="tag wait">ต้องเชื่อมข้อมูลเคลมก่อน</span></td></tr></tbody></table>
+          <p class="tiny">ทุกแถวที่ระบุว่า<b>มีแล้วในหน้านี้</b>คำนวณจากข้อมูลที่บันทึกจริงในระบบ
+            ไม่มีการเติมตัวเลขประมาณการ และหน้านี้จะไม่แสดงข้อความว่าโปรแกรมลดการเคลมได้จนกว่าจะมีข้อมูลนำร่องจริง</p>
+        </div></details>
+
+      <details class="more" id="d-usage"><summary>ใช้ข้อมูลได้ 3 ระดับ <span>ใครเห็นอะไร และห้ามใช้ทำอะไร</span></summary>
+        <div class="body">
+          <div class="lvl">
+            <div class="card"><h3>1 · ระดับเคส</h3><p>เพื่อดูแลคนที่กำลังเสี่ยง</p>
+              <ul><li>ผู้ประสานงานการดูแลเห็นเฉพาะผู้ที่ยินยอม</li>
+                  <li>เห็นสัญญาณเสี่ยงเพื่อส่งต่อบริการ</li>
+                  <li>ฝ่ายพิจารณารับประกันและฝ่ายสินไหม<b>ไม่ได้เห็นชั้นนี้</b></li></ul></div>
+            <div class="card"><h3>2 · ระดับพอร์ต</h3><p>เพื่อบริหารโครงการ</p>
+              <ul><li>จำนวนคนกลุ่มเขียว เหลือง ส้ม แดง</li>
+                  <li>จำนวนคนที่ต้องกายภาพบำบัด ทบทวนยา หรือปรับบ้าน</li>
+                  <li>ใช้วางกำลังผู้ประสานงานและเครือข่ายผู้ให้บริการ</li></ul></div>
+            <div class="card"><h3>3 · ระดับสถิติ</h3><p>แบบไม่ระบุตัวตน เพื่อพัฒนาบริการ</p>
+              <ul><li>กลุ่มไหนใช้บริการมาก</li>
+                  <li>การส่งต่อแบบไหนตามมาด้วยผลประเมินที่ดีขึ้น</li>
+                  <li>เชื่อมกับข้อมูลเคลมเพื่อวัดผลได้ เมื่อบริษัทเปิดข้อมูลให้</li></ul></div>
+          </div>
+          <div class="note" style="margin-top:12px"><b>เส้นที่ขีดไว้</b> —
+            ข้อมูลนี้<b>ไม่ใช้เพื่อปฏิเสธการจ่ายสินไหม ไม่ใช้เพิ่มเบี้ย ไม่ใช้พิจารณารับประกัน และไม่ใช้กำหนดระยะรอคอย</b>
+            เรื่องเหล่านั้นเป็นของบริษัทผู้ออกกรมธรรม์โดยตรง และฐานข้อมูลบังคับไว้แล้วว่าหน้านี้เห็นได้เฉพาะค่ารวมระดับกลุ่ม</div>
+        </div></details>
+
+      <details class="more" id="d-product"><summary>ต่อยอดเป็นสิทธิประโยชน์ในกรมธรรม์เดิมได้อย่างไร <span>ข้อเสนอสำหรับการหารือ</span></summary>
+        <div class="body tblwrap">
+          <table><thead><tr><th>ผลิตภัณฑ์ที่บริษัทมีอยู่แล้ว</th><th>CareSignal พ่วงเข้าไปเป็น</th><th>ข้อมูลที่ใช้</th></tr></thead>
+          <tbody><tr><td>ประกันสุขภาพผู้สูงอายุ</td><td>สิทธิประโยชน์ป้องกันการหกล้ม — ประเมินที่บ้าน มีผู้ประสานงานการดูแล และส่งต่อผู้เชี่ยวชาญ</td><td>ประวัติการล้ม · ลุกนั่ง 5 ครั้ง · ลุกเดิน 3 เมตร · การทรงตัว · ยา</td></tr><tr><td>ประกันอุบัติเหตุ</td><td>สิทธิประโยชน์ลดอุบัติเหตุในบ้าน — สำรวจจุดเสี่ยงและวางแผนแก้ไข</td><td>ประวัติการล้ม · การเดิน · การทรงตัว · จุดเสี่ยงในบ้าน</td></tr><tr><td>ประกันดูแลระยะยาว</td><td>สิทธิประโยชน์ติดตามการพึ่งพิง — เฝ้าดูกิจวัตรประจำวันและวางแผนดูแลที่บ้าน</td><td>กิจวัตรประจำวัน (ADL) · การลุกย้ายตัว · การเดิน · ผู้ดูแลในบ้าน</td></tr><tr><td>ประกันโรคร้ายแรง / หลังผ่าตัด</td><td>สิทธิประโยชน์ติดตามการฟื้นตัวหลังเจ็บป่วย</td><td>ลุกนั่ง · เดิน · ทรงตัว · กิจวัตรประจำวัน และแนวโน้มของแต่ละคน</td></tr><tr><td>สวัสดิการกลุ่ม</td><td>สิทธิประโยชน์ดูแลพ่อแม่ของพนักงาน</td><td>ผลประเมินความเสี่ยงและการส่งต่อบริการ</td></tr></tbody></table>
+          <p class="tiny">เพิ่มเป็นบริการในกรมธรรม์ที่มีอยู่ ไม่ต้องออกผลิตภัณฑ์ประกันใหม่ ·
+            ตารางนี้เป็น<b>ข้อเสนอเพื่อหารือ ยังไม่มีบริษัทประกันเข้าร่วมโครงการ</b> และ CareSignal ไม่ได้เป็นผู้ขายประกัน</p>
+        </div></details>
 
       <div class="pending" style="margin-top:18px">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
