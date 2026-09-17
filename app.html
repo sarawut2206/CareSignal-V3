@@ -92,6 +92,9 @@ textarea{min-height:70px}
 <div id="print"></div>
 <script src="./cs-score.js"></script>
 <script src="./cs-hospitals.js"></script>
+<script>window.CS_AUTH_SCOPE = "member";</script>
+<script src="./cs-backend.js"></script>
+<script src="./cs-cloud.js"></script>
 <script>
 /* ============================================================
    CareSignal V3 — ลูกหลานเป็นผู้วัด · ไม่ใช้กล้อง · ข้อมูลอยู่ในเครื่องนี้
@@ -100,6 +103,25 @@ textarea{min-height:70px}
    ============================================================ */
 var KEY = "cs3:data";
 /* ใส่รหัสวิดีโอ YouTube ตรงนี้เมื่อถ่ายเสร็จ — ว่างไว้จะแสดงขั้นตอนเป็นตัวหนังสือแทน */
+/* ภาพประกอบคู่มือ — วาดเป็น SVG ในไฟล์ ใช้ได้ทันทีก่อนวิดีโอถ่ายเสร็จ และยังอยู่ใต้วิดีโอเมื่อมีแล้ว */
+var FIG = {
+  chair: '<g stroke="#16233B" stroke-width="4" fill="none" stroke-linecap="round"><path d="M40 60v70M40 100h44M84 60v70M84 100v-40"/><path d="M36 60h52" stroke-width="6"/></g>',
+  person: function (x, standing) {
+    return '<g transform="translate(' + x + ',0)" stroke="#2563EB" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round">' +
+      '<circle cx="0" cy="34" r="12" fill="#EAF0FE"/>' +
+      (standing ? '<path d="M0 46v46M0 92l-14 36M0 92l14 36M0 58l-16 10M0 58l16 10"/>'
+                : '<path d="M0 46v38M0 84h30M30 84v40M0 58l-14 14M0 58l14 14"/>') + '</g>';
+  },
+  prep: '<svg viewBox="0 0 320 150"><rect x="0" y="130" width="320" height="4" fill="#DFE7F2"/><g transform="translate(40,0)">CHAIR</g><path d="M130 118h150" stroke="#F59E0B" stroke-width="6" stroke-dasharray="10 8"/><rect x="278" y="106" width="10" height="24" fill="#F59E0B"/><text x="205" y="105" font-size="15" text-anchor="middle" fill="#B45309" font-weight="600">3 เมตร</text><text x="60" y="148" font-size="12" fill="#5B6B84">เก้าอี้ชิดผนัง</text></svg>',
+  ftsst: '<svg viewBox="0 0 320 150"><rect x="0" y="130" width="320" height="4" fill="#DFE7F2"/><g transform="translate(20,0)">CHAIR</g>PERSON_SIT<text x="160" y="80" font-size="30" fill="#5B6B84">→</text><g transform="translate(170,0)">CHAIR</g>PERSON_STAND<text x="160" y="148" font-size="13" text-anchor="middle" fill="#5B6B84">ลุก–นั่ง ×5 · กอดอก · จับเวลา</text></svg>',
+  tug: '<svg viewBox="0 0 320 150"><rect x="0" y="130" width="320" height="4" fill="#DFE7F2"/><g transform="translate(10,0)">CHAIR</g>PERSON_WALK<path d="M110 120h160" stroke="#F59E0B" stroke-width="4" stroke-dasharray="8 8"/><path d="M270 100a14 14 0 1 1 0 28" stroke="#2563EB" stroke-width="4" fill="none"/><rect x="288" y="104" width="8" height="26" fill="#F59E0B"/><text x="190" y="148" font-size="13" text-anchor="middle" fill="#5B6B84">ลุก → เดิน 3 ม. → หมุน → กลับมานั่ง</text></svg>',
+  balance: '<svg viewBox="0 0 320 150"><rect x="0" y="130" width="320" height="4" fill="#DFE7F2"/><rect x="60" y="20" width="6" height="110" fill="#DFE7F2"/><g stroke="#2563EB" stroke-width="5" fill="none" stroke-linecap="round"><circle cx="160" cy="34" r="12" fill="#EAF0FE"/><path d="M160 46v50M160 96v32M160 96l4 32M160 60l-18 12M160 60l18 8"/></g><path d="M148 128h12M162 128h12" stroke="#16233B" stroke-width="6" stroke-linecap="round"/><text x="235" y="80" font-size="26" fill="#0E9F6E" font-weight="700">10 วิ</text><text x="160" y="148" font-size="13" text-anchor="middle" fill="#5B6B84">ส้นเท้าชิดปลายเท้า · ยืนข้างผนัง</text></svg>'
+};
+function fig(k) {
+  var s = FIG[k] || "";
+  return '<div style="background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px;margin-bottom:8px">' +
+    s.replace(/CHAIR/g, FIG.chair).replace("PERSON_SIT", FIG.person(70, false)).replace("PERSON_STAND", FIG.person(230, true)).replace("PERSON_WALK", FIG.person(150, true)) + '</div>';
+}
 var VIDEOS = [
   { k: "prep",    nm: "เตรียมที่ · เก้าอี้ · เส้น 3 เมตร", id: "", len: "1 นาที",
     steps: ["เก้าอี้มีพนักพิง ไม่มีล้อ วางชิดผนัง", "วางเทปหรือวัตถุทำจุดหมาย ห่างจากขาเก้าอี้ 3 เมตร", "พื้นแห้ง ไม่มีพรมลื่น รองเท้าหุ้มส้นหรือเท้าเปล่า", "ลูกหลานยืนข้าง ๆ ตลอด พร้อมพยุงได้ทันที"] },
@@ -150,6 +172,7 @@ function render() {
   if (sc === "history") return renderHistory(v);
   if (sc === "fall") return renderFall(v);
   if (sc === "contacts") return renderContacts(v);
+  if (sc === "cloud") return renderCloud(v);
   renderHome(v);
 }
 
@@ -206,6 +229,7 @@ function renderHome(v) {
     '<button class="btn" onclick="startTest()">⏱️ เริ่มวัดวันนี้</button>' +
     '<button class="btn sec" onclick="go(\'video\')">▶️ ดูวิธีวัดก่อน</button>' +
     '<button class="btn sec" onclick="go(\'fall\')">🩹 บันทึกว่าล้ม</button>' +
+    cloudCard() +
     '<div class="card" style="margin-top:14px"><h3>ทำไมลูกหลานเป็นคนวัด</h3><p class="sub" style="margin:0">จากการสัมภาษณ์ผู้สูงอายุ 3 คน ทุกคนใช้แอปหรือตั้งกล้องเองไม่ได้ และทุกคนอยากให้ "ลูกหลานรู้" เป็นอันดับหนึ่ง แอปรุ่นนี้จึงให้คุณเป็นคนจับเวลา ผู้สูงอายุแค่ทำท่าตามที่คุณบอก</p></div>' +
     '<button class="btn ghost" onclick="go(\'reg\')">แก้ไขข้อมูล · ' + esc(e.name) + '</button>' +
     '<button class="btn ghost" onclick="go(\'contacts\')">📞 เบอร์ที่ควรมี และโรงพยาบาลใกล้บ้าน</button>';
@@ -218,7 +242,7 @@ function renderVideo(v) {
     VIDEOS.map(function (x) {
       return '<div class="card"><h3>' + esc(x.nm) + ' <span class="pill" style="background:var(--surf2);color:var(--brand2)">' + x.len + '</span></h3>' +
         (x.id ? '<div class="vid"><iframe src="https://www.youtube-nocookie.com/embed/' + esc(x.id) + '" allow="fullscreen" loading="lazy" title="' + esc(x.nm) + '"></iframe></div>'
-              : '<div class="vid">วิดีโอสาธิตกำลังจัดทำ<br>ทำตามขั้นตอนด้านล่างได้เลย</div>') +
+              : '') + fig(x.k) +
         '<div class="steps">' + x.steps.map(function (s) { return '<div>' + esc(s) + '</div>'; }).join("") + '</div></div>';
     }).join("") +
     '<button class="btn" onclick="startTest()">พร้อมแล้ว เริ่มวัด</button>';
@@ -267,7 +291,7 @@ function renderStopwatch(v, k, prog) {
     '<button class="sw ' + (running ? "stop" : "") + '" onclick="swToggle()">' + (running ? "■ หยุด" : (sw.val != null ? "↻ จับใหม่" : "▶ เริ่ม")) + '</button></div>' +
     (sw.val != null && !running ? '<button class="btn" onclick="swSave()">บันทึก ' + sw.val.toFixed(1) + ' วินาที</button>' : "") +
     '<button class="btn ghost" onclick="swSkip()">ข้ามท่านี้ (ทำไม่ได้ / ไม่ปลอดภัย)</button>' +
-    '<div class="card"><h3>ทำอย่างไร</h3><div class="steps">' + vid.steps.map(function (s) { return '<div>' + esc(s) + '</div>'; }).join("") + '</div>' +
+    '<div class="card"><h3>ทำอย่างไร</h3>' + fig(k) + '<div class="steps">' + vid.steps.map(function (s) { return '<div>' + esc(s) + '</div>'; }).join("") + '</div>' +
     (vid.id ? '<button class="btn sec" onclick="go(\'video\')">ดูวิดีโอท่านี้</button>' : "") + '</div>';
 }
 function swToggle() {
@@ -334,6 +358,23 @@ function finish() {
   if (tr.some(function (t) { return !t.good; }) && tier > 2) tier = 2; /* แย่ลงจากเดิมชัดเจน */
   var rec = Object.assign({ id: uid(), score: sc.score, max: sc.max, tier: tier, parts: sc.parts, flags: fl, trend: tr, by: D.caregiver.name, method: "manual" }, d);
   D.assessments.push(rec); save(); S.draft = null; S.last = rec; go("result");
+  cloudSync(rec);
+}
+/* ส่งขึ้นระบบกลางแบบไม่บล็อกหน้าจอ — ผลในเครื่องบันทึกไปแล้ว ถ้าส่งไม่สำเร็จจะลองใหม่ครั้งหน้า */
+async function cloudSync(rec) {
+  if (!CSCloud.connected()) return;
+  try {
+    var r = await CSCloud.syncAssessment(rec, elder(), D.caregiver);
+    rec.cloud = { at: new Date().toISOString(), level: r.level, referral: r.referral.need ? r.referral.nm : null, id: r.assessmentId };
+    save();
+    if (S.screen === "result" && S.last && S.last.id === rec.id) render();
+    toast(r.level === "stable" ? "ส่งขึ้นระบบกลางแล้ว" : "ส่งถึงเจ้าหน้าที่แล้ว · " + r.referral.nm);
+  } catch (e) { console.warn("cloud sync", e); rec.cloudError = String(e.message || e); save(); }
+}
+async function cloudRetry() {
+  if (!CSCloud.connected()) return;
+  var pend = D.assessments.filter(function (a) { return !a.cloud && !a.fromCloud; });
+  for (var i = 0; i < pend.length; i++) await cloudSync(pend[i]);
 }
 
 /* ---------- ผลทันที ---------- */
@@ -347,6 +388,8 @@ function renderResult(v) {
   v.innerHTML = '<div class="tier ' + T.cls + '"><b>' + T.nm + '</b><span>' + T.advice + '</span></div>' +
     '<div class="card"><h3>ทำไมได้ผลนี้</h3>' + (items.length ? items.join("") : '<div class="flag good"><b>ไม่พบสัญญาณเสี่ยงจากการวัดครั้งนี้</b><small>ลุกนั่ง ' + (r.ftsst != null ? r.ftsst.toFixed(1) + ' วินาที อยู่ในเกณฑ์อายุ' : 'ข้าม') + '</small></div>') + '</div>' +
     '<div class="card"><h3>ขั้นต่อไป</h3><div class="steps">' + nextSteps(r).map(function (s) { return '<div>' + s + '</div>'; }).join("") + '</div></div>' +
+    (r.cloud ? '<div class="flag ' + (r.cloud.level === "stable" ? "good" : "") + '"><b>☁️ ส่งถึงระบบกลางแล้ว' + (r.cloud.referral ? ' · ' + esc(r.cloud.referral) : '') + '</b><small>' + (r.cloud.level === "stable" ? "ไม่เปิดเคส เพราะไม่พบสัญญาณเสี่ยง" : "เปิดเคสให้เจ้าหน้าที่แล้ว จะมีคนติดต่อกลับตามระดับความเร่งด่วน") + '</small></div>'
+      : (CSCloud.connected() ? '<p class="sub">กำลังส่งขึ้นระบบกลาง…</p>' : '')) +
     '<button class="btn" onclick="share()">📤 แจ้งครอบครัว (LINE / ข้อความ)</button>' +
     '<button class="btn sec" onclick="printSummary()">🖨️ ใบสรุปสำหรับพกไปพบแพทย์</button>' +
     '<button class="btn ghost" onclick="go(\'history\')">ดูแนวโน้ม</button>' +
@@ -423,7 +466,9 @@ function renderFall(v) {
 }
 function saveFall() {
   D.falls.push({ id: uid(), elderId: elder().id, date: new Date().toISOString(), where: $("fWhere").value.trim() || "ไม่ระบุ", injury: $("fInj").value, getup: $("fUp").value });
+  var f = D.falls[D.falls.length - 1];
   save(); toast("บันทึกแล้ว · แนะนำวัดซ้ำภายใน 3 วันเมื่อหายเจ็บ"); go("history");
+  if (CSCloud.connected()) CSCloud.reportFall(f).then(function () { f.cloud = true; save(); toast("แจ้งเจ้าหน้าที่แล้ว จะมีคนติดต่อกลับ"); }).catch(function (e) { console.warn(e); });
 }
 
 /* ---------- เบอร์และโรงพยาบาล ---------- */
@@ -442,7 +487,73 @@ function hospList() {
   $("hosp").innerHTML = out || '<p class="sub">ไม่พบข้อมูล</p>';
 }
 
+/* ---------- ระบบกลาง (Supabase เดียวกับ V2) ---------- */
+var CLOUD_NM = { local: "ไม่มีอินเทอร์เน็ต · เก็บในเครื่อง", "signed-out": "ยังไม่เชื่อมบัญชี", cloud: "เชื่อมระบบกลางแล้ว" };
+function cloudCard() {
+  var m = CSCloud.mode();
+  if (m !== "cloud") return '<div class="card" style="margin-top:14px;border:1.5px dashed var(--line)"><h3>☁️ ระบบกลาง: ' + CLOUD_NM[m] + '</h3><p class="sub" style="margin:0 0 8px">เชื่อมแล้ว ผลวัดจะถึงเจ้าหน้าที่ดูแล และมีคนโทรกลับเมื่อผลแย่ลง</p><button class="btn sec" style="margin:0" onclick="go(\'cloud\')">เชื่อมบัญชีให้ ' + esc(elder().name) + '</button></div>';
+  var st = S.care || { cases: [], referrals: [] }, c = st.cases[0];
+  var LV = { stable: "เขียว", watch: "เหลือง · เฝ้าสังเกต", decline: "ส้ม · ถดถอย", urgent: "แดง · เร่งด่วน" };
+  var ST = { new: "เคสใหม่ รอเจ้าหน้าที่รับ", reviewing: "เจ้าหน้าที่รับเคสแล้ว", contacted: "ติดต่อครอบครัวแล้ว", referred: "ส่งต่อผู้เชี่ยวชาญแล้ว", intervention: "อยู่ระหว่างการดูแล", follow_up_due: "ถึงกำหนดติดตาม", stable: "ปิดเคส ดีขึ้น", closed: "ปิดเคส" };
+  return '<div class="card" style="margin-top:14px"><h3>☁️ การดูแลจากทีมกลาง</h3>' +
+    (c ? '<div class="hist"><span>เคสล่าสุด ' + thDate(c.opened_at) + '<br><small style="color:var(--ink2)">' + (LV[c.level] || c.level) + (c.next_action ? ' · ' + esc(c.next_action) : '') + '</small></span><span class="pill" style="background:var(--surf2);color:var(--brand2)">' + (ST[c.status] || c.status) + '</span></div>'
+       : '<p class="sub" style="margin:0">ยังไม่มีเคสเปิด — ผลวัดที่เป็นสีเหลืองขึ้นไปจะเปิดเคสให้เจ้าหน้าที่อัตโนมัติ</p>') +
+    st.referrals.slice(0, 3).map(function (r) { return '<div class="hist"><span>ส่งต่อ ' + esc(r.destination || r.action || "") + '</span><small>' + esc(r.status) + '</small></div>'; }).join("") +
+    '<button class="btn ghost" style="margin-top:6px" onclick="go(\'cloud\')">บัญชีระบบกลาง</button></div>';
+}
+function renderCloud(v) {
+  var e = elder(), m = CSCloud.mode();
+  head("ระบบกลาง", m === "cloud" ? "เชื่อมแล้ว" : "เชื่อมบัญชีให้ " + e.name, "ระบบเดียวกับ CareSignal V2 — เจ้าหน้าที่ดูแลเห็นผลและติดต่อกลับได้", "home");
+  if (m === "local") { v.innerHTML = '<div class="card"><h3>ตอนนี้ไม่มีอินเทอร์เน็ต หรือระบบกลางยังไม่ตอบ</h3><p class="sub">ผลวัดยังบันทึกในเครื่องนี้ครบ เมื่อเชื่อมได้จะส่งขึ้นให้อัตโนมัติ</p><button class="btn sec" onclick="location.reload()">ลองเชื่อมใหม่</button></div>'; return; }
+  if (m === "cloud") {
+    var pend = D.assessments.filter(function (a) { return !a.cloud && !a.fromCloud; }).length;
+    v.innerHTML = '<div class="card"><h3>บัญชีของ ' + esc(e.name) + '</h3><p class="sub">ผู้ดูแลบัญชี: ' + esc(D.caregiver.name) + ' · ' + (CSCloud.state.profile ? 'รหัสในระบบ ' + esc(CSCloud.state.profile.pseudonym || '') : '') + '</p>' +
+      '<div class="hist"><span>ผลวัดที่ส่งขึ้นแล้ว</span><b>' + D.assessments.filter(function (a) { return a.cloud || a.fromCloud; }).length + '</b></div>' +
+      '<div class="hist"><span>รอส่ง</span><b>' + pend + '</b></div>' +
+      (pend ? '<button class="btn sec" onclick="cloudRetry().then(function(){render()})">ส่งที่ค้างอยู่</button>' : '') + '</div>' +
+      '<div class="card"><h3>ข้อมูลที่ส่งขึ้นระบบกลาง</h3><p class="sub" style="margin:0">ชื่อที่ให้เรียก ปีเกิด ชื่อและเบอร์ลูกหลาน ผลจับเวลา คำตอบ 5 ข้อ และรหัสในระบบ · ไม่มีภาพ ไม่มีเลขบัตร · ระบบไม่ใช้ผลปรับเบี้ยหรือพิจารณาเคลม</p></div>' +
+      '<button class="btn ghost" onclick="CSCloud.signOut().then(function(){toast(\'ออกจากบัญชีแล้ว ข้อมูลในเครื่องยังอยู่\');go(\'home\')})">ออกจากบัญชีระบบกลาง</button>';
+    return;
+  }
+  v.innerHTML = '<div class="card"><h3>บัญชีนี้เป็นของผู้สูงอายุ ลูกหลานเป็นผู้ดูแลบัญชี</h3><p class="sub">ใช้เบอร์โทรของลูกหลานได้ถ้าผู้สูงอายุไม่มีมือถือ · PIN 4 หลักตั้งเองและจำไว้ ระบบไม่ส่ง SMS</p>' +
+    '<label class="f">เบอร์โทร</label><input type="tel" id="cPhone2" inputmode="numeric" value="' + esc(D.caregiver.phone) + '" placeholder="08xxxxxxxx">' +
+    '<label class="f">PIN 4 หลัก</label><input type="tel" id="cPin" inputmode="numeric" maxlength="4" pattern="[0-9]*" placeholder="••••" autocomplete="off">' +
+    '<button class="btn" onclick="cloudAuth(\'register\')">สมัครบัญชีให้ ' + esc(e.name) + '</button>' +
+    '<button class="btn sec" onclick="cloudAuth(\'signin\')">มีบัญชีแล้ว เข้าสู่ระบบ</button>' +
+    '<p class="sub" style="font-size:12.5px;margin-top:10px">เมื่อสมัคร ระบบบันทึกความยินยอมว่าลูกหลานเป็นผู้วัดและส่งผลแทน (ติ๊กไว้ในหน้าลงทะเบียน) · ยกเลิกได้โดยลบบัญชีในภายหลัง</p></div>';
+}
+async function cloudAuth(kind) {
+  var phone = $("cPhone2").value.replace(/\D/g, ""), pin = $("cPin").value.replace(/\D/g, ""), e = elder();
+  if (phone.length < 9) return toast("กรอกเบอร์โทรให้ครบ");
+  if (pin.length !== 4) return toast("PIN ต้องเป็นตัวเลข 4 หลัก");
+  if (!(e.consent && e.consent.data)) return toast("ต้องติ๊กยินยอมในหน้าลงทะเบียนก่อน");
+  toast(kind === "register" ? "กำลังสมัคร…" : "กำลังเข้าสู่ระบบ…");
+  try {
+    if (kind === "register") await CSCloud.register(phone, pin, e, D.caregiver);
+    else await CSCloud.signIn(phone, pin, e, D.caregiver);
+    if (!D.caregiver.phone) { D.caregiver.phone = phone; save(); }
+    toast("เชื่อมแล้ว"); await cloudRefresh(); await cloudRetry(); go("home");
+  } catch (err) {
+    var m = String(err.message || err);
+    toast(/already|registered/i.test(m) ? "เบอร์นี้มีบัญชีแล้ว กด เข้าสู่ระบบ" : /Invalid login/i.test(m) ? "เบอร์หรือ PIN ไม่ถูกต้อง" : "ไม่สำเร็จ: " + m);
+  }
+}
+async function cloudRefresh() {
+  if (!CSCloud.connected()) return;
+  try {
+    S.care = await CSCloud.careStatus();
+    var e = elder(), have = {}; D.assessments.forEach(function (a) { if (a.cloud) have[a.cloud.id] = 1; if (a.cloudId) have[a.cloudId] = 1; });
+    (await CSCloud.pullAssessments()).forEach(function (r) {
+      if (have[r.cloudId]) return;
+      /* ผลที่วัดจากเครื่องอื่น (เช่น มือถือของญาติอีกคน) — ดึงมาแสดงในแนวโน้ม */
+      D.assessments.push(Object.assign({ id: uid(), elderId: e.id, flags: { reds: [], yellows: [] }, trend: [], fallsCount: null, skipped: {} }, r));
+    });
+    save(); if (S.screen === "home" || S.screen === "history") render();
+  } catch (e) { console.warn("cloud refresh", e); }
+}
+
 render();
+CSCloud.init().then(function () { if (S.screen === "home") render(); return cloudRefresh(); }).then(cloudRetry);
 if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("./sw.js").catch(function () {});
 </script>
 </body>

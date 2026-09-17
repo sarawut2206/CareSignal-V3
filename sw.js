@@ -1,6 +1,6 @@
 /* CareSignal V3 — ใช้ออฟไลน์ได้หลังเปิดครั้งแรก · ไม่มีการเรียกออกภายนอกนอกจากฟอนต์ */
-var VERSION = "caresignal-v3-1";
-var FILES = ["./", "./index.html", "./app.html", "./testkit.html", "./cs-score.js", "./cs-hospitals.js",
+var VERSION = "caresignal-v3-2";
+var FILES = ["./", "./index.html", "./app.html", "./testkit.html", "./cs-score.js", "./cs-hospitals.js", "./cs-backend.js", "./cs-cloud.js",
              "./manifest.json", "./icon-192.png", "./icon-512.png"];
 self.addEventListener("install", function (e) {
   e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(FILES); }).then(function () { return self.skipWaiting(); }));

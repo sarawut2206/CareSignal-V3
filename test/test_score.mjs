@@ -45,5 +45,38 @@ ok("แอปมีทาง 1669 และไม่มีปุ่มฉุก�
 ok("index อ้างตัวเลขจากการสัมภาษณ์จริง 5/5 และ 3/3", /5\/5/.test(html) && /3\/3/.test(html));
 ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
 
+/* ---------- ชั้นเชื่อมระบบกลาง (cs-cloud.js ส่วนฟังก์ชันล้วน) ---------- */
+{
+  const C = require("../cs-cloud.js");
+  let p2 = 0, f2 = 0;
+  const ok2 = (n, c, x) => { if (c) p2++; else { f2++; console.log("  ตก: " + n + (x !== undefined ? " — " + JSON.stringify(x) : "")); } };
+  const mk = (o) => Object.assign({ date: "2026-09-17T10:00:00Z", ftsst: 9, tug: 8, balance: 10, fallsCount: 0, injury: null, getup: null, worried: false, medsCount: 1, adl: 2,
+                                    score: 9, max: 9, tier: 4, parts: {}, flags: { reds: [], yellows: [] }, trend: [], skipped: {} }, o);
+  const clean = C.levelOf(mk({}));
+  ok2("ไม่มีธง = stable ไม่ส่งต่อ นัด 90 วัน", clean.level === "stable" && !clean.referral.need && clean.nextDays === 90, clean);
+  const yel = C.levelOf(mk({ tier: 3, flags: { reds: [], yellows: [{ id: "B9", text: "x", why: "y" }] } }));
+  ok2("เหลืองอย่างเดียว = watch เปิดเคสแต่ไม่ส่งต่อ", yel.level === "watch" && !yel.referral.need && yel.signals[0].k === "S4" && yel.signals[0].dest === "physio", yel);
+  const red = C.levelOf(mk({ tier: 2, flags: { reds: [{ id: "B1", text: "x", why: "y" }], yellows: [] } }));
+  ok2("ธงแดง = urgent ส่งต่อพยาบาล 72 ชม. สัญญาณ S2 → แพทย์", red.level === "urgent" && red.referral.need && /พยาบาล/.test(red.referral.nm) && red.signals[0].k === "S2", red);
+  const tr = C.levelOf(mk({ tier: 2, trend: [{ id: "R1", text: "ช้าลง", why: "MCID" }] }));
+  ok2("แย่ลงจากเดิม + ระดับส้ม = decline → Care Manager โทร", tr.level === "decline" && /Care Manager/.test(tr.referral.nm) && tr.flags[0].sev === 2, tr);
+  const adl = C.levelOf(mk({ tier: 3, flags: { reds: [], yellows: [{ id: "B16", text: "adl", why: "w" }] } }));
+  ok2("ADL ลด = urgent สัญญาณ S6 → พยาบาล (เหมือน V2 R6)", adl.level === "urgent" && adl.signals.some((s) => s.k === "S6" && s.dest === "nurse"), adl);
+  ok2("ธงมีรูปแบบ {id,text,why,sev} ที่คอนโซล V2 อ่านได้", red.flags.every((f) => f.id && f.text && f.why && f.sev));
+
+  const pay = C.payloadOf(mk({ balance: 6, note: "ปวดเข่า", fallsCount: 3, injury: 2, getup: 3, medsCount: 2 }), { name: "ป้า", age: 68 }, "ครูแซม");
+  ok2("payload: method manual · reps 5 · engine carer · ไม่อ้างยืนยันตัวตน", pay.method === "manual" && pay.reps === 5 && pay.engine === "3.0.0-carer" && pay.verified === false);
+  ok2("payload: detail.measured_by carer + tug.ended_by carer (ใบส่งต่ออ่านได้)", pay.detail.measured_by === "carer" && pay.detail.tug.ended_by === "carer" && pay.testQuality.ended_by === "carer");
+  ok2("payload: ยืนต่อเท้า 6 วิ → passed 2 และมี label", pay.detail.balance.passed === 2 && /6 วินาที/.test(pay.detail.balance.label));
+  ok2("payload: ประวัติล้มและยาไปครบ", pay.fallsDetail.count === 3 && pay.fallsDetail.getup === 3 && pay.medsDetail.count === 2 && pay.detail.steadi.fell === true);
+  ok2("payload: ข้ามทุกท่า = not_tested", C.payloadOf(mk({ ftsst: null, tug: null, balance: null }), { name: "x", age: 70 }, "y").notTested === true);
+  ok2("ล้มบาดเจ็บต้องพบแพทย์ = high · ไม่บาดเจ็บลุกได้ทันที = low", C.fallSeverity({ injury: "ต้องพบแพทย์", getup: "ได้ทันที" }) === "high" && C.fallSeverity({ injury: "ไม่บาดเจ็บ", getup: "ได้ทันที" }) === "low" && C.fallSeverity({ injury: "ฟกช้ำ แผลเล็กน้อย", getup: "ได้แต่ช้า" }) === "medium");
+  ok2("ปีเกิด พ.ศ. จากอายุ", C.birthYearBE(68) === new Date().getFullYear() + 543 - 68);
+  const sql = readFileSync(new URL("../supabase/23_v3_carer.sql", import.meta.url), "utf8");
+  ok2("migration 23: รันซ้ำได้ (if not exists / or replace) และมีทริกเกอร์ล้ม→เคส", /add column if not exists/.test(sql) && /create or replace function public\.open_case_on_fall_event/.test(sql) && /drop trigger if exists trg_open_case_on_fall_event/.test(sql));
+  ok2("migration 23: ไม่แตะ RLS ให้ anon และไม่มี secret", !/to anon/.test(sql) && !/sb_secret|ZHJE/.test(sql));
+  console.log("  cloud: " + p2 + " ผ่าน / " + f2 + " ตก");
+  pass += p2; fail += f2;
+}
 console.log("  " + pass + " ผ่าน / " + fail + " ตก");
 process.exit(fail ? 1 : 0);
