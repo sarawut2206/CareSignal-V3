@@ -192,6 +192,23 @@ h3{font-size:14.5px;margin:0 0 10px;color:var(--ink);font-weight:700}
 .consent .cd{font-family:var(--mono);font-size:12.5px;color:var(--ink2);margin-top:6px}
 .locked{filter:blur(4px);pointer-events:none;user-select:none}
 .newtag{display:inline-block;font-size:10.5px;font-weight:700;background:var(--brand);color:#fff;padding:1px 7px;border-radius:99px;margin-left:6px}
+.rolebar{display:flex;gap:12px;align-items:center;background:var(--brandt);border:1px solid #C9DAF3;
+  border-radius:10px;padding:11px 14px;margin-bottom:12px}
+.rolebar .ic{font-size:22px;line-height:1}
+.rolebar b{display:block;font-size:14.5px}
+.rolebar span.bd{margin-left:auto;font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--brand);white-space:nowrap}
+.rolebar div span{font-size:12.5px;color:var(--ink2);line-height:1.6}
+.rolebar .lnk{margin-left:auto;border:0;background:transparent;color:var(--brand);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.pickgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:14px}
+.pickcard{text-align:left;background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:16px;
+  font-family:inherit;cursor:pointer;box-shadow:var(--sh);display:flex;flex-direction:column;gap:4px;color:inherit}
+.pickcard:hover{border-color:var(--brand);box-shadow:0 6px 18px rgba(37,99,235,.14)}
+.pickcard .ic{font-size:26px}
+.pickcard b{font-size:16px}
+.pickcard .tag{font-size:13px;color:var(--ink2)}
+.pickcard .en{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--brand)}
+.pickcard .goo{margin-top:auto;padding-top:8px;font-size:13.5px;font-weight:600;color:var(--brand)}
+ul.bl{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink2);line-height:1.75}
 .warnbox{background:var(--c1t);border:1px solid #FCA5A5;border-radius:var(--r);padding:12px 15px;font-size:13.5px;color:#991B1B;margin-bottom:12px}
 .warnbox b{color:#7F1D1D}
 .toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(86px + env(safe-area-inset-bottom));
@@ -495,11 +512,79 @@ if(window.CSReferralForms)CSReferralForms.injectCSS();   /* สไตล์แ�
    ชั้นการใช้งาน ไม่ใช่ชั้นความปลอดภัย
    ============================================================ */
 var V=document.getElementById("view"), TABS=document.getElementById("tabs");
-var ST={screen:"login", role:null, email:null, name:null};
+var ST={screen:"pick", role:null, email:null, name:null, pick:null};
 var LV_NM={stable:"คงที่",watch:"เฝ้าสังเกต",decline:"ถดถอย",urgent:"เร่งด่วน"};
 var LV_C ={stable:"var(--c4)",watch:"var(--c3)",decline:"var(--c2)",urgent:"var(--c1)"};
 var ROLE_NM={care_manager:"Care Manager / ผู้ประสานงาน",insurer:"เจ้าหน้าที่บริษัทประกัน",
   admin:"ผู้ดูแลระบบ",pharmacist:"เภสัชกร",physio:"นักกายภาพบำบัด",doctor:"แพทย์",nurse:"พยาบาล"};
+/* ---------- กระดานของแต่ละบทบาท ----------
+   แต่ละวิชาชีพมีหน้าที่และข้อมูลที่ต้องใช้ต่างกันตาม CDC STEADI Coordinated Care Plan
+   จึงไม่ให้ทุกวิชาชีพเห็นคิวเดียวกัน · รายการ "ต้องดู" และ "บันทึกได้" ตรงกับ
+   แบบฟอร์มจริงในโมดูล cs-referral-forms.js ไม่ใช่ข้อความประดับ */
+var BOARD={
+  doctor:{ic:"🩺",nm:"กระดานทบทวนทางการแพทย์",en:"Medical Review Board",
+    tag:"เคสที่รอการตัดสินใจทางการแพทย์",
+    see:["เคสใหม่ที่รอทบทวน และเคสเร่งด่วน","ประวัติหกล้มและการบาดเจ็บ",
+         "อาการเตือน เช่น เจ็บหน้าอก หน้ามืด อ่อนแรงเฉียบพลัน","โรคประจำตัวและรายการยา",
+         "ผลลุกเดิน (TUG) ลุกนั่ง 5 ครั้ง การทรงตัว และกิจวัตรประจำวันแบบสรุป",
+         "ข้อเสนอจากเภสัชกรและนักกายภาพบำบัด","ประวัติการส่งต่อและผลติดตาม"],
+    act:["ยืนยันความเสี่ยง","ขอข้อมูลเพิ่ม","นัดพบแพทย์","ส่งต่อเภสัชกร นักกายภาพบำบัด หรือพยาบาล",
+         "ให้คำแนะนำ","ปิดเคสพร้อมเหตุผล"]},
+  pharmacist:{ic:"💊",nm:"กระดานทบทวนยา",en:"Pharmacy Review Board",
+    tag:"เคสที่รอทบทวนยา",
+    see:["คิวรอทบทวนยา","รูปฉลากยาที่ผู้เอาประกันยินยอมให้เปิดดู","ชื่อยา ขนาดยา และเวลาที่รับประทาน",
+         "อาการเวียนศีรษะ ง่วงซึม หรือหน้ามืด","ประวัติหกล้มที่สัมพันธ์กับช่วงเริ่มยาหรือเปลี่ยนยา",
+         "โรคประจำตัวที่เกี่ยวข้อง","ข้อเสนอจากแพทย์และพยาบาล"],
+    act:["ยืนยันว่าควรทบทวนยา","ระบุยาหรือกลุ่มยาที่ควรประเมินเพิ่ม",
+         "เสนอให้แพทย์ผู้สั่งยาทบทวน","ขอข้อมูลเพิ่ม","ส่งต่อแพทย์","นัดติดตามอาการ"],
+    warn:"ระบบไม่มีปุ่มสั่งหยุดยาหรือเปลี่ยนยา การปรับยาเป็นของผู้สั่งใช้ยาเท่านั้น ใช้ถ้อยคำว่า “เสนอให้ผู้สั่งยาทบทวน”"},
+  physio:{ic:"🦵",nm:"กระดานประเมินการเคลื่อนไหว",en:"Physical Therapy Board",
+    tag:"เคสที่รอประเมินการเคลื่อนไหว",
+    see:["คิวผู้ที่ลุกเดินหรือลุกนั่งผิดเกณฑ์","เวลาลุกนั่ง 5 ครั้ง และเวลาลุกเดิน 3 เมตร",
+         "ผลการทรงตัวทั้ง 4 ท่า","ใช้ไม้เท้าหรือวอล์กเกอร์ และต้องมีคนพยุงหรือไม่",
+         "ข้อสังเกตการเดิน 8 ข้อตาม STEADI","อาการปวดเข่า สะโพก หรือหลัง",
+         "กิจวัตรที่เกี่ยวกับการเดินและการย้ายตัว","ผลครั้งก่อนเพื่อดูแนวโน้ม"],
+    act:["ยืนยันว่าควรประเมินกายภาพ","ขอข้อมูลหรือวิดีโอเพิ่ม","นัดประเมิน",
+         "สร้างโปรแกรมฝึก พร้อมเป้าหมาย ท่า จำนวนครั้ง และข้อควรระวัง",
+         "แนะนำอุปกรณ์ช่วยเดิน","ส่งต่อแพทย์","นัดประเมินซ้ำ 7 · 30 · 90 วัน"]},
+  nurse:{ic:"🧑‍⚕️",nm:"กระดานประสานการดูแล",en:"Nursing Coordination Board",
+    tag:"เคสที่รอประสานและติดตาม",
+    see:["คิวเคสใหม่และเคสที่เกินกำหนด","ผู้ที่ติดต่อไม่ได้","อาการเร่งด่วน",
+         "ประวัติหกล้มและการบาดเจ็บ","ความปลอดภัยในบ้าน",
+         "กิจวัตรประจำวันและความสามารถดูแลตนเอง","สถานะการส่งต่อทุกวิชาชีพและการนัดหมาย",
+         "ผลติดตามหลัง 7 ถึง 90 วัน"],
+    act:["บันทึกผลการติดต่อผู้เอาประกัน","ประเมินความปลอดภัยเบื้องต้น",
+         "ส่งต่อแพทย์ เภสัชกร หรือนักกายภาพบำบัด","นัดติดตาม","ปิดเคสเมื่อผู้เชี่ยวชาญยืนยันแล้ว"],
+    warn:"พยาบาลเห็นไทม์ไลน์ทั้งเคสเพื่อประสานงาน แต่แก้ข้อสรุปทางวิชาชีพของแพทย์ เภสัชกร หรือนักกายภาพบำบัดไม่ได้"},
+  care_manager:{ic:"🗂️",nm:"กระดานผู้ประสานงาน",en:"Care Coordination Board",
+    tag:"ทั้งพอร์ต — จัดคิวและส่งต่อ",
+    see:["คิวเคสทั้งพอร์ตเรียงตามความเร่งด่วน","เคสที่เกินกำหนดติดต่อ",
+         "สัญญาณเสี่ยงของแต่ละเคส","สถานะการส่งต่อและผลที่กลับมา","ภาพรวมการทำงานของทีม"],
+    act:["รับเคสและมอบหมายงาน","บันทึกการติดต่อ","ส่งต่อให้วิชาชีพที่ตรงปัญหา",
+         "รวมผลเป็นแผนดูแล","กำหนดวันติดตามและปิดเคส"]}
+};
+BOARD.admin=BOARD.care_manager;
+function board(){ return BOARD[ST.role]||null }
+/* แถบบอกบทบาทและขอบเขต — ต้องขึ้นทุกกระดาน ไม่ให้เข้าใจผิดว่าเห็นทั้งระบบ */
+function roleBarHTML(){
+  var b=board(); if(!b) return "";
+  var scope=isClinician()
+    ? "แสดงเฉพาะเคสที่ถูกส่งต่อมายังบทบาทนี้ ข้อมูลใช้เพื่อทบทวนและประสานการดูแล ไม่ใช้แทนการวินิจฉัยหรือคำสั่งรักษา"
+    : "เห็นเคสทั้งพอร์ตเพื่อจัดคิวและส่งต่อ ข้อสรุปทางวิชาชีพเป็นของผู้เชี่ยวชาญแต่ละคน";
+  return '<div class="rolebar"><span class="ic">'+b.ic+'</span><div><b>คุณกำลังเข้าระบบในฐานะ '+
+    esc(ROLE_NM[ST.role]||ST.role)+'</b><span>'+esc(scope)+'</span></div>'+
+    '<span class="bd">'+esc(b.en)+'</span></div>';
+}
+function boardGuideHTML(){
+  var b=board(); if(!b) return "";
+  return '<div class="grid2 wide" style="margin-bottom:12px">'+
+    '<div class="card"><h3>สิ่งที่ต้องดูในบทบาทนี้</h3><ul class="bl">'+
+      b.see.map(function(x){return '<li>'+esc(x)+'</li>'}).join("")+'</ul></div>'+
+    '<div class="card"><h3>สิ่งที่บันทึกกลับได้</h3><ul class="bl">'+
+      b.act.map(function(x){return '<li>'+esc(x)+'</li>'}).join("")+'</ul>'+
+      (b.warn?'<p class="tiny" style="margin-top:8px"><b>ข้อจำกัด</b> — '+esc(b.warn)+'</p>':'')+
+    '</div></div>';
+}
 /* วิชาชีพที่รับเคสส่งต่อ — เห็นเฉพาะรายการที่ส่งมาถึงวิชาชีพตน (บังคับด้วย RLS)
    ต่างจากผู้ประสานงานซึ่งเห็นทั้งพอร์ตเพราะต้องจัดสรรงาน */
 var CLINICIANS=["pharmacist","physio","doctor","nurse"];
@@ -550,7 +635,7 @@ function redeemV(em){
     '<button class="ghostb" id="rdOut">ออกจากระบบ</button>';
   document.getElementById("rdOut").addEventListener("click",async function(){
     try{ await CSBackend.signOut() }catch(e){}
-    ST.role=null; ST.email=null; ST.name=null; chip(); loginV();
+    ST.role=null; ST.email=null; ST.name=null; ST.pick=null; chip(); pickV();
   });
   var b=document.getElementById("rdGo");
   b.addEventListener("click",async function(){
@@ -736,10 +821,41 @@ function mfaPrompt(){
    ช่องแรกรับได้ทั้งชื่อผู้ใช้และอีเมล เพราะผู้ดูแลระบบยังใช้อีเมลจริง
    ระบบดูที่เครื่องหมาย @ เป็นตัวแยก ไม่ต้องให้ผู้ใช้เลือกหมวดเองอีก
    ============================================================ */
+/* ---------- หน้าแรก: เลือกบทบาทก่อนเข้าสู่ระบบ ----------
+   เดิมทุกวิชาชีพเห็นหน้าเข้าสู่ระบบหน้าเดียวกัน แล้วค่อยรู้ว่าตัวเองเห็นอะไรได้บ้าง
+   หน้านี้บอกตั้งแต่ต้นว่าบทบาทไหนเห็นอะไรและทำอะไรได้
+   สำคัญ: การเลือกที่นี่ไม่ได้ให้สิทธิ์ใด ๆ สิทธิ์จริงผูกกับบัญชีที่ฐานข้อมูล */
+function pickV(){
+  ST.screen="pick"; TABS.hidden=true; if(typeof SIDE!=="undefined"&&SIDE) SIDE.hidden=true;
+  head("เลือกบทบาทของท่าน","ทีมผู้เชี่ยวชาญและเจ้าหน้าที่ดูแล — แต่ละบทบาทเห็นคนละคิว");
+  var order=["doctor","pharmacist","physio","nurse","care_manager"];
+  V.innerHTML='<div class="pickgrid">'+order.map(function(k){
+    var b=BOARD[k];
+    return '<button class="pickcard" data-pick="'+k+'"><span class="ic">'+b.ic+'</span>'+
+      '<b>'+esc(ROLE_NM[k])+'</b><span class="tag">'+esc(b.tag)+'</span>'+
+      '<span class="en">'+esc(b.en)+'</span>'+
+      '<ul class="bl">'+b.see.slice(0,3).map(function(x){return '<li>'+esc(x)+'</li>'}).join("")+'</ul>'+
+      '<span class="goo">เข้าสู่ระบบในบทบาทนี้ ›</span></button>';
+  }).join("")+'</div>'+
+  '<div class="notice"><b>จำนวนเคสในคิวจะแสดงหลังเข้าสู่ระบบ</b> — ระบบไม่เปิดเผยจำนวนเคสให้ผู้ที่ยังไม่ยืนยันตัวตน '+
+  'และการเลือกบทบาทที่หน้านี้เป็นเพียงการจัดหน้าจอ <b>สิทธิ์จริงผูกกับบัญชีของท่านที่ฐานข้อมูล</b> '+
+  'ถ้าบัญชีเป็นคนละบทบาท ระบบจะเปิดกระดานตามบทบาทจริงให้</div>'+
+  '<button class="ghostb" id="pkOther">บทบาทอื่น (ผู้ดูแลระบบ · เจ้าหน้าที่บริษัทประกัน)</button>';
+  V.querySelectorAll("[data-pick]").forEach(function(b){
+    b.addEventListener("click",function(){ ST.pick=b.dataset.pick; loginV() });
+  });
+  document.getElementById("pkOther").addEventListener("click",function(){ ST.pick=null; loginV() });
+}
+
 function loginV(){
   ST.screen="login"; TABS.hidden=true; if(typeof SIDE!=="undefined"&&SIDE) SIDE.hidden=true;
-  head("เข้าสู่ระบบ","สำหรับเจ้าหน้าที่และผู้เชี่ยวชาญที่ได้รับรหัสจากผู้ดูแลระบบ");
-  V.innerHTML='<div class="card">'+
+  var pk=ST.pick&&BOARD[ST.pick]?ST.pick:null;
+  head(pk?("เข้าสู่ระบบในฐานะ "+ROLE_NM[pk]):"เข้าสู่ระบบ",
+       pk?(BOARD[pk].en+" — "+BOARD[pk].tag):"สำหรับเจ้าหน้าที่และผู้เชี่ยวชาญที่ได้รับรหัสจากผู้ดูแลระบบ");
+  V.innerHTML=(pk?'<div class="rolebar"><span class="ic">'+BOARD[pk].ic+'</span><div><b>'+esc(ROLE_NM[pk])+'</b>'+
+      '<span>หลังเข้าสู่ระบบจะเห็นเฉพาะเคสที่ส่งต่อมายังบทบาทนี้</span></div>'+
+      '<button class="lnk" id="lBack">เปลี่ยนบทบาท</button></div>':'')+
+    '<div class="card">'+
     '<div class="field"><label>ชื่อผู้ใช้</label>'+
       '<input id="lEm" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="เช่น nurse01"></div>'+
     '<p class="tiny" style="margin:-6px 0 12px">บัญชีผู้ดูแลระบบที่เปิดไว้ก่อนหน้านี้ใช้อีเมลเข้าระบบได้ตามเดิม</p>'+
@@ -754,6 +870,7 @@ function loginV(){
     '<p class="sub" style="margin:0">สิทธิ์ข้อมูลบังคับด้วย Row Level Security บนฐานข้อมูล · '+
     'ทุกการเปิดดูและการตัดสินเคสถูกบันทึกลง audit log ที่แก้ไขไม่ได้ · '+
     'รหัสเปิดใช้งานใช้ได้ครั้งเดียวและมีวันหมดอายุ · รองรับ MFA (ตั้งค่าจากแดชบอร์ดบนเว็บ)</p></div>';
+  var lb=document.getElementById("lBack"); if(lb) lb.addEventListener("click",pickV);
   document.getElementById("lGo").addEventListener("click",doLogin);
   document.getElementById("lPw").addEventListener("keydown",function(e){if(e.key==="Enter")doLogin()});
 }
@@ -775,7 +892,7 @@ function setPwV(){
     '<button class="ghostb" id="pwOut">ออกจากระบบ</button>';
   document.getElementById("pwOut").addEventListener("click",async function(){
     try{ await CSBackend.signOut() }catch(e){}
-    ST.role=null; ST.email=null; ST.name=null; chip(); loginV();
+    ST.role=null; ST.email=null; ST.name=null; ST.pick=null; chip(); pickV();
   });
   var b=document.getElementById("pwGo");
   b.addEventListener("click",async function(){
@@ -836,7 +953,9 @@ async function doLogin(){
     if(pr.must_set_password){ setPwV(); return; }
 
     ST.role=pr.role;
-    toast("เข้าสู่ระบบแล้ว · "+(ROLE_NM[ST.role]||ST.role)+(vf.length?" · ผ่าน MFA":""));
+    if(ST.pick&&ST.pick!==pr.role)
+      toast("บัญชีนี้เป็น"+(ROLE_NM[pr.role]||pr.role)+" ระบบจึงเปิดกระดานของ"+(ROLE_NM[pr.role]||pr.role)+"ให้");
+    else toast("เข้าสู่ระบบแล้ว · "+(ROLE_NM[ST.role]||ST.role)+(vf.length?" · ผ่าน MFA":""));
     /* หน่วยบริการและการกรองเมนูอยู่ในเส้นทางร่วม ไม่ทำซ้ำที่นี่ */
     await enterConsole(pr.role, ST.email, pr.display_name);
   }catch(e){
@@ -1517,7 +1636,7 @@ function meV(){
   document.getElementById("out").addEventListener("click",async function(){
     try{await CSBackend.signOut()}catch(e){}
     ST.role=null;ST.email=null;ST.name=null;chip();
-    toast("ออกจากระบบแล้ว");loginV();
+    toast("ออกจากระบบแล้ว");ST.pick=null;pickV();
   });
 }
 
@@ -2131,8 +2250,8 @@ function timelineHTML(rows){
 
 
 async function mineV(){
-  var rn=ROLE_NM[ST.role]||ST.role;
-  head("งานของฉัน", isClinician()
+  var rn=ROLE_NM[ST.role]||ST.role, bd=board();
+  head(bd?bd.nm:"งานของฉัน", isClinician()
     ? "เคสที่ส่งต่อมาถึง"+rn+" — เห็นเฉพาะรายการที่ส่งมาถึงวิชาชีพของท่าน"
     : "เคสที่ท่านรับผิดชอบ และเคสที่ยังไม่มีผู้รับผิดชอบ");
   if(ST.role==="insurer"){
@@ -2141,7 +2260,17 @@ async function mineV(){
   }
   V.innerHTML='<div class="empty">กำลังโหลด…</div>';
   var rows=[]; try{ rows=await CSBackend.myWork() }catch(e){}
-  head("งานของฉัน", isClinician()?"เคสที่ส่งต่อมาถึง"+rn:"เคสที่ท่านรับผิดชอบ และเคสที่ยังไม่มีผู้รับผิดชอบ", rows.length);
+  head(bd?bd.nm:"งานของฉัน", isClinician()?"เคสที่ส่งต่อมาถึง"+rn:"เคสที่ท่านรับผิดชอบ และเคสที่ยังไม่มีผู้รับผิดชอบ", rows.length);
+  /* ไม่มีเคสของบทบาทนี้ = บอกตรง ๆ ไม่เอาข้อมูลของวิชาชีพอื่นมาถมหน้าให้ดูไม่ว่าง */
+  if(isClinician()&&!rows.length){
+    V.innerHTML=roleBarHTML()+
+      '<div class="card"><div class="empty"><b>ยังไม่มีเคสที่ส่งต่อมายังบทบาทนี้</b><br>'+
+      'เมื่อผู้ประสานงานส่งเคสมาถึง'+esc(rn)+' รายการจะขึ้นที่นี่พร้อมแจ้งกำหนดเวลา</div></div>'+
+      boardGuideHTML()+
+      '<div class="notice">หน้านี้กรองที่ฐานข้อมูลด้วยบัญชีที่ล็อกอิน ไม่ใช่การซ่อนไว้ที่หน้าจอ '+
+      'จึงไม่มีทางเห็นคิวของวิชาชีพอื่นแม้แก้โค้ดหน้าเว็บ</div>';
+    return;
+  }
 
   var now=Date.now();
   var late  = rows.filter(function(r){return r.overdue});
@@ -2159,7 +2288,7 @@ async function mineV(){
   rows.forEach(function(r){r._due=r.due_at?new Date(r.due_at).getTime():null});
   var LVR={urgent:0,decline:1,watch:2,stable:3};
 
-  var html=orgBarHTML()+kpiRow([
+  var html=roleBarHTML()+orgBarHTML()+kpiRow([
     {id:"late",n:late.length,label:"เกินกำหนด",tone:"c1"},
     {id:"today",n:today.length,label:"ครบกำหนดวันนี้",tone:"c2"},
     {id:"mine",n:mine.length,label:"ที่ท่านรับไว้",tone:"brand"},
@@ -2187,7 +2316,7 @@ async function mineV(){
           '<button data-goopen="'+esc(r.kind)+':'+esc(r.ref_id)+'">'+(r.kind==="case"?"เปิดเคส":"ดูการส่งต่อ")+'</button>';
       }}
     ]});
-  V.innerHTML=html; bindOrgBar();
+  V.innerHTML=html+boardGuideHTML(); bindOrgBar();
 
   function rebind(){
     V.querySelectorAll("[data-claim]").forEach(function(b){
@@ -2509,7 +2638,8 @@ async function referV(){
      จึงไม่ต้องกรองซ้ำที่หน้าจอ และแก้โค้ดหน้าเว็บก็ไม่ทำให้เห็นของคนอื่น */
   var rows=[]; try{ rows=await (isClinician()?CSBackend.myReferrals():CSBackend.listReferralQueue()) }catch(e){}
   if(!rows.length){
-    V.innerHTML='<div class="card"><div class="empty">ยังไม่มีรายการส่งต่อ</div></div>'+
+    V.innerHTML=roleBarHTML()+'<div class="card"><div class="empty">'+
+      (isClinician()?'<b>ยังไม่มีเคสที่ส่งต่อมายังบทบาทนี้</b>':'ยังไม่มีรายการส่งต่อ')+'</div></div>'+
       '<div class="notice">ระบบเปิดรายการส่งต่อเมื่อ Care Manager กดส่งจากหน้าเคส หรือเมื่อเภสัชกรสรุปว่าควรให้แพทย์ทบทวน</div>';
     return;
   }
@@ -2837,8 +2967,8 @@ function resetIdle(){
   clearTimeout(idleT);
   idleT=setTimeout(async function(){
     try{ await CSBackend.signOut() }catch(e){}
-    ST.role=null; ST.email=null; chip(); TABS.hidden=true; if(SIDE) SIDE.hidden=true;
-    loginV();
+    ST.role=null; ST.email=null; ST.pick=null; chip(); TABS.hidden=true; if(SIDE) SIDE.hidden=true;
+    pickV();
     V.insertAdjacentHTML("afterbegin",
       '<div class="warnbox">ออกจากระบบอัตโนมัติ เนื่องจากไม่มีการใช้งานเกิน '+IDLE_MIN+' นาที</div>');
   }, IDLE_MIN*60000);
@@ -2849,7 +2979,7 @@ function resetIdle(){
 
 /* ---------- บูต ---------- */
 (async function(){
-  loginV();
+  pickV();
   try{
     var ok=await CSBackend.init();
     if(!ok){V.insertAdjacentHTML("afterbegin",'<div class="warnbox">เชื่อมต่อฐานข้อมูลกลางไม่ได้ — แอปเจ้าหน้าที่ต้องออนไลน์เท่านั้น</div>');return}
