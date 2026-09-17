@@ -12,7 +12,7 @@
    หมายเหตุความเป็นส่วนตัว: Service Worker นี้แคชเฉพาะ "ไฟล์โปรแกรม"
    ไม่แตะข้อมูลผู้ใช้ และไม่มีการส่งข้อมูลใดออกจากเครื่อง
    ============================================================ */
-var VERSION = "cs3-site-1";
+var VERSION = "cs3-site-2";
 /* V2 กับ V3 อยู่บนโดเมนเดียวกัน (sarawut2206.github.io) แคชจึงอยู่ถังเดียวกัน
    ลบเฉพาะแคชของ V3 เอง (ขึ้นต้น cs3-) ห้ามลบของ V2 */
 var PREFIX = "cs3-";
@@ -74,7 +74,10 @@ self.addEventListener("activate", function (e) {
   e.waitUntil(
     caches.keys()
       .then(function (keys) {
-        return Promise.all(keys.filter(function (k) { return k.indexOf(PREFIX) === 0 && k !== VERSION; })
+        return Promise.all(keys.filter(function (k) {
+          /* รวมแคชของ V3 รุ่นแรก (caresignal-v3-*) ที่เก็บหน้าแรกแบบเก่าไว้แบบ cache-first */
+          return (k.indexOf(PREFIX) === 0 || /^caresignal-v3-/.test(k)) && k !== VERSION;
+        })
           .map(function (k) { return caches.delete(k); }));
       })
       .then(function () { return self.clients.claim(); })
