@@ -63,7 +63,12 @@
       yellows.push({ id: "B9", text: "ลุกนั่ง 5 ครั้งใช้เวลา " + a.ftsst.toFixed(1) + " วินาที เกินเกณฑ์อายุ " + cut + " วินาที", why: "สะท้อนกำลังกล้ามเนื้อขาส่วนล่างที่ลดลง" });
     if (a.tug != null && a.tug >= 12)
       yellows.push({ id: "B10", text: "ลุกเดิน 3 เมตรใช้เวลา " + a.tug.toFixed(1) + " วินาที (เกณฑ์ 12)", why: "เกณฑ์คัดกรองของ CDC STEADI" });
-    if (a.balance != null && a.balance < 10)
+    /* ทรงตัว 4 ท่า: ผ่านไม่ถึงท่าที่ 3 (ยืนต่อเท้า) = เกณฑ์เดียวกับ V2 (balPassed < 3)
+       ข้อมูลรุ่นแรกของ V3 มีแค่วินาทีของท่ายืนต่อเท้า จึงยังรองรับ a.balance ด้วย */
+    if (a.balPassed != null) {
+      if (a.balPassed < 3)
+        yellows.push({ id: "B11", text: "ทรงตัวผ่าน " + a.balPassed + " จาก 4 ท่า ยืนต่อเท้าไม่ครบ 10 วินาที", why: "หนึ่งในสัญญาณเสี่ยงตาม CDC 4-Stage Balance Test" });
+    } else if (a.balance != null && a.balance < 10)
       yellows.push({ id: "B11", text: "ยืนต่อเท้าได้ " + a.balance + " วินาที ไม่ครบ 10", why: "หนึ่งในสัญญาณเสี่ยงตาม 4-Stage Balance Test" });
     if (a.medsCount != null && a.medsCount >= 2 && a.medsCount !== 9)
       yellows.push({ id: "B12", text: "ใช้ยาประจำตั้งแต่ 4 รายการขึ้นไป", why: "การใช้ยาหลายชนิดสัมพันธ์กับความเสี่ยงหกล้มที่สูงขึ้น ควรให้เภสัชกรทบทวน ไม่ควรหยุดยาเอง" });
@@ -86,7 +91,10 @@
     }
     if (prev.tug != null && cur.tug != null && cur.tug - prev.tug >= 2)
       out.push({ id: "R3", text: "ลุกเดินช้าลง " + (cur.tug - prev.tug).toFixed(1) + " วินาที", why: "การเดินที่ช้าลงต่อเนื่องสัมพันธ์กับความเสี่ยงหกล้ม" });
-    if (prev.balance != null && cur.balance != null && prev.balance >= 10 && cur.balance < 10)
+    if (prev.balPassed != null && cur.balPassed != null) {
+      if (cur.balPassed < prev.balPassed)
+        out.push({ id: "R8", text: "ทรงตัวได้ " + cur.balPassed + " ท่า จากเดิม " + prev.balPassed + " ท่า", why: "ท่าทรงตัวเรียงจากง่ายไปยาก การทำท่าที่เคยผ่านไม่ได้ คือการสูญเสียความสามารถ ไม่ใช่ความผันผวนของการวัด" });
+    } else if (prev.balance != null && cur.balance != null && prev.balance >= 10 && cur.balance < 10)
       out.push({ id: "R8", text: "เคยยืนต่อเท้าครบ 10 วินาที ครั้งนี้ทำไม่ได้", why: "การทำท่าที่เคยผ่านไม่ได้ คือการสูญเสียความสามารถ ไม่ใช่ความผันผวนของการวัด" });
     return out;
   }

@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://esm.sh; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://esm.sh https://*.supabase.co wss://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="CareSignal Portfolio Dashboard — ใครเข้าร่วม ใครมีสัญญาณเสี่ยง และงานดูแลค้างอยู่ที่ขั้นตอนไหน">
+<title>CareSignal — ภาพรวมพอร์ตสำหรับบริษัทประกัน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ภาพรวมพอร์ต — เรียงตามคำถามของคนอ่าน ไม่ใช่ตามหัวข้อของข้อมูล
+   ------------------------------------------------------------
+   รุ่นก่อนหน้าเรียงเป็น ก · ข · ค · ง · จ ตามชนิดของข้อมูล
+   (ประชากร → ความเสี่ยง → สัญญาณ → การดูแล → ผลลัพธ์) ซึ่งอ่านเหมือน
+   รายงานประจำปี ผู้ใช้ที่เปิดหน้ามาจึงตอบไม่ได้ว่า "วันนี้ต้องดูอะไร"
+   และเมื่อฐานข้อมูลยังว่าง ทุกบรรทัดขึ้น 0 ราย · 0% โดยไม่บอกว่าทำไม
+
+   รุ่นนี้เรียงเป็น 4 ชั้นตามลำดับการตัดสินใจ
+     1. ตัวเลขที่ต้องรู้ก่อน   — ขนาดพอร์ตและสิ่งที่ผิดปกติวันนี้
+     2. ความเสี่ยงและงานค้าง   — ใครเสี่ยง และงานติดอยู่ที่ขั้นไหน
+     3. แนวโน้ม                — กำลังดีขึ้นหรือแย่ลงเมื่อเทียบกับเดือนก่อน
+     4. วงจรการดูแล            — จากสัญญาณถึงผลลัพธ์ หล่นหายตรงไหน
+   รายละเอียดที่เหลือพับไว้ด้านล่าง เปิดดูเมื่อต้องการ
+
+   ยังคงข้อจำกัดเดิมทุกข้อ: ไม่มีเบี้ย ส่วนลด ระยะรอคอย ผลประโยชน์
+   การพิจารณารับประกัน หรือการตัดสินสินไหม และไม่มีข้อมูลรายบุคคล
+   ============================================================ */
+:root{
+  --bg:#F4F6FA; --surf:#fff; --surf2:#F7F9FC; --ink:#16233B; --ink2:#4F5F78; --ink3:#7B8AA1;
+  --line:#D9E1EC; --line2:#EAEFF5; --brand:#1D4E9A; --brand2:#143A74; --brandt:#E8F0FB;
+  /* สีสถานะ — สงวนไว้สำหรับระดับความเสี่ยงเท่านั้น ไม่เอาไปใช้เป็นสีชุดข้อมูล */
+  --c4:#16A34A; --c3:#D97706; --c2:#EA580C; --c1:#DC2626;
+  /* สีชุดข้อมูลของกราฟเส้น — ผ่านการตรวจระยะห่างสำหรับตาบอดสี (ΔE 22.8 protan) */
+  --s1:#1D4E9A; --s2:#B45309;
+  --sans:"Prompt","Noto Sans Thai",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;
+  --sh:0 1px 2px rgba(22,35,59,.06);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+a{color:var(--brand)}
+
+/* ---------- หัวและแถบเครื่องมือ ---------- */
+header{background:var(--surf);color:var(--ink);padding:18px 0 0;border-bottom:3px solid var(--brand)}
+.kick{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--brand);font-weight:700}
+h1{font-size:24px;letter-spacing:-.02em;margin:5px 0 6px;line-height:1.25;color:var(--brand2)}
+header p{color:var(--ink2);font-size:14px;margin:0 0 14px;max-width:760px}
+.srcbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:9px 0;border-top:1px solid var(--line2);font-size:13px;color:var(--ink2)}
+.srcbar .live{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--ink)}
+.srcbar .live i{width:9px;height:9px;border-radius:99px;background:var(--c4);display:inline-block}
+.srcbar .demo{background:#7C2D12;color:#fff;border-radius:5px;padding:2px 9px;font-weight:700;font-size:12px;letter-spacing:.02em}
+.srcbar .sp{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.tbtn{border:1px solid var(--line);background:var(--surf);color:var(--ink);font-family:inherit;font-size:13px;font-weight:600;
+  border-radius:7px;padding:6px 12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+.tbtn:hover{border-color:var(--brand);color:var(--brand)}
+.tbtn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.tbtn.pri:hover{background:var(--brand2);color:#fff}
+
+section{padding:22px 0}
+h2{font-size:19px;letter-spacing:-.01em;margin:0 0 3px}
+.sub{color:var(--ink2);font-size:13.5px;margin:0 0 14px;max-width:840px}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:16px 18px;box-shadow:var(--sh)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid2.wide{grid-template-columns:1.25fr .75fr}
+@media(max-width:900px){.grid2,.grid2.wide{grid-template-columns:1fr}}
+
+/* ---------- ชั้นที่ 1: การ์ดตัวเลข ---------- */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+@media(max-width:1000px){.kpis{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--surf);border:1px solid var(--line);border-top:3px solid var(--brand);border-radius:10px;
+  padding:12px 14px 10px;box-shadow:var(--sh);display:flex;flex-direction:column;min-width:0}
+.kpi.alert{border-top-color:var(--c1)}
+.kpi.warn{border-top-color:var(--c3)}
+.kpi .l{font-size:12.5px;color:var(--ink2);font-weight:600;line-height:1.4}
+.kpi .n{font-size:30px;font-family:var(--mono);font-weight:700;letter-spacing:-.03em;margin:3px 0 0;color:var(--ink);line-height:1.15}
+.kpi.alert .n{color:var(--c1)}
+.kpi .u{font-size:12.5px;color:var(--ink3);font-weight:500;margin-left:3px;font-family:var(--sans)}
+.kpi .d{font-size:12px;color:var(--ink3);line-height:1.5;margin-top:2px}
+.kpi .delta{font-size:12px;font-weight:600;margin-top:4px;display:inline-flex;align-items:center;gap:4px}
+.kpi .delta.up{color:var(--c4)}.kpi .delta.dn{color:var(--c1)}.kpi .delta.flat{color:var(--ink3)}
+.kpi .go{margin-top:auto;padding-top:8px;font-size:12.5px;font-weight:600;color:var(--brand);
+  background:none;border:0;text-align:left;cursor:pointer;font-family:inherit}
+.kpi .go:hover{text-decoration:underline}
+
+/* ---------- ชั้นที่ 2: ความเสี่ยง + งานค้าง ---------- */
+h3{margin:0 0 10px;font-size:15.5px}
+.rowline{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px dashed var(--line2);font-size:13.5px}
+.rowline:last-child{border-bottom:0}
+.rowline .k{color:var(--ink2)}
+.rowline .v{font-family:var(--mono);font-weight:600;text-align:right;white-space:nowrap}
+.rbar{display:grid;grid-template-columns:96px 1fr 92px;align-items:center;gap:10px;padding:5px 0;font-size:13.5px}
+.rbar .nm{display:flex;align-items:center;gap:7px;color:var(--ink2)}
+.rbar .nm i{width:10px;height:10px;border-radius:3px;flex:none}
+.rbar .tr{background:var(--line2);border-radius:4px;height:16px;overflow:hidden}
+.rbar .tr i{display:block;height:100%;border-radius:0 4px 4px 0}
+.rbar .vv{font-family:var(--mono);font-weight:600;text-align:right;white-space:nowrap}
+.rbar .vv small{font-family:var(--sans);color:var(--ink3);font-weight:500}
+.split{display:flex;height:9px;border-radius:99px;overflow:hidden;margin:3px 0 10px;background:var(--line);gap:2px}
+.split i{display:block;height:100%}
+
+.todo{display:flex;flex-direction:column;gap:0}
+.td{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px dashed var(--line2)}
+.td:last-child{border-bottom:0}
+.td .n{font-family:var(--mono);font-size:21px;font-weight:700;text-align:right;line-height:1.1}
+.td .t{font-size:13.5px;line-height:1.45}
+.td .t small{display:block;color:var(--ink3);font-size:12px}
+.td .w{font-size:11.5px;font-weight:700;border-radius:99px;padding:2px 9px;white-space:nowrap}
+.td[data-lv="crit"] .n{color:var(--c1)} .td[data-lv="crit"] .w{background:#FEE2E2;color:#991B1B}
+.td[data-lv="warn"] .n{color:var(--c3)} .td[data-lv="warn"] .w{background:#FEF3C7;color:#92400E}
+.td[data-lv="ok"] .n{color:var(--ink)}  .td[data-lv="ok"] .w{background:var(--surf2);color:var(--ink2)}
+.td[data-lv="done"] .n{color:var(--c4)} .td[data-lv="done"] .w{background:#DCFCE7;color:#166534}
+
+/* ---------- ชั้นที่ 3: กราฟ ---------- */
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.lg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--ink2);margin:0 0 8px}
+.lg span{display:inline-flex;align-items:center;gap:6px}
+.lg i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:#fff;border-radius:7px;padding:7px 10px;
+  font-size:12.5px;line-height:1.5;white-space:nowrap;opacity:0;transition:opacity .1s;z-index:5;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.tip b{font-family:var(--mono)}
+.tip[data-on="1"]{opacity:1}
+.chart .gridline{stroke:var(--line2);stroke-width:1}
+.chart .axis{fill:var(--ink3);font-size:11px;font-family:var(--sans)}
+.chart .lbl{fill:var(--ink2);font-size:11.5px;font-weight:600;font-family:var(--sans)}
+.rng{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.rng button{border:0;background:var(--surf);color:var(--ink2);font-family:inherit;font-size:12.5px;font-weight:600;padding:5px 11px;cursor:pointer}
+.rng button[aria-pressed="true"]{background:var(--brand);color:#fff}
+
+/* ---------- ชั้นที่ 4: ตารางวงจร ---------- */
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line2)}
+th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink2);font-weight:700;background:var(--surf2)}
+td.num,th.num{text-align:right;font-family:var(--mono);white-space:nowrap}
+tbody tr:hover td{background:var(--surf2)}
+.tblwrap{overflow-x:auto}
+.stagebar{display:inline-block;height:8px;border-radius:99px;background:var(--brand);vertical-align:middle}
+
+/* ---------- รายละเอียดที่พับไว้ ---------- */
+details.more{background:var(--surf);border:1px solid var(--line);border-radius:10px;box-shadow:var(--sh);margin-bottom:10px}
+details.more>summary{cursor:pointer;list-style:none;padding:13px 18px;font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:9px}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::before{content:"›";color:var(--brand);font-size:19px;line-height:1;transition:transform .15s}
+details.more[open]>summary::before{transform:rotate(90deg)}
+details.more>summary span{margin-left:auto;font-weight:500;font-size:12.5px;color:var(--ink3)}
+details.more .body{padding:0 18px 16px}
+
+/* ---------- สถานะว่าง / หมายเหตุ ---------- */
+.empty{background:var(--surf);border:1.5px dashed #C2CFE3;border-radius:12px;padding:26px 24px;text-align:center}
+.empty h3{font-size:17px;margin:0 0 6px}
+.empty p{color:var(--ink2);font-size:14px;max-width:560px;margin:0 auto 14px}
+.empty .acts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.note{background:var(--brandt);border:1px solid #C9DAF3;border-radius:10px;padding:13px 16px;font-size:13px;color:var(--ink2)}
+.note b{color:var(--ink)}
+.pending{border:1.5px dashed #C2CFE3;background:#F7FAFF;border-radius:12px;padding:16px 18px}
+.tag{display:inline-block;font-size:11.5px;font-weight:700;padding:3px 11px;border-radius:99px}
+.tag.wait{background:#E4EBF6;color:#3A4A66}
+.tiny{font-size:12px;color:var(--ink3);margin:8px 0 0;line-height:1.6}
+.login{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:20px;box-shadow:var(--sh);max-width:460px}
+.login input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:15px;margin-bottom:10px}
+.btn{border:0;border-radius:8px;background:var(--brand);color:#fff;font-family:inherit;font-size:15px;font-weight:700;padding:11px 20px;cursor:pointer}
+.btn.lite{background:var(--surf2);color:var(--ink);border:1px solid var(--line)}
+footer{padding:26px 0 40px;color:var(--ink3);font-size:12.5px;text-align:center;line-height:1.8}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="kick">CareSignal · Portfolio Dashboard</div>
+  <h1>ภาพรวมพอร์ต CareSignal</h1>
+  <p>ดูว่ามีใครเข้าร่วม ใครมีสัญญาณเสี่ยง และงานดูแลค้างอยู่ที่ขั้นตอนไหน —
+     หน้านี้ไม่มีการคำนวณเบี้ย ส่วนลด ระยะรอคอย ผลประโยชน์ การพิจารณารับประกัน หรือการตัดสินสินไหม</p>
+  <div class="srcbar" id="srcbar" hidden></div>
+</div></header>
+
+<section><div class="wrap">
+  <div id="gate"></div>
+  <div id="body" hidden>
+
+    <div id="emptyState" hidden></div>
+
+    <div id="live">
+      <!-- ชั้นที่ 1 -->
+      <div class="kpis" id="kpis"></div>
+
+      <!-- ชั้นที่ 2 -->
+      <h2 style="margin-top:26px">ความเสี่ยงในพอร์ต และงานที่ค้างอยู่</h2>
+      <p class="sub">ซ้ายคือใครเสี่ยงแค่ไหนตอนนี้ ขวาคืองานที่มีคนต้องลงมือทำ และค้างอยู่ที่ขั้นไหน</p>
+      <div class="grid2 wide">
+        <div class="card" id="riskmix"></div>
+        <div class="card" id="todo"></div>
+      </div>
+
+      <!-- ชั้นที่ 3 -->
+      <h2 style="margin-top:26px" id="s-trend">แนวโน้ม — กำลังดีขึ้นหรือแย่ลง</h2>
+      <p class="sub">เทียบเดือนต่อเดือนจากข้อมูลที่บันทึกจริง ไม่ใช่ค่าประมาณ ·
+        เดือนก่อนเดือนแรกที่มีข้อมูลจะไม่ถูกวาด เพราะยังไม่มีโปรแกรมในช่วงนั้น</p>
+      <div class="grid2">
+        <div class="card"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+          <h3 style="margin:0">การประเมินต่อเดือน</h3>
+          <div class="rng" id="rng" style="margin-left:auto">
+            <button type="button" data-m="6" aria-pressed="false">6 เดือน</button>
+            <button type="button" data-m="12" aria-pressed="true">12 เดือน</button>
+          </div></div>
+          <div class="chart" id="chAssess"></div>
+        </div>
+        <div class="card"><h3>ระดับความเสี่ยงของผลประเมินแต่ละเดือน</h3>
+          <div class="chart" id="chRisk"></div>
+        </div>
+      </div>
+
+      <!-- ชั้นที่ 4 -->
+      <h2 style="margin-top:26px" id="s-cycle">วงจรการดูแล — งานหล่นหายตรงไหน</h2>
+      <p class="sub">แต่ละขั้นคือคนจริงที่ต้องลงมือ ตัวเลขทางขวาบอกว่ามาถึงขั้นนั้นกี่เปอร์เซ็นต์ของขั้นก่อนหน้า</p>
+      <div class="card tblwrap" id="cycle"></div>
+
+      <!-- รายละเอียด -->
+      <h2 style="margin-top:26px">รายละเอียด</h2>
+      <p class="sub">เปิดดูเมื่อต้องการเจาะลึก — ทุกส่วนคำนวณจากข้อมูลชุดเดียวกับด้านบน</p>
+      <details class="more" id="d-strata"><summary>แยกตามกลุ่มประชากร <span>อายุ · เพศ · พื้นที่</span></summary>
+        <div class="body" id="strata"></div></details>
+      <details class="more" id="d-signals"><summary>ชนิดสัญญาณที่พบ <span>ใช้เลือกว่าควรลงทุนกับอะไรก่อน</span></summary>
+        <div class="body" id="signals"></div></details>
+      <details class="more" id="d-events"><summary>เหตุการณ์ที่สมาชิกและครอบครัวรายงานเข้ามา <span>12 เดือน</span></summary>
+        <div class="body" id="events"></div></details>
+      <details class="more" id="d-change"><summary>การเปลี่ยนระดับความเสี่ยงรายบุคคล <span>เทียบกับตัวเองในอดีต</span></summary>
+        <div class="body" id="change"></div></details>
+      <details class="more" id="d-ops"><summary>ตัวชี้วัดการดำเนินงาน <span>ทบทวนยา · แผนดูแล · การติดตาม</span></summary>
+        <div class="body" id="ops"></div></details>
+
+      <div class="pending" style="margin-top:18px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <b style="font-size:15px">ผลลัพธ์ทางธุรกิจและค่าสินไหม</b>
+          <span class="tag wait">Claims outcome: Pending pilot integration</span>
+        </div>
+        <p style="margin:9px 0 0;font-size:13.5px;color:var(--ink2)">ตัวชี้วัดที่จะเติมได้<b>เมื่อบริษัทประกันเชื่อมข้อมูลเคลมและมีกลุ่มเปรียบเทียบ</b> —
+          อัตราการเคลมจากการหกล้ม ค่ารักษาเฉลี่ยต่อเคส และผลต่างระหว่างกลุ่มที่ใช้กับไม่ใช้โปรแกรม
+          ระบบเลือกแสดงว่า<b>"ยังไม่มีข้อมูล"</b> แทนการใส่ตัวเลขประมาณการ และ<b>จะไม่แสดงข้อความว่าลดการเคลมได้</b>จนกว่าจะมีข้อมูลนำร่องจริง</p>
+      </div>
+
+      <div class="note" style="margin-top:14px"><b>ความเป็นส่วนตัวที่บังคับไว้ที่ฐานข้อมูล</b> — ทุกตัวเลขในหน้านี้เป็นค่ารวมระดับกลุ่ม
+        บริษัทประกัน<b>ไม่เห็นชื่อ เบอร์โทร คะแนนรายคน เวลาลุกนั่งรายคน รูปซองยา หรือรายการยารายบุคคล</b>
+        การแยกกลุ่มจะ<b>ปิดตัวเลขเมื่อกลุ่มเล็กกว่า 10 คน</b> เพราะกลุ่มเล็กระบุตัวบุคคลย้อนกลับได้</div>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  CareSignal — ระบบเฝ้าระวังความเสี่ยงและประสานการดูแลก่อนเกิดการเคลม · ไม่ใช่ผลิตภัณฑ์ประกันและไม่ใช่เครื่องมือพิจารณาสินไหม<br>
+  ไม่คำนวณเบี้ย ไม่พิจารณารับประกัน ไม่กำหนดระยะรอคอย และไม่ตัดสินการจ่ายสินไหม ·
+  ต้นแบบเพื่อการประกวด OIC InsurTech Award 2026
+</div></footer>
+
+<script src="./cs-backend.js?v=213"></script>
+<script src="./cs-demo.js?v=1"></script>
+<script>
+window.CS_AUTH_SCOPE="staff";
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function pct(a,b){return b?Math.round(a/b*100):0}
+function nf(n){return (+n||0).toLocaleString("th-TH")}
+function row(k,v,color){return '<div class="rowline"><span class="k">'+k+'</span><span class="v"'+(color?' style="color:'+color+'"':'')+'>'+v+'</span></div>'}
+
+var SESSION=false, ROLE=null, DATA=null, RANGE=12;
+
+/* ============================================================
+   ประตูเข้าใช้งาน — สิทธิ์จริงบังคับที่ฐานข้อมูล ไม่ใช่ที่หน้าจอนี้
+   ============================================================ */
+function gate(){
+  var g=document.getElementById("gate");
+  if(SESSION){g.innerHTML="";document.getElementById("body").hidden=false;return}
+  document.getElementById("body").hidden=true;
+  g.innerHTML='<div class="login"><b style="font-size:16px">🔐 เข้าสู่ระบบเจ้าหน้าที่</b>'+
+    '<p style="font-size:13.5px;color:var(--ink2);margin:6px 0 14px">หน้านี้แสดงภาพรวมของทั้งพอร์ต จึงเปิดเฉพาะบัญชีเจ้าหน้าที่ที่ได้รับสิทธิ์ '+
+    'สิทธิ์จริงบังคับที่ฐานข้อมูลด้วย Row Level Security ไม่ใช่ที่หน้าจอนี้</p>'+
+    '<input id="em" type="email" placeholder="อีเมลเจ้าหน้าที่"><input id="pw" type="password" placeholder="รหัสผ่าน">'+
+    '<button class="btn" id="go">เข้าสู่ระบบ</button> <button class="btn lite" id="out" hidden>ออกจากระบบ</button>'+
+    '<p id="msg" style="font-size:13px;color:var(--c1);margin:10px 0 0"></p></div>';
+  document.getElementById("go").addEventListener("click",async function(){
+    var b=this;b.disabled=true;b.textContent="กำลังตรวจสอบ…";
+    try{
+      await CSBackend.signInStaff(document.getElementById("em").value.trim(),document.getElementById("pw").value);
+      var p=await CSBackend.loadProfile();
+      if(!p||["insurer","care_manager","admin"].indexOf(p.role)<0)throw new Error("บัญชีนี้ไม่มีสิทธิ์เข้าดูภาพรวมพอร์ต");
+      ROLE=p.role;SESSION=true;gate();load();
+    }catch(e){
+      document.getElementById("msg").textContent=e.message||"เข้าสู่ระบบไม่สำเร็จ";
+      b.disabled=false;b.textContent="เข้าสู่ระบบ";
+    }
+  });
+}
+
+/* ============================================================
+   กราฟ — เขียนเป็น SVG ตรง ๆ ไม่พึ่งไลบรารีภายนอก (CSP ปิดไว้)
+   เส้นหนา 2px · เส้นตารางจาง · ป้ายค่าเฉพาะจุดสุดท้าย ·
+   มีเส้นชี้ตำแหน่งและกล่องข้อความเมื่อชี้เมาส์ ทั้งบนเส้นและบนแท่ง
+   ============================================================ */
+function mkTip(host){
+  var t=document.createElement("div"); t.className="tip"; host.appendChild(t); return t;
+}
+function showTip(tip,host,x,y,html){
+  tip.innerHTML=html; tip.dataset.on="1";
+  var w=host.clientWidth, tw=tip.offsetWidth;
+  tip.style.left=Math.max(0,Math.min(w-tw,x-tw/2))+"px";
+  tip.style.top=Math.max(0,y-tip.offsetHeight-10)+"px";
+}
+function thMonth(iso){
+  var d=new Date(iso+(iso.length===10?"T00:00:00":""));
+  return d.toLocaleDateString("th-TH",{month:"short",year:"2-digit"});
+}
+
+/* กราฟเส้นสองชุดข้อมูล — แกนเดียว หน่วยเดียว (จำนวนครั้ง) */
+function lineChart(host,rows,series){
+  host.innerHTML=""; if(!rows.length){host.innerHTML='<p class="tiny">ยังไม่มีข้อมูลย้อนหลังพอจะวาดกราฟ</p>';return}
+  var W=520,H=190,L=34,R=54,T=12,B=26, iw=W-L-R, ih=H-T-B;
+  var max=1; rows.forEach(function(r){series.forEach(function(s){max=Math.max(max,+r[s.k]||0)})});
+  var step=Math.max(1,Math.ceil(max/4)); max=step*4;
+  var X=function(i){return rows.length<2?L+iw/2:L+i*iw/(rows.length-1)};
+  var Y=function(v){return T+ih-(v/max)*ih};
+  var g='';
+  for(var t=0;t<=4;t++){var yy=T+ih-t*ih/4;
+    g+='<line class="gridline" x1="'+L+'" y1="'+yy+'" x2="'+(L+iw)+'" y2="'+yy+'"></line>'+
+       '<text class="axis" x="'+(L-7)+'" y="'+(yy+4)+'" text-anchor="end">'+(step*t)+'</text>';}
+  rows.forEach(function(r,i){
+    if(rows.length>7&&i%2)return;
+    g+='<text class="axis" x="'+X(i)+'" y="'+(T+ih+16)+'" text-anchor="middle">'+esc(thMonth(r.month))+'</text>';
+  });
+  series.forEach(function(s){
+    var pts=rows.map(function(r,i){return X(i)+","+Y(+r[s.k]||0)}).join(" ");
+    g+='<polyline fill="none" stroke="'+s.c+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="'+pts+'"></polyline>';
+    var last=rows[rows.length-1];
+    g+='<circle cx="'+X(rows.length-1)+'" cy="'+Y(+last[s.k]||0)+'" r="4" fill="'+s.c+'" stroke="#fff" stroke-width="2"></circle>'+
+       '<text class="lbl" x="'+(X(rows.length-1)+9)+'" y="'+(Y(+last[s.k]||0)+4)+'" fill="'+s.c+'">'+nf(last[s.k])+'</text>';
+  });
+  g+='<line id="cross" x1="0" y1="'+T+'" x2="0" y2="'+(T+ih)+'" stroke="var(--ink3)" stroke-width="1" stroke-dasharray="3 3" opacity="0"></line>';
+  var lg='<div class="lg">'+series.map(function(s){return '<span><i style="background:'+s.c+'"></i>'+esc(s.nm)+'</span>'}).join("")+'</div>';
+  host.innerHTML=lg+'<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="กราฟเส้นการประเมินต่อเดือน">'+g+'</svg>';
+  var svg=host.querySelector("svg"), cross=svg.querySelector("#cross"), tip=mkTip(host);
+  svg.addEventListener("pointermove",function(e){
+    var b=svg.getBoundingClientRect(), sx=(e.clientX-b.left)/b.width*W;
+    var i=0,best=1e9; rows.forEach(function(r,k){var d=Math.abs(X(k)-sx); if(d<best){best=d;i=k}});
+    cross.setAttribute("x1",X(i));cross.setAttribute("x2",X(i));cross.setAttribute("opacity","1");
+    showTip(tip,host,X(i)/W*b.width,T/H*b.height+30,
+      "<b>"+esc(thMonth(rows[i].month))+"</b><br>"+series.map(function(s){
+        return '<span style="color:'+s.c+'">■</span> '+esc(s.nm)+" <b>"+nf(rows[i][s.k])+"</b>"}).join("<br>"));
+  });
+  svg.addEventListener("pointerleave",function(){cross.setAttribute("opacity","0");tip.dataset.on="0"});
+}
+
+/* แท่งซ้อนรายเดือน — สัดส่วนระดับความเสี่ยงของผลประเมินในเดือนนั้น */
+function stackChart(host,rows,parts){
+  host.innerHTML=""; if(!rows.length){host.innerHTML='<p class="tiny">ยังไม่มีข้อมูลย้อนหลังพอจะวาดกราฟ</p>';return}
+  var W=520,H=190,L=34,R=10,T=12,B=26, iw=W-L-R, ih=H-T-B;
+  var tot=rows.map(function(r){var s=0;parts.forEach(function(p){s+=+r[p.k]||0});return s});
+  var max=Math.max(1,Math.max.apply(null,tot)); var step=Math.max(1,Math.ceil(max/4)); max=step*4;
+  var bw=Math.min(38,iw/rows.length-8);
+  var g='';
+  for(var t=0;t<=4;t++){var yy=T+ih-t*ih/4;
+    g+='<line class="gridline" x1="'+L+'" y1="'+yy+'" x2="'+(L+iw)+'" y2="'+yy+'"></line>'+
+       '<text class="axis" x="'+(L-7)+'" y="'+(yy+4)+'" text-anchor="end">'+(step*t)+'</text>';}
+  rows.forEach(function(r,i){
+    var cx=L+(i+.5)*iw/rows.length, y=T+ih;
+    parts.forEach(function(p){
+      var v=+r[p.k]||0; if(!v)return;
+      var h=v/max*ih; y-=h;
+      g+='<rect x="'+(cx-bw/2)+'" y="'+y+'" width="'+bw+'" height="'+Math.max(0,h-2)+'" fill="'+p.c+'" rx="2"></rect>';
+    });
+    if(!(rows.length>7&&i%2))
+      g+='<text class="axis" x="'+cx+'" y="'+(T+ih+16)+'" text-anchor="middle">'+esc(thMonth(r.month))+'</text>';
+    g+='<rect class="hit" data-i="'+i+'" x="'+(cx-iw/rows.length/2)+'" y="'+T+'" width="'+(iw/rows.length)+'" height="'+ih+'" fill="transparent"></rect>';
+  });
+  var lg='<div class="lg">'+parts.map(function(p){return '<span><i style="background:'+p.c+'"></i>'+esc(p.nm)+'</span>'}).join("")+'</div>';
+  host.innerHTML=lg+'<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="แท่งซ้อนระดับความเสี่ยงรายเดือน">'+g+'</svg>';
+  var svg=host.querySelector("svg"), tip=mkTip(host);
+  svg.querySelectorAll(".hit").forEach(function(h){
+    h.addEventListener("pointerenter",function(e){
+      var r=rows[+h.dataset.i], b=svg.getBoundingClientRect(), n=tot[+h.dataset.i];
+      showTip(tip,host,(+h.getAttribute("x")+ +h.getAttribute("width")/2)/W*b.width,60,
+        "<b>"+esc(thMonth(r.month))+"</b> · ผลประเมิน "+nf(n)+" ครั้ง<br>"+
+        parts.map(function(p){return '<span style="color:'+p.c+'">■</span> '+esc(p.nm)+" <b>"+nf(r[p.k])+"</b>"}).join("<br>"));
+    });
+    h.addEventListener("pointerleave",function(){tip.dataset.on="0"});
+  });
+}
+
+/* ============================================================
+   โหลดข้อมูลครั้งเดียว แล้ววาดทุกส่วนจากชุดเดียวกัน
+   ============================================================ */
+async function load(){
+  var o=await CSBackend.insurerOutcomes();
+  if(!o){document.getElementById("live").innerHTML='<div class="card"><p class="sub" style="margin:0">อ่านข้อมูลไม่ได้ — บัญชีนี้อาจไม่มีสิทธิ์ดูภาพรวมพอร์ต</p></div>';srcbar(null);return}
+  var f=await CSBackend.insurerFunnel()||{};
+  var st=await CSBackend.insurerStrata()||[];
+  var sg=await CSBackend.insurerSignals()||[];
+  var mo=[]; try{ if(typeof CSBackend.insurerMonthly==="function") mo=await CSBackend.insurerMonthly()||[] }catch(e){}
+  DATA={o:o,f:f,st:st,sg:sg,mo:mo};
+  srcbar(o);
+  if(!o.n_members){emptyState();return}
+  document.getElementById("emptyState").hidden=true;
+  document.getElementById("live").hidden=false;
+  renderKpis();renderRisk();renderTodo();renderTrend();renderCycle();renderDetails();
+}
+
+/* ---------- แถบบอกที่มาของข้อมูล ---------- */
+function srcbar(o){
+  var b=document.getElementById("srcbar"); b.hidden=false;
+  var demo=!!window.CS_DEMO;
+  var when=new Date().toLocaleString("th-TH",{day:"numeric",month:"short",year:"2-digit",hour:"2-digit",minute:"2-digit"});
+  b.innerHTML=(demo
+      ?'<span class="demo">ข้อมูลสาธิต</span><span>ตัวเลขทั้งหมดเป็นข้อมูลสังเคราะห์ ไม่ใช่ผู้เอาประกันจริง</span>'
+      :'<span class="live"><i></i>ข้อมูลจริงจากฐานข้อมูล</span>')+
+    '<span>อัปเดตล่าสุด '+esc(when)+'</span>'+
+    '<span class="sp">'+
+      '<button class="tbtn" type="button" id="csv">⬇ ส่งออก CSV</button>'+
+      (ROLE&&ROLE!=="insurer"?'<a class="tbtn pri" href="./CareSignal-Staff.html'+(demo?"?demo=1":"")+'" target="_top">เปิดคิวงาน</a>':'')+
+      '<a class="tbtn" href="./index.html" target="_top">← กลับหน้าหลัก</a>'+
+    '</span>';
+  var c=document.getElementById("csv"); if(c)c.addEventListener("click",exportCSV);
+}
+
+/* ---------- ยังไม่มีข้อมูล: บอกว่าทำไม และจะเห็นอะไรเมื่อมีข้อมูล ---------- */
+function emptyState(){
+  document.getElementById("live").hidden=true;
+  var e=document.getElementById("emptyState"); e.hidden=false;
+  e.innerHTML='<div class="empty"><h3>ยังไม่มีผู้เอาประกันในโปรแกรม</h3>'+
+    '<p>ฐานข้อมูลนี้ยังไม่มีผู้เข้าร่วมที่ยินยอมให้ใช้ข้อมูลเชิงกลุ่ม จึงยังไม่มีอะไรให้สรุป '+
+    'เมื่อมีผู้เอาประกันเริ่มประเมินที่บ้าน หน้านี้จะแสดงขนาดพอร์ต การกระจายความเสี่ยง '+
+    'งานดูแลที่ค้างอยู่ และแนวโน้มรายเดือนโดยอัตโนมัติ</p>'+
+    '<div class="acts">'+
+      '<a class="tbtn pri" href="./CareSignal-Portfolio-Dashboard.html?demo=1">ดูด้วยข้อมูลสาธิต</a>'+
+      '<a class="tbtn" href="./index.html#bizmodel" target="_top">อ่านแผนนำร่อง</a>'+
+    '</div>'+
+    '<p class="tiny" style="margin-top:14px">ระบบเลือกแสดงข้อความนี้แทนการขึ้น 0 ราย · 0% ทุกบรรทัด '+
+    'เพราะศูนย์ที่ไม่มีคำอธิบายอ่านได้ทั้งว่า "ระบบพัง" และ "ไม่มีความเสี่ยงเลย" ซึ่งคนละความหมายกัน</p></div>';
+}
+
+/* ---------- ชั้นที่ 1: การ์ดตัวเลข ---------- */
+function delta(now,prev,unit){
+  if(prev==null||now==null)return"";
+  var d=now-prev;
+  if(!d)return '<span class="delta flat">→ เท่าเดือนก่อน</span>';
+  return '<span class="delta '+(d>0?"up":"dn")+'">'+(d>0?"↗":"↘")+" "+(d>0?"+":"")+nf(d)+" "+esc(unit||"")+" จากเดือนก่อน</span>";
+}
+function kpiCard(o){
+  return '<div class="kpi'+(o.cls?" "+o.cls:"")+'"><div class="l">'+esc(o.l)+'</div>'+
+    '<div class="n">'+o.n+(o.u?'<span class="u">'+esc(o.u)+'</span>':'')+'</div>'+
+    '<div class="d">'+o.d+'</div>'+(o.delta||"")+
+    (o.go?'<button class="go" type="button" data-jump="'+esc(o.go)+'">'+esc(o.goT||"ดูรายละเอียด")+' ›</button>':'')+'</div>';
+}
+function renderKpis(){
+  var o=DATA.o,f=DATA.f,mo=DATA.mo;
+  var cur=mo[mo.length-1]||{}, prv=mo[mo.length-2]||null;
+  var open=(+o.case_new||0)+(+o.case_working||0);
+  document.getElementById("kpis").innerHTML=
+    kpiCard({l:"ผู้มีสิทธิ์ใช้โปรแกรม",n:nf(f.eligible||o.n_members),u:"คน",
+      d:"ผู้เอาประกันที่เข้าโปรแกรมได้ตามกรมธรรม์"})+
+    kpiCard({l:"เข้าร่วมแล้ว",n:nf(f.enrolled||0),u:"คน",
+      d:pct(f.enrolled,f.eligible)+"% ของผู้มีสิทธิ์ · ยินยอมให้ใช้ข้อมูลเชิงกลุ่ม",
+      go:"d-strata",goT:"ดูแยกตามกลุ่ม"})+
+    kpiCard({l:"ประเมินแล้วอย่างน้อย 1 ครั้ง",n:nf(f.assessed||0),u:"คน",
+      d:pct(f.assessed,f.enrolled)+"% ของผู้เข้าร่วม · ใน 30 วันล่าสุด "+nf(o.n_active_30d)+" คน",
+      delta:prv?delta(+cur.n_first_assessments,+prv.n_first_assessments,"คนใหม่"):"",
+      go:"s-trend",goT:"ดูแนวโน้ม"})+
+    kpiCard({l:"เคสที่เปิดอยู่",n:nf(open),u:"เคส",cls:open?"warn":"",
+      d:"รอทีมดูแลลงมือ · ปิดแล้วสะสม "+nf((+o.case_closed||0)+(+o.case_stable||0))+" เคส",
+      delta:prv?delta(+cur.n_cases_opened,+prv.n_cases_opened,"เคสเปิดใหม่"):"",
+      go:"todo",goT:"ดูงานค้าง"})+
+    kpiCard({l:"เกินกำหนดติดต่อ",n:nf(o.case_overdue),u:"เคส",cls:(+o.case_overdue)?"alert":"",
+      d:(+o.case_overdue)?"พ้นเวลาที่ต้องติดต่อตามระดับความเร่งด่วน":"ไม่มีเคสไหนพ้นกำหนด",
+      go:"todo",goT:"ดูงานค้าง"});
+}
+
+/* ---------- ชั้นที่ 2 ซ้าย: การกระจายความเสี่ยง ---------- */
+function renderRisk(){
+  var o=DATA.o;
+  var lv=[["urgent","แดง · เร่งด่วน","var(--c1)"],["decline","ส้ม · ถดถอย","var(--c2)"],
+          ["watch","เหลือง · เฝ้าสังเกต","var(--c3)"],["stable","เขียว · คงที่","var(--c4)"]];
+  var tot=(+o.lv_stable)+(+o.lv_watch)+(+o.lv_decline)+(+o.lv_urgent);
+  var mx=Math.max(1,Math.max.apply(null,lv.map(function(x){return +o["lv_"+x[0]]||0})));
+  document.getElementById("riskmix").innerHTML=
+    '<h3>ระดับความเสี่ยงตอนนี้ <span style="font-weight:400;color:var(--ink3);font-size:13px">('+nf(tot)+' คนที่มีผลประเมิน)</span></h3>'+
+    (tot?lv.map(function(x){
+      var n=+o["lv_"+x[0]]||0;
+      return '<div class="rbar"><span class="nm"><i style="background:'+x[2]+'"></i>'+esc(x[1])+'</span>'+
+        '<span class="tr"><i style="width:'+Math.round(n/mx*100)+'%;background:'+x[2]+'"></i></span>'+
+        '<span class="vv">'+nf(n)+' <small>'+pct(n,tot)+'%</small></span></div>';
+    }).join(""):'<p class="tiny">ยังไม่มีผลประเมินในพอร์ต</p>')+
+    '<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--line2)">'+
+      row("ผู้ที่ประเมินซ้ำแล้วอย่างน้อย 2 ครั้ง",nf(o.n_comparable)+" คน")+
+      row("ระดับดีขึ้น",nf(o.n_improved)+" คน · "+pct(o.n_improved,o.n_comparable)+"%","var(--c4)")+
+      row("ระดับแย่ลง",nf(o.n_worsened)+" คน · "+pct(o.n_worsened,o.n_comparable)+"%","var(--c1)")+
+      ((+o.case_reescalated)?row("เคยปิดเคสแล้วกลับมาเปิดใหม่",nf(o.case_reescalated)+" คน","var(--c2)"):"")+
+    '</div>'+
+    '<p class="tiny">ระดับมาจากกฎที่ประกาศไว้ล่วงหน้า ไม่ใช่โมเดลทำนาย และไม่แสดงเป็นเปอร์เซ็นต์ความน่าจะเป็นที่จะหกล้ม</p>';
+}
+
+/* ---------- ชั้นที่ 2 ขวา: งานที่ค้างอยู่ ---------- */
+function renderTodo(){
+  var o=DATA.o;
+  var refWait=Math.max(0,(+o.n_ref_confirmed||0)-(+o.n_ref_completed||0));
+  var fuWait=Math.max(0,(+o.n_fu_due||0)-(+o.n_fu_done||0));
+  var items=[
+    {n:+o.case_overdue||0,t:"เกินกำหนดติดต่อแล้ว",s:"ต้องเร่งติดต่อวันนี้",w:"ทีมดูแล",lv:"crit"},
+    {n:+o.case_new||0,t:"เคสใหม่ ยังไม่มีผู้รับผิดชอบ",s:"รอมอบหมายในคิวงาน",w:"ทีมดูแล",lv:"warn"},
+    {n:+o.case_unreachable||0,t:"ติดต่อผู้เอาประกันไม่ได้",s:"ต้องลองช่องทางอื่นหรือผ่านครอบครัว",w:"ทีมดูแล",lv:"warn"},
+    {n:+o.n_medrev_open||0,t:"คำขอทบทวนยารอผล",s:"ส่งถึงเภสัชกรแล้ว รอสรุปกลับ",w:"เภสัชกร",lv:"ok"},
+    {n:refWait,t:"ส่งต่อแล้วยังไม่ได้ไปพบ",s:"ยืนยันแล้วแต่ยังไม่บันทึกว่ารับบริการ",w:"ผู้เชี่ยวชาญ",lv:"ok"},
+    {n:fuWait,t:"นัดติดตามถึงกำหนดแล้วยังไม่ได้ทำ",s:"ตามแผนดูแลที่ตกลงไว้",w:"ทีมดูแล",lv:"ok"}
+  ];
+  var none=items.every(function(x){return !x.n});
+  document.getElementById("todo").innerHTML='<h3>งานที่ค้างอยู่ตอนนี้</h3>'+
+    (none?'<div class="td" data-lv="done"><span class="n">0</span><span class="t">ไม่มีงานค้าง<small>ทุกเคสอยู่ในกำหนดและมีผู้รับผิดชอบครบ</small></span><span class="w">ครบแล้ว</span></div>'
+      :'<div class="todo">'+items.map(function(x){
+        return '<div class="td" data-lv="'+(x.n?x.lv:"done")+'"><span class="n">'+nf(x.n)+'</span>'+
+          '<span class="t">'+esc(x.t)+'<small>'+esc(x.s)+'</small></span>'+
+          '<span class="w">'+esc(x.w)+'</span></div>';
+      }).join("")+'</div>')+
+    '<p class="tiny">ตัวเลขเป็นจำนวนเคสระดับกลุ่ม บริษัทประกันกดดูรายบุคคลไม่ได้ '+
+    (ROLE&&ROLE!=="insurer"?'บัญชีของท่านเปิดคิวงานจริงได้จากปุ่มด้านบน':'ทีมดูแลเป็นผู้เปิดคิวงานจริงในคอนโซลเจ้าหน้าที่')+'</p>';
+}
+
+/* ---------- ชั้นที่ 3: แนวโน้ม ---------- */
+function trendRows(){
+  var mo=DATA.mo||[];
+  var first=-1;
+  mo.forEach(function(r,i){ if(first<0&&((+r.n_assessments)||(+r.n_cases_opened)))first=i });
+  if(first<0)return[];
+  var rows=mo.slice(first);
+  return rows.slice(Math.max(0,rows.length-RANGE));
+}
+function renderTrend(){
+  var rows=trendRows();
+  lineChart(document.getElementById("chAssess"),rows,[
+    {k:"n_assessments",nm:"การประเมินทั้งหมด",c:"var(--s1)"},
+    {k:"n_first_assessments",nm:"ผู้ประเมินครั้งแรก",c:"var(--s2)"}
+  ]);
+  stackChart(document.getElementById("chRisk"),rows,[
+    {k:"lv_urgent",nm:"เร่งด่วน",c:"var(--c1)"},
+    {k:"lv_decline",nm:"ถดถอย",c:"var(--c2)"},
+    {k:"lv_watch",nm:"เฝ้าสังเกต",c:"var(--c3)"},
+    {k:"lv_stable",nm:"คงที่",c:"var(--c4)"}
+  ]);
+}
+
+/* ---------- ชั้นที่ 4: วงจรการดูแล ---------- */
+function renderCycle(){
+  var o=DATA.o;
+  var steps=[
+    ["ผลประเมินที่บันทึก",+o.n_assessments||0,null,"ผู้เอาประกันทำเองที่บ้าน"],
+    ["เปิดเคสให้ทีมดูแล",+o.case_total||0,+o.n_assessments||0,"เปิดอัตโนมัติเมื่อสัญญาณถึงระดับเหลืองขึ้นไป"],
+    ["ติดต่อผู้เอาประกันได้",+o.case_contacted||0,+o.case_total||0,"ในกำหนด "+nf(o.case_contacted_in_sla)+" เคส ("+pct(o.case_contacted_in_sla,o.case_contacted)+"%)"],
+    ["ส่งต่อผู้เชี่ยวชาญ",+o.n_ref||0,+o.case_contacted||0,"แพทย์ · เภสัชกร · นักกายภาพบำบัด · พยาบาล"],
+    ["ผู้เชี่ยวชาญรับเรื่อง",+o.n_ref_confirmed||0,+o.n_ref||0,"ยืนยันว่าจะดูให้"],
+    ["ไปพบจริง",+o.n_ref_completed||0,+o.n_ref_confirmed||0,"ตัวชี้วัดว่าวงจรปิดสนิทหรือไม่"],
+    ["บันทึกผลหลังรับบริการ",+o.n_ref_outcome||0,+o.n_ref_completed||0,"ดีขึ้น เท่าเดิม หรือแย่ลง"]
+  ];
+  var top=steps[0][1]||1;
+  document.getElementById("cycle").innerHTML='<table><thead><tr>'+
+    '<th>ขั้นของวงจร</th><th class="num">จำนวน</th><th class="num">จากขั้นก่อน</th><th>สัดส่วน</th><th>หมายเหตุ</th>'+
+    '</tr></thead><tbody>'+steps.map(function(s){
+      return '<tr><td>'+esc(s[0])+'</td><td class="num">'+nf(s[1])+'</td>'+
+        '<td class="num">'+(s[2]==null?"—":pct(s[1],s[2])+"%")+'</td>'+
+        '<td><span class="stagebar" style="width:'+Math.max(2,Math.round(s[1]/top*100))+'%"></span></td>'+
+        '<td style="color:var(--ink2);font-size:12.5px">'+esc(s[3])+'</td></tr>';
+    }).join("")+'</tbody></table>'+
+    ((+o.n_ref_lost)?'<p class="tiny" style="color:var(--c1)">ปฏิเสธหรือติดต่อไม่ได้ระหว่างส่งต่อ '+nf(o.n_ref_lost)+' รายการ</p>':'')+
+    '<p class="tiny">ทุกขั้นต้องมีคนกดยืนยัน ระบบไม่เลื่อนขั้นให้เอง จำนวนจึงลดลงตามความเป็นจริงของงานหน้างาน</p>';
+}
+
+/* ---------- รายละเอียดที่พับไว้ ---------- */
+function renderDetails(){
+  var o=DATA.o,st=DATA.st,sg=DATA.sg;
+
+  var dimNm={age:"ช่วงอายุ",sex:"เพศ",province:"พื้นที่"},sHTML="";
+  ["age","sex","province"].forEach(function(d){
+    var rows=st.filter(function(x){return x.dim===d}); if(!rows.length)return;
+    sHTML+='<div style="font-size:13px;font-weight:600;margin:12px 0 4px">'+dimNm[d]+'</div>';
+    rows.forEach(function(r){
+      var nm=r.bucket==="f"?"หญิง":r.bucket==="m"?"ชาย":r.bucket;
+      if(r.suppressed){
+        sHTML+='<div class="rowline"><span class="k">'+esc(nm)+'</span><span class="v" style="font-family:inherit;font-size:12.5px;color:var(--ink3)">กลุ่มเล็กเกินไป (n='+r.n+') — ปิดตัวเลข</span></div>';
+        return;
+      }
+      var t=r.n||1,g=Math.round(r.green/t*100),y=Math.round(r.yellow/t*100),rd=Math.round(r.red/t*100);
+      sHTML+=row(esc(nm)+" (n="+r.n+")","เขียว "+g+"% · เหลือง "+y+"% · แดง "+rd+"%")+
+        '<div class="split"><i style="width:'+g+'%;background:var(--c4)"></i><i style="width:'+y+'%;background:var(--c3)"></i><i style="width:'+rd+'%;background:var(--c1)"></i></div>';
+    });
+  });
+  document.getElementById("strata").innerHTML=
+    '<p class="tiny" style="margin:0 0 4px">กลุ่มที่เล็กกว่า 10 คนจะถูกปิดตัวเลข เพื่อกันการระบุตัวบุคคลย้อนกลับ</p>'+
+    (sHTML||'<p class="tiny">ยังไม่มีข้อมูลพอแยกกลุ่ม</p>');
+
+  var SIGNM={S1:"หกล้มครั้งใหม่",S2:"หกล้มซ้ำ/บาดเจ็บ",S3:"ความเสี่ยงจากยา",S4:"กำลังขา/ทรงตัวถดถอย",
+             S5:"เดินช้าลง",S6:"กิจวัตรลดลง",S7:"ธงแดงความปลอดภัย"};
+  var mxs=Math.max(1,Math.max.apply(null,(sg.length?sg:[{n:1}]).map(function(x){return +x.n||0})));
+  document.getElementById("signals").innerHTML=sg.length?sg.map(function(x){
+    return '<div class="rbar"><span class="nm">'+esc(SIGNM[x.signal]||x.signal)+'</span>'+
+      '<span class="tr"><i style="width:'+Math.round((+x.n||0)/mxs*100)+'%;background:var(--c2)"></i></span>'+
+      '<span class="vv">'+nf(x.n)+' <small>'+x.pct+'%</small></span></div>';
+  }).join("")+'<p class="tiny">ใช้ตัดสินใจว่าควรลงทุนกับการแก้ปัญหาแบบไหนก่อน เช่น ถ้าความเสี่ยงจากยาเป็นสัดส่วนใหญ่ การเพิ่มเภสัชกรจะคุ้มกว่าการเพิ่มนักกายภาพบำบัด</p>'
+    :'<p class="tiny">ยังไม่มีสัญญาณในช่วง 12 เดือน</p>';
+
+  var py=+o.person_years||0, rateOK=py>=5;
+  var per=function(n){return rateOK?((+n||0)/py*100).toFixed(1)+" ต่อ 100 คน-ปี":nf(n)+" ครั้ง"};
+  document.getElementById("events").innerHTML=
+    row("หกล้ม",per(o.ev_fall))+row("เกือบล้ม",per(o.ev_near_fall))+
+    row("เข้าโรงพยาบาล / ห้องฉุกเฉิน",per(o.ev_hospital))+
+    row("กิจวัตรประจำวันลดลง",per(o.ev_adl_drop||0))+
+    row("มีการปรับยา",per(o.ev_med_change))+
+    '<p class="tiny">'+(rateOK?"คิดเป็นอัตราต่อ 100 คน-ปี (ฐานเวลา "+py.toFixed(2)+" คน-ปี)":"ฐานเวลายังน้อยเกินกว่าจะคิดเป็นอัตรา จึงแสดงเป็นจำนวนครั้ง")+
+    ' · มาจากที่สมาชิกและครอบครัวรายงานเข้ามาเอง <b>ไม่ใช่ข้อมูลเคลม</b></p>';
+
+  document.getElementById("change").innerHTML=
+    row("ผู้ที่มีผลเทียบได้ (ประเมิน ≥ 2 ครั้ง)",nf(o.n_comparable)+" คน")+
+    row("ระดับดีขึ้น",nf(o.n_improved)+" คน · "+pct(o.n_improved,o.n_comparable)+"%","var(--c4)")+
+    row("ระดับคงที่",nf((+o.n_comparable||0)-(+o.n_improved||0)-(+o.n_worsened||0))+" คน")+
+    row("ระดับแย่ลง",nf(o.n_worsened)+" คน · "+pct(o.n_worsened,o.n_comparable)+"%","var(--c1)")+
+    '<p class="tiny">เทียบผู้ใช้กับ<b>ตัวเองในอดีต</b> ไม่ใช่กับค่าเฉลี่ยของคนอื่น และ<b>ไม่ได้พิสูจน์ว่าโปรแกรมเป็นสาเหตุ</b> เพราะยังไม่มีกลุ่มเปรียบเทียบ</p>';
+
+  document.getElementById("ops").innerHTML=
+    row("ทบทวนยาสำเร็จ",nf(o.n_medrev_done)+" / "+nf(o.n_medrev)+" คำขอ · "+pct(o.n_medrev_done,o.n_medrev)+"%")+
+    row("แผนดูแลที่สร้างแล้ว",nf(o.n_plans)+" แผน")+
+    row("นัดติดตามที่ถึงกำหนด",nf(o.n_fu_due)+" นัด")+
+    row("ติดตามตามนัดสำเร็จ",nf(o.n_fu_done)+" นัด · "+pct(o.n_fu_done,o.n_fu_due)+"%")+
+    row("การประเมินที่หยุดกลางคันเพื่อความปลอดภัย",nf(o.n_not_tested)+" ครั้ง")+
+    row("ฐานเวลาในโปรแกรม",(+o.person_years||0).toFixed(2)+" คน-ปี")+
+    '<p class="tiny">การหยุดกลางคันไม่ใช่ความล้มเหลว — ด่านความปลอดภัยสั่งหยุดเมื่อผู้ทดสอบอยู่คนเดียวหรือมีอาการที่ไม่ควรทดสอบต่อ</p>';
+}
+
+/* ---------- ส่งออก CSV ---------- */
+function exportCSV(){
+  if(!DATA)return;
+  var o=DATA.o,f=DATA.f,rows=[["ตัวชี้วัด","ค่า"]];
+  var add=function(k,v){rows.push([k,v])};
+  add("แหล่งข้อมูล",window.CS_DEMO?"ข้อมูลสาธิต (สังเคราะห์)":"ข้อมูลจริง");
+  add("เวลาที่ส่งออก",new Date().toISOString());
+  add("ผู้มีสิทธิ์ใช้",f.eligible||o.n_members);add("เข้าร่วมแล้ว",f.enrolled||0);
+  add("ประเมินแล้วอย่างน้อย 1 ครั้ง",f.assessed||0);add("ประเมินใน 30 วัน",o.n_active_30d);
+  ["lv_stable","lv_watch","lv_decline","lv_urgent","n_comparable","n_improved","n_worsened",
+   "case_total","case_new","case_working","case_contacted","case_contacted_in_sla","case_overdue","case_unreachable",
+   "n_ref","n_ref_confirmed","n_ref_completed","n_ref_outcome","n_medrev","n_medrev_done","n_medrev_open",
+   "n_plans","n_fu_due","n_fu_done","person_years"].forEach(function(k){add(k,o[k])});
+  (DATA.mo||[]).forEach(function(m){
+    add("เดือน "+m.month+" · การประเมิน",m.n_assessments);
+    add("เดือน "+m.month+" · ผู้ประเมินครั้งแรก",m.n_first_assessments);
+    add("เดือน "+m.month+" · เคสที่เปิด",m.n_cases_opened);
+  });
+  var csv="﻿"+rows.map(function(r){return r.map(function(c){
+    var s=String(c==null?"":c); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}).join(",")}).join("\r\n");
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  a.download="caresignal-portfolio-"+new Date().toISOString().slice(0,10)+(window.CS_DEMO?"-demo":"")+".csv";
+  document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},0);
+}
+
+/* ---------- ปุ่มเจาะรายละเอียด และตัวเลือกช่วงกราฟ ---------- */
+document.addEventListener("click",function(e){
+  var j=e.target.closest("[data-jump]");
+  if(j){
+    var el=document.getElementById(j.dataset.jump);
+    if(el){ if(el.tagName==="DETAILS")el.open=true; el.scrollIntoView({behavior:"smooth",block:"start"}); }
+    return;
+  }
+  var r=e.target.closest("#rng button");
+  if(r){
+    RANGE=+r.dataset.m;
+    document.querySelectorAll("#rng button").forEach(function(b){b.setAttribute("aria-pressed",b===r?"true":"false")});
+    renderTrend();
+  }
+});
+window.addEventListener("resize",function(){ if(DATA&&!document.getElementById("live").hidden)renderTrend() });
+
+(async function(){
+  try{
+    var ok=await CSBackend.init();
+    if(ok){
+      var u=await CSBackend.currentUser();
+      if(u){var p=await CSBackend.loadProfile();
+        if(p&&p.id===u.id&&["insurer","care_manager","admin"].indexOf(p.role)>=0){SESSION=true;ROLE=p.role;}}
+    }
+  }catch(e){}
+  gate();
+  if(SESSION)load();
+})();
+</script>
+</body>
+</html>

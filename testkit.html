@@ -24,7 +24,7 @@ table{border-collapse:collapse;width:100%;margin:8px 0}td,th{border:1px solid va
 </style>
 </head>
 <body>
-<div class="tools"><a href="./index.html">‹ หน้าหลัก</a><button onclick="window.print()">🖨️ พิมพ์</button></div>
+<div class="tools"><a href="./index.html">‹ หน้าหลัก</a><a href="./CareSignal-App.html">เปิดแอป</a><button onclick="window.print()">🖨️ พิมพ์</button></div>
 
 <div class="page">
   <h1>ชุดอุปกรณ์ทดสอบที่บ้าน · CareSignal V3</h1>
@@ -61,7 +61,7 @@ table{border-collapse:collapse;width:100%;margin:8px 0}td,th{border:1px solid va
     <tr><th style="width:24%">ท่า</th><th>ทำอย่างไร</th><th style="width:26%">กดเริ่ม / กดหยุด</th></tr>
     <tr><td><b>1. ลุกนั่ง 5 ครั้ง</b><br><small>วัดแรงขา</small></td><td>นั่งเก้าอี้ กอดอก (กอดไม่ได้ให้วางมือบนตัก อย่าดันเก้าอี้) ลุกยืนตรงแล้วนั่งลง ทำติดกัน 5 ครั้ง ให้เร็วเท่าที่ปลอดภัย</td><td>เริ่ม: เมื่อพูดว่า "เริ่ม"<br>หยุด: ก้นแตะเก้าอี้ครั้งที่ 5</td></tr>
     <tr><td><b>2. ลุกเดิน 3 เมตร</b><br><small>วัดการเดินและการหมุนตัว</small></td><td>นั่งพิงพนัก ลุกขึ้น เดินไปแตะจุดหมาย 3 เมตร หมุนกลับ เดินมานั่งลง เดินตามปกติ ใช้ไม้เท้าได้ถ้าใช้ประจำ</td><td>เริ่ม: เมื่อพูดว่า "เริ่ม"<br>หยุด: นั่งลงเรียบร้อย</td></tr>
-    <tr><td><b>3. ยืนต่อเท้า</b><br><small>วัดการทรงตัว</small></td><td>ยืนข้างผนังหรือโต๊ะ วางเท้าข้างหนึ่งหน้าอีกข้าง ส้นเท้าชิดปลายเท้า ปล่อยมือแล้วยืนนิ่ง เป้าหมาย 10 วินาที</td><td>เริ่ม: เมื่อปล่อยมือ<br>หยุด: ก้าวเท้า จับผนัง หรือครบ 10 วินาที</td></tr>
+    <tr><td><b>3. ทรงตัว 4 ท่า</b><br><small>วัดการทรงตัว (CDC STEADI)</small></td><td>ยืนข้างผนังหรือโต๊ะ ทำทีละท่า ท่าละ 10 วินาที: <b>เท้าชิด → เท้าเหลื่อม → ต่อเท้า (ส้นชิดปลาย) → ขาเดียว</b> ทำท่าถัดไปเมื่อผ่านท่าก่อนหน้าเท่านั้น</td><td>เริ่ม: เมื่อปล่อยมือ<br>หยุด: ก้าวเท้า จับผนัง หรือครบ 10 วินาที (แอปหยุดเอง)</td></tr>
   </table>
   <h2>หลังวัดเสร็จ แอปจะถาม 5 ข้อ</h2>
   <ol>
@@ -76,24 +76,28 @@ table{border-collapse:collapse;width:100%;margin:8px 0}td,th{border:1px solid va
     <tr><td style="background:#FDECD8"><b>ส้ม</b> ถดถอย</td><td>พบแพทย์หรือนักกายภาพใน 2–4 สัปดาห์ พร้อมใบสรุปจากแอป</td></tr>
     <tr><td style="background:#FEE9E9"><b>แดง</b> ต้องพบแพทย์</td><td>พาไปพบแพทย์โดยเร็ว ไม่ปล่อยอยู่คนเดียว</td></tr>
   </table>
-  <p style="font-size:13.5px;color:var(--ink2)">เกณฑ์เดียวกับ CareSignal รุ่นกล้อง: ลุกนั่ง 10.0 / 11.5 / 12.1 วินาทีตามช่วงอายุ (Poncumhak 2014) · เปลี่ยนแปลงมีความหมาย ≥ 2.3 วินาที (Meretta 2006) · ลุกเดิน ≥ 12 วินาที และยืนต่อเท้า &lt; 10 วินาที (CDC STEADI) · เป็นการคัดกรองเบื้องต้น ไม่ใช่การวินิจฉัย</p>
+  <p style="font-size:13.5px;color:var(--ink2)">เกณฑ์เดียวกับ CareSignal รุ่นกล้อง: ลุกนั่ง 10.0 / 11.5 / 12.1 วินาทีตามช่วงอายุ (Poncumhak 2014) · เปลี่ยนแปลงมีความหมาย ≥ 2.3 วินาที (Meretta 2006) · ลุกเดิน ≥ 12 วินาที และทรงตัวไม่ถึงท่ายืนต่อเท้า (CDC STEADI) · เป็นการคัดกรองเบื้องต้น ไม่ใช่การวินิจฉัย</p>
 </div>
 
 <div class="page">
-  <h1>บทวิดีโอสาธิต 4 คลิป</h1>
-  <p class="sub">แผ่นที่ 3 · สำหรับทีมถ่ายทำ · คลิปละไม่เกิน 1 นาที แนวตั้ง มีซับไทย · ให้สมาชิกทีมเป็นผู้แสดง ไม่ใช้ผู้สูงอายุที่ให้สัมภาษณ์</p>
-  <div class="script"><b>คลิป 1 · เตรียมที่ (45 วิ)</b><br>ภาพ: ห้องนั่งเล่นธรรมดา · เสียง: "ก่อนวัด เตรียมสามอย่างครับ หนึ่ง เก้าอี้มีพนัก ไม่มีล้อ วางชิดผนัง สอง วัดสามเมตรจากขาเก้าอี้ ติดเทปไว้เป็นจุดหมาย สาม เก็บของบนพื้นให้หมด ใส่รองเท้าหุ้มส้น แล้วลูกหลานยืนข้าง ๆ ตลอดครับ" · ปิดด้วยภาพเส้น 3 เมตร</div>
-  <div class="script"><b>คลิป 2 · ลุกนั่ง 5 ครั้ง (50 วิ)</b><br>ภาพ: ผู้แสดงนั่งเก้าอี้ กอดอก ลูกหลานถือมือถือ · เสียง: "ให้คุณแม่กอดอก ลูกหลานพูดว่า เริ่ม พร้อมกดจับเวลา ลุกยืนตรง นั่งลง นับหนึ่ง ทำให้ครบห้าครั้ง กดหยุดตอนก้นแตะเก้าอี้ครั้งที่ห้า ถ้าต้องใช้มือดัน หรือทำไม่ครบ ให้กดข้ามท่านี้ ไม่ต้องฝืนครับ" · แทรกภาพหน้าจอปุ่มเริ่ม/หยุด</div>
-  <div class="script"><b>คลิป 3 · ลุกเดิน 3 เมตร (50 วิ)</b><br>ภาพ: มุมข้าง เห็นเก้าอี้และเทป 3 เมตร · เสียง: "นั่งพิงพนัก มือวางตัก พูดว่า เริ่ม พร้อมกดจับเวลา ลุก เดินไปแตะจุดหมาย หมุนกลับ เดินมานั่ง กดหยุดตอนนั่งลงเรียบร้อย เดินตามปกติ ไม่ต้องรีบ ใช้ไม้เท้าได้ถ้าใช้ประจำครับ"</div>
-  <div class="script"><b>คลิป 4 · ยืนต่อเท้า (40 วิ)</b><br>ภาพ: ยืนข้างผนัง ซูมที่เท้า · เสียง: "ยืนข้างผนังที่จับได้ วางเท้าข้างหนึ่งหน้าอีกข้าง ส้นเท้าชิดปลายเท้า ปล่อยมือ กดเริ่ม ยืนนิ่งให้ครบสิบวินาที ถ้าก้าวเท้าหรือจับผนัง กดหยุดตรงนั้น บันทึกวินาทีที่ยืนได้ครับ" · ปิดด้วยคำเตือน "หน้ามืด เจ็บหน้าอก หยุดทันที โทร 1669"</div>
-  <h2>เมื่อถ่ายเสร็จ</h2>
-  <p>อัปโหลด YouTube แบบไม่เป็นสาธารณะ (unlisted) แล้วใส่รหัสวิดีโอในไฟล์ <code>app.html</code> ที่ตัวแปร <code>VIDEOS</code> ช่อง <code>id</code> — แอปจะแสดงวิดีโอแทนขั้นตอนตัวหนังสือทันที</p>
+  <h1>วิดีโอสาธิต 3 ชุดทดสอบ</h1>
+  <p class="sub">แผ่นที่ 3 · สแกนเพื่อดูก่อนวัดครั้งแรก · วิดีโอเปิดในแอปได้ด้วย</p>
+  <div class="qr"><div id="qv1"></div><div><b>1. การลุกขึ้นยืน 5 ครั้ง (Five Times Sit-to-Stand Test)</b><br><span style="font-size:14px;color:var(--ink2)">youtube.com/watch?v=KQaDdX66OUM</span></div></div>
+  <div class="qr"><div id="qv2"></div><div><b>2. Timed Up and Go Test</b><br><span style="font-size:14px;color:var(--ink2)">youtube.com/watch?v=o_HM_3u0TZk</span></div></div>
+  <div class="qr"><div id="qv3"></div><div><b>3. การยืนเพื่อทดสอบการทรงตัว 4 แบบ (4-Stage Balance Test)</b><br><span style="font-size:14px;color:var(--ink2)">youtube.com/watch?v=AO88b5YLFg0</span></div></div>
+  <h2>เครดิต</h2>
+  <p>วิดีโอทั้ง 3 คลิปเป็นผลงานชุด <b>"สูงวัยไม่ล้ม BWSTT"</b> ของช่อง YouTube <b>Siriraj Health Policy</b> (youtube.com/@SirirajHealthPolicy) — ลิขสิทธิ์เป็นของเจ้าของผลงาน CareSignal อ้างอิงและฝังผ่านเครื่องเล่นของ YouTube เพื่อการเรียนรู้ ไม่ได้ดัดแปลงหรือนำไฟล์มาเผยแพร่ซ้ำ</p>
 </div>
 
 <script>
 var base = location.origin + location.pathname.replace(/testkit\.html$/, "");
-document.getElementById("url1").textContent = base + "app.html";
-if (window.QRCode) new QRCode(document.getElementById("qr1"), { text: base + "app.html", width: 132, height: 132 });
+document.getElementById("url1").textContent = base + "CareSignal-App.html";
+if (window.QRCode) {
+  new QRCode(document.getElementById("qr1"), { text: base + "CareSignal-App.html", width: 132, height: 132 });
+  [["qv1", "KQaDdX66OUM"], ["qv2", "o_HM_3u0TZk"], ["qv3", "AO88b5YLFg0"]].forEach(function (q) {
+    new QRCode(document.getElementById(q[0]), { text: "https://www.youtube.com/watch?v=" + q[1], width: 110, height: 110 });
+  });
+}
 </script>
 </body>
 </html>

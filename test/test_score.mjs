@@ -36,11 +36,25 @@ ok("ความปลอดภัย: เพิ่งล้ม = ไม่ป�
 ok("ค่าจับเวลาสมเหตุสมผล: ลุกนั่ง 0 วิ ไม่ผ่าน · 12 วิ ผ่าน · 200 วิ ไม่ผ่าน", !S.plausible("ftsst", 0) && S.plausible("ftsst", 12) && !S.plausible("ftsst", 200));
 ok("นัดวัดซ้ำ 90/30/14 วัน", S.nextDueDays(4) === 90 && S.nextDueDays(3) === 30 && S.nextDueDays(2) === 14 && S.nextDueDays(1) === 14);
 
+/* ทรงตัว 4 ท่า — เกณฑ์เดียวกับ V2 (balPassed < 3) */
+ok("ทรงตัวผ่าน 2/4 ท่า ติด B11", S.flags({ age: 70, balPassed: 2 }).yellows.some((y) => y.id === "B11"));
+ok("ทรงตัวผ่าน 3/4 ท่า ไม่ติด แม้ขาเดียวไม่ผ่าน", !S.flags({ age: 70, balPassed: 3, balance: 10 }).yellows.some((y) => y.id === "B11"));
+ok("ผ่าน 3 ท่า ใช้ balPassed ก่อนวินาที", !S.flags({ age: 70, balPassed: 3, balance: 4 }).yellows.length);
+ok("แนวโน้ม: เคยผ่าน 4 ท่า ครั้งนี้ 2 ท่า ติด R8", S.trend({ balPassed: 4 }, { balPassed: 2 }).some((t) => t.id === "R8"));
+ok("แนวโน้ม: ผ่านเท่าเดิม ไม่ติด", !S.trend({ balPassed: 3 }, { balPassed: 3 }).length);
+
 /* เอกสารต้องไม่อ้างเกินจริง และต้องไม่มีความลับ */
-const html = ["index.html", "app.html", "testkit.html"].map((f) => readFileSync(new URL("../" + f, import.meta.url), "utf8")).join("\n");
-ok("ไม่มีรหัสตั้งต้นผู้ดูแลระบบหรือรหัสผ่านในหน้าเว็บ", !/ZHJE|password|รหัสผ่านคือ/i.test(html));
+const PAGES = ["index.html", "CareSignal-App.html", "testkit.html"];
+const html = PAGES.map((f) => readFileSync(new URL("../" + f, import.meta.url), "utf8")).join("\n");
+ok("ไม่มีรหัสตั้งต้นผู้ดูแลระบบในหน้าเว็บ", !/ZHJE|รหัสผ่านคือ/i.test(html));
 ok("ไม่อ้างว่าป้องกันการล้มได้ หรือแทนการตรวจโรงพยาบาล", !/ป้องกันการล้มได้แน่|แทนการตรวจที่โรงพยาบาลได้|วินิจฉัยได้/.test(html));
-ok("ทุกหน้าบอกว่าไม่ใช่การวินิจฉัย", ["index.html", "app.html", "testkit.html"].every((f) => /ไม่ใช่การวินิจฉัย|ไม่วินิจฉัยโรค/.test(readFileSync(new URL("../" + f, import.meta.url), "utf8"))));
+ok("ทุกหน้าบอกว่าไม่ใช่การวินิจฉัย", PAGES.every((f) => /ไม่ใช่การวินิจฉัย|ไม่วินิจฉัยโรค/.test(readFileSync(new URL("../" + f, import.meta.url), "utf8"))));
+ok("ฝังวิดีโอครบ 3 คลิปทั้งในหน้ารวมและในแอป", ["KQaDdX66OUM", "o_HM_3u0TZk", "AO88b5YLFg0"].every((id) => PAGES.slice(0, 2).every((f) => readFileSync(new URL("../" + f, import.meta.url), "utf8").includes(id))));
+ok("ให้เครดิตเจ้าของวิดีโอทั้งในหน้ารวมและในแอป", PAGES.slice(0, 2).every((f) => /Siriraj Health Policy/.test(readFileSync(new URL("../" + f, import.meta.url), "utf8")) && /สูงวัยไม่ล้ม BWSTT/.test(readFileSync(new URL("../" + f, import.meta.url), "utf8"))));
+ok("แอปลูกหลานไม่ขอใช้กล้อง", !/getUserMedia|mediapipe/i.test(readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8")));
+ok("โคลนระบบ V2 ครบ: คอนโซล แดชบอร์ด ใบส่งต่อ เดโม ฐานข้อมูล", ["CareSignal-Staff.html", "CareSignal-Portfolio-Dashboard.html", "CareSignal-Journey.html", "cs-referral-forms.js", "cs-demo.js", "cs-backend.js", "supabase/22_referral_forms.sql"].every((f) => { try { readFileSync(new URL("../" + f, import.meta.url)); return true; } catch (e) { return false; } }));
+const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
+ok("service worker ไม่ลบแคชของ V2 (โดเมนเดียวกัน)", /indexOf\(PREFIX\) === 0/.test(sw) && !/CareSignal-Vision|cs-aruco/.test(sw));
 ok("แอปมีทาง 1669 และไม่มีปุ่มฉุกเฉินที่อ้างว่าเรามีทีมช่วย", /tel:1669/.test(html) && !/ทีมฉุกเฉินของเรา/.test(html));
 ok("index อ้างตัวเลขจากการสัมภาษณ์จริง 5/5 และ 3/3", /5\/5/.test(html) && /3\/3/.test(html));
 ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
@@ -67,7 +81,9 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   const pay = C.payloadOf(mk({ balance: 6, note: "ปวดเข่า", fallsCount: 3, injury: 2, getup: 3, medsCount: 2 }), { name: "ป้า", age: 68 }, "ครูแซม");
   ok2("payload: method manual · reps 5 · engine carer · ไม่อ้างยืนยันตัวตน", pay.method === "manual" && pay.reps === 5 && pay.engine === "3.0.0-carer" && pay.verified === false);
   ok2("payload: detail.measured_by carer + tug.ended_by carer (ใบส่งต่ออ่านได้)", pay.detail.measured_by === "carer" && pay.detail.tug.ended_by === "carer" && pay.testQuality.ended_by === "carer");
-  ok2("payload: ยืนต่อเท้า 6 วิ → passed 2 และมี label", pay.detail.balance.passed === 2 && /6 วินาที/.test(pay.detail.balance.label));
+  ok2("payload: ข้อมูลรุ่นแรก ยืนต่อเท้า 6 วิ → passed 2 และมี label", pay.detail.balance.passed === 2 && /6 วินาที/.test(pay.detail.balance.label));
+  const pay4 = C.payloadOf(mk({ balance: 4.2, balPassed: 2, balStages: [10, 10, 4.2] }), { name: "ป้า", age: 68 }, "ครูแซม");
+  ok2("payload: ทรงตัว 4 ท่า ส่ง passed และ stages รายท่า", pay4.detail.balance.passed === 2 && pay4.detail.balance.stages.length === 3 && pay4.detail.balance.stages[2].stage === "tandem" && pay4.detail.balance.stages[2].passed === false && /2 จาก 4/.test(pay4.detail.balance.label));
   ok2("payload: ประวัติล้มและยาไปครบ", pay.fallsDetail.count === 3 && pay.fallsDetail.getup === 3 && pay.medsDetail.count === 2 && pay.detail.steadi.fell === true);
   ok2("payload: ข้ามทุกท่า = not_tested", C.payloadOf(mk({ ftsst: null, tug: null, balance: null }), { name: "x", age: 70 }, "y").notTested === true);
   ok2("ล้มบาดเจ็บต้องพบแพทย์ = high · ไม่บาดเจ็บลุกได้ทันที = low", C.fallSeverity({ injury: "ต้องพบแพทย์", getup: "ได้ทันที" }) === "high" && C.fallSeverity({ injury: "ไม่บาดเจ็บ", getup: "ได้ทันที" }) === "low" && C.fallSeverity({ injury: "ฟกช้ำ แผลเล็กน้อย", getup: "ได้แต่ช้า" }) === "medium");

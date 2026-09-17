@@ -1,102 +1,1034 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>CareSignal V3 — ลูกหลานวัดแรงขาให้ผู้สูงอายุที่บ้าน</title>
-<meta name="description" content="หลังสัมภาษณ์ผู้สูงอายุและครอบครัว 5 คน CareSignal ปรับจากให้ผู้สูงอายุตั้งกล้องเอง เป็นให้ลูกหลานจับเวลาแบบทดสอบให้ ผลทันที แนวโน้ม และใบสรุปพกไปพบแพทย์">
-<link rel="manifest" href="./manifest.json"><link rel="icon" href="./icon-192.png"><meta name="theme-color" content="#0F2A5C">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://esm.sh; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net https://storage.googleapis.com https://esm.sh https://*.supabase.co wss://*.supabase.co; worker-src 'self' blob:; media-src 'self' blob:; frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CareSignal V3 — ลูกหลานวัดให้ผู้สูงอายุที่บ้าน · เฝ้าระวังความเสี่ยงหกล้มและประสานการดูแล</title>
+<meta name="description" content="CareSignal V3 — ลูกหลานจับเวลาแบบทดสอบมาตรฐาน 3 ชุดให้ผู้สูงอายุที่บ้าน ไม่ใช้กล้อง ผลเข้าระบบกลางเดียวกับ V2 ทีมดูแลเปิดเคส ส่งต่อเภสัชกร นักกายภาพ แพทย์ พยาบาล พร้อมวิดีโอสาธิต">
+<meta property="og:title" content="CareSignal — แพลตฟอร์มเฝ้าระวังความเสี่ยงผู้สูงอายุ ที่พ่วงกับกรมธรรม์">
+<meta property="og:description" content="คัดกรอง → ประเมิน → แผนดูแล → ติดตาม ตาม CDC STEADI · ผู้ถือกรมธรรม์ใช้ฟรี ไม่จ่ายเพิ่ม">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sarawut2206.github.io/CareSignal-V2/">
+<meta property="og:image" content="https://sarawut2206.github.io/CareSignal-V2/icon-512.png">
+<meta property="og:locale" content="th_TH">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CareSignal">
+<link rel="manifest" href="./manifest.json">
+<script>
+/* เปิดจากไอคอนแอปที่ติดตั้งไว้ = เข้าตัวแอปเลย ไม่ใช่หน้าเว็บแนะนำ
+   manifest ตั้ง start_url ไปที่ตัวแอปอยู่แล้ว แต่เครื่องที่ติดตั้งไปก่อนหน้านี้
+   ยังจำ start_url เดิมไว้จนกว่าเบราว์เซอร์จะอ่าน manifest ใหม่ ซึ่งอาจกินเวลา
+   เป็นวัน ตัวเปลี่ยนเส้นทางนี้จึงทำให้ได้ผลทันทีโดยไม่ต้องถอนแล้วติดตั้งใหม่
+   ต่อท้าย ?site=1 เมื่อจงใจจะดูหน้าเว็บนำเสนอจากในแอป */
+(function(){
+  try{
+    var inApp=matchMedia("(display-mode: standalone)").matches
+           || matchMedia("(display-mode: fullscreen)").matches
+           || matchMedia("(display-mode: minimal-ui)").matches
+           || navigator.standalone===true;
+    /* ยอมเปลี่ยนเส้นทางครั้งเดียวต่อการเปิดหนึ่งครั้ง — ตอนออฟไลน์ service worker
+       ตั้งทางออกสำรองไว้ที่หน้านี้ ถ้าเราส่งกลับไปหาไฟล์ที่โหลดไม่ได้ซ้ำ ๆ จะวนไม่รู้จบ */
+    var once=false;
+    try{once=sessionStorage.getItem("cs:toapp")==="1"}catch(e2){}
+    if(inApp&&!once&&location.search.indexOf("site=1")<0){
+      try{sessionStorage.setItem("cs:toapp","1")}catch(e3){}
+      location.replace("./CareSignal-App.html");
+    }
+  }catch(e){}
+})();
+</script>
+<meta name="theme-color" content="#0F2A5C">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="icon" href="./favicon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#F2F6FB;--ink:#16233B;--ink2:#5B6B84;--brand:#2563EB;--brand2:#1D4ED8;--line:#DFE7F2;--surf:#fff;--c4:#0E9F6E;--c1:#DC2626;--acc:#FEF3C7}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:"Prompt",system-ui,sans-serif;color:var(--ink);line-height:1.65;font-size:17px}
-.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
-.hero{background:linear-gradient(135deg,#0F2A5C,var(--brand2) 60%,#3B82F6);color:#fff;padding:56px 0 48px}
-.hero .kick{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#FCD34D;font-weight:600}
-.hero h1{font-size:clamp(28px,4.5vw,44px);margin:8px 0 12px;line-height:1.25}
-.hero p{font-size:19px;opacity:.9;max-width:720px;margin:0 0 22px}
-.btn{display:inline-block;background:#fff;color:var(--brand2);font-weight:600;padding:14px 22px;border-radius:14px;text-decoration:none;margin:6px 8px 6px 0;font-size:17px}
-.btn.o{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.4)}
-section{padding:44px 0}section h2{font-size:26px;margin:0 0 6px}section .sub{color:var(--ink2);margin:0 0 22px;font-size:16.5px}
-.grid{display:grid;gap:16px}.g3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
-.card{background:var(--surf);border-radius:18px;padding:22px;box-shadow:0 1px 2px rgba(22,35,59,.04),0 6px 18px rgba(22,35,59,.05)}
-.card h3{margin:0 0 8px;font-size:19px}.card ul{padding-left:20px;margin:8px 0}.card li{margin:4px 0}
-.tag{display:inline-block;font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:99px;margin-bottom:8px}
-.before{background:#EAF0FE;color:var(--brand2)}.found{background:var(--acc);color:#B45309}.after{background:#E3F6EF;color:var(--c4)}
-.num{font-size:40px;font-weight:700;color:var(--brand);line-height:1}.num small{font-size:15px;color:var(--ink2);font-weight:500;display:block;margin-top:4px}
-.quote{border-left:4px solid #F59E0B;padding:8px 14px;background:#FFFBEB;border-radius:0 12px 12px 0;margin:8px 0;font-size:15.5px}
-.quote small{display:block;color:var(--ink2)}
-.steps{counter-reset:s;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-.steps div{background:var(--surf);border-radius:16px;padding:18px 18px 18px 56px;position:relative;box-shadow:0 1px 2px rgba(22,35,59,.04)}
-.steps div::before{counter-increment:s;content:counter(s);position:absolute;left:16px;top:16px;width:30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;font-weight:700;text-align:center;line-height:30px}
-.steps b{display:block;margin-bottom:4px}
-.alt{background:#fff}
-table{border-collapse:collapse;width:100%}td,th{border:1px solid var(--line);padding:9px 12px;text-align:left;font-size:15.5px}th{background:#EAF0FE}
-footer{padding:28px 0 40px;color:var(--ink2);font-size:14px;border-top:1px solid var(--line)}
+/* ============================================================
+   CareSignal — หน้าเดียว 5 ส่วน
+   ------------------------------------------------------------
+   เดิมเว็บมีดรอปดาวน์ 3 ชุด รวมกว่า 20 ลิงก์ กระโดดไป 6 หน้า
+   ผู้ใช้หลงว่าตัวเองอยู่ตรงไหนและต้องกดอะไรต่อ
+   รอบนี้เหลือ 5 ส่วนตามบทบาทของคนใช้จริง อยู่ในหน้าเดียวทั้งหมด
+   ระบบงานแต่ละส่วนเปิดอยู่ "ในกรอบ" ของหน้านี้ ไม่พาออกไปไหน
+   ============================================================ */
+:root{
+  --navy:#0F2A5C; --navy2:#123A7A; --brand:#2563EB; --brand2:#1D4ED8;
+  --ink:#0F172A; --ink2:#475569; --ink3:#64748B; --line:#E2E8F0; --line2:#CBD5E1;
+  --bg:#F5F8FD; --surf:#FFFFFF; --surf2:#EEF3FB; --gold:#F5B93E;
+  --c4:#16A34A; --c3:#CA8A04; --c2:#EA580C; --c1:#DC2626;
+  --sans:"Prompt","Noto Sans Thai",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,monospace;
+  --nav-h:64px; --strip-h:52px;
+}
+*{box-sizing:border-box}
+html{height:100%}
+/* body สูงเท่าเนื้อหาจริง ไม่ล็อกเท่าจอ ไม่งั้นแถบเมนูที่เป็น sticky
+   จะติดได้แค่หน้าจอแรกแล้วถูกดันหายไป · ล็อกความสูงเฉพาะส่วนระบบงานที่ฝังแอป */
+body{min-height:100%}
+body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--bg);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--brand)}
+button{font-family:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* ---------- แถบบน: 5 ส่วน ---------- */
+.top{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:14px;height:var(--nav-h)}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);flex:none}
+.brand img{width:34px;height:34px}
+.brand b{font-size:17px;letter-spacing:-.01em}
+.brand b i{color:var(--brand);font-style:normal}
+.brand small{display:block;font-size:11px;color:var(--ink3);margin-top:-2px}
+nav.tabs{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs button{flex:none;border:0;background:none;color:var(--ink2);font-size:14px;font-weight:500;padding:9px 13px;border-radius:11px;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap}
+nav.tabs button .n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:99px;background:var(--surf2);color:var(--ink3);font-size:11.5px;font-weight:700}
+nav.tabs button:hover{background:var(--surf2);color:var(--ink)}
+nav.tabs button[aria-selected="true"]{background:var(--navy);color:#fff}
+nav.tabs button[aria-selected="true"] .n{background:var(--gold);color:#231a02}
+.ribbon{background:var(--navy);color:#DCE7FA;font-size:12.5px;text-align:center;padding:6px 14px}
+.ribbon b{color:var(--gold)}
+/* ---------- ลดหัวซ้อนเมื่ออยู่ในส่วนระบบงาน ----------
+   ส่วนที่ 2–5 ฝังแอปที่มีหัวของตัวเองอยู่แล้ว ถ้าหน้าแม่ยังมีริบบิ้น
+   แถบเมนู แถบอธิบาย และคำอธิบายท้ายอีก จะเหลือที่ให้เนื้อหาจริงน้อยมาก
+   จึงซ่อนริบบิ้นและย่อแถบอธิบายให้เหลือบรรทัดเดียวเมื่อเข้าส่วนระบบงาน */
+body[data-sec="work"] .ribbon{display:none}
+body[data-sec="work"]{height:100%;overflow:hidden}
+
+/* ---------- แผงเนื้อหา ---------- */
+.panel{display:none}
+.panel[data-on="1"]{display:block}
+
+/* ---------- ส่วนที่ 1: แนะนำ ---------- */
+.hero{background:radial-gradient(120% 90% at 50% 20%,var(--navy2) 0%,var(--navy) 60%,#0A1E45 100%);color:#fff;padding:56px 0 48px}
+.hero .wrap{display:grid;grid-template-columns:1.3fr .62fr .92fr;gap:28px;align-items:start}
+.illus{display:flex;align-items:center;justify-content:center;padding-top:6px}
+.illus svg{width:100%;max-width:280px;height:auto}
+@media(max-width:1120px){.hero .wrap{grid-template-columns:1.15fr .95fr}.illus{display:none}}
+.eyebrow{display:inline-block;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(245,185,62,.5);border-radius:99px;padding:5px 13px;font-weight:600;margin-bottom:16px}
+h1{font-size:clamp(28px,3.6vw,42px);line-height:1.22;letter-spacing:-.02em;margin:0 0 16px;text-wrap:balance}
+h1 em{color:var(--gold);font-style:normal}
+.hero p.lead{font-size:16.5px;color:#DCE7FA;max-width:600px;margin:0 0 22px}
+.hero p.lead b{color:#fff}
+.cta{display:inline-block;border:0;border-radius:14px;padding:14px 22px;font-size:16px;font-weight:700;cursor:pointer;text-decoration:none}
+.cta.p{background:var(--brand);color:#fff;box-shadow:0 8px 24px rgba(37,99,235,.35)}
+.cta.g{background:transparent;color:#C7D6F5;border:1px solid rgba(255,255,255,.22);margin-left:8px;font-weight:600}
+.cta.g:hover{background:rgba(255,255,255,.08);color:#fff}
+.cta.p{position:relative}
+
+/* ---------- วงจรการทำงาน ---------- */
+.flow{background:#0B1C42;padding:52px 0 56px;border-top:1px solid rgba(255,255,255,.1)}
+.flow h2{margin:0 0 10px;font-size:clamp(21px,2.4vw,28px);letter-spacing:-.01em}
+.flow .fsub{margin:0 0 26px;font-size:15.5px;color:#B9C7E8;max-width:760px;line-height:1.75}
+.flowlist{list-style:none;margin:0;padding:0;display:grid;gap:12px;
+  grid-template-columns:repeat(auto-fit,minmax(215px,1fr));counter-reset:none}
+.flowlist li{position:relative;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.13);
+  border-radius:13px;padding:14px 15px 15px;border-left-width:4px}
+.flowlist li b{display:block;font-size:12px;color:#8FB8FF;margin-bottom:5px;letter-spacing:.05em}
+.flowlist li .t{display:block;font-size:15.5px;font-weight:600;line-height:1.4}
+.flowlist li .d{display:block;font-size:13px;color:#B9C7E8;margin-top:5px;line-height:1.6}
+/* สีขอบซ้ายบอกว่าใครถืองานในขั้นนั้น */
+.fl-m{border-left-color:#38BDF8}.fl-s{border-left-color:#8FB8FF}
+.fl-c{border-left-color:#FCD34D}.fl-e{border-left-color:#34D399}.fl-i{border-left-color:#F472B6}
+.fnote{margin:20px 0 0;font-size:13.5px;color:#B9C7E8}
+.fnote .k{display:inline-block;width:11px;height:11px;border-radius:3px;margin:0 3px 0 10px;vertical-align:-1px}
+.fnote .k.m{background:#38BDF8}.fnote .k.s{background:#8FB8FF}.fnote .k.c{background:#FCD34D}
+.fnote .k.e{background:#34D399}.fnote .k.i{background:#F472B6}
+.vows{display:flex;gap:26px;flex-wrap:wrap;margin-top:26px;padding-top:20px;border-top:1px solid rgba(255,255,255,.16)}
+.vows div b{display:block;font-size:14.5px}
+.vows div span{font-size:12px;color:#B9C7E8}
+/* การ์ด "ติดตั้งเป็นแอป" เป็นปุ่มจริง — เดิมเป็นข้อความเฉย ๆ ผู้ใช้กดแล้วไม่มีอะไรเกิดขึ้น */
+.vows button{font:inherit;color:inherit;background:transparent;border:0;padding:0;text-align:left;cursor:pointer}
+.vows button b{display:block;font-size:14.5px}
+.vows button span{font-size:12px;color:#8FB8FF;text-decoration:underline;text-decoration-color:rgba(143,184,255,.45);text-underline-offset:3px}
+.vows button:hover span,.vows button:focus-visible span{text-decoration-color:#8FB8FF}
+/* แผ่นคำแนะนำวิธีติดตั้ง — แสดงเมื่อเบราว์เซอร์ไม่มีปุ่มติดตั้งอัตโนมัติ */
+.isheet{position:fixed;inset:0;background:rgba(15,27,51,.58);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px}
+.isheet-card{background:#fff;color:#16233B;border-radius:20px;padding:24px;max-width:440px;width:100%;max-height:86vh;overflow:auto}
+.isheet-card h3{margin:0 0 12px;font-size:19px}
+.isheet-body{font-size:15.5px;line-height:1.85;color:#3E4E68}
+.isheet-body ol{margin:10px 0 0;padding-left:22px}
+.isheet-body li{margin-bottom:7px}
+.isheet-note{margin:14px 0 0;font-size:13.5px;line-height:1.75;color:#6B7B96;background:#F1F5FB;border-radius:10px;padding:11px 13px}
+.isheet-ok{display:block;width:100%;border:0;border-radius:14px;padding:15px;font:inherit;font-size:16px;font-weight:700;background:var(--brand);color:#fff;margin-top:18px;cursor:pointer}
+.spec{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:18px;padding:20px 22px;backdrop-filter:blur(6px)}
+.spec h3{margin:0 0 8px;font-size:15px;color:#fff}
+.spec .r{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px dashed rgba(255,255,255,.14);font-size:13.5px}
+.spec .r:last-child{border:0}
+.spec .r span:first-child{color:#B9C7E8}
+.spec .r b{color:#fff;text-align:right}
+/* หมวดพับได้ — เก็บข้อมูลไว้ครบสำหรับกรรมการ แต่ไม่เทใส่หน้าแรกทีเดียว 15 แถว */
+.spec details{border-top:1px solid rgba(255,255,255,.13)}
+.spec details:first-of-type{border-top:0}
+.spec summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;
+  align-items:center;gap:10px;padding:11px 0;font-size:14px;font-weight:600;color:#fff}
+.spec summary::-webkit-details-marker{display:none}
+.spec summary::after{content:"▾";color:#8FB8FF;font-size:12px;transition:transform .18s}
+.spec details[open] summary::after{transform:rotate(180deg)}
+.spec summary .cnt{margin-left:auto;margin-right:6px;font-weight:500;font-size:12px;color:#8FB8FF}
+.spec details .r:first-of-type{border-top:1px dashed rgba(255,255,255,.14)}
+.spec details .r{padding:8px 0}
+/* ย่อหน้ารองใต้ประโยคหลัก — เล็กและจางกว่า เพื่อให้ตาไปที่ประโยคหลักก่อน */
+.lead.sub2{font-size:15px;color:#B9C7E8;margin-top:10px}
+.spec .r b.y{color:var(--gold)}
+.spec .r b.g{color:#4ADE80}
+
+section.s{padding:64px 0}
+/* พื้นไล่สีอ่อนแบบเว็บบริการสุขภาพ ให้การ์ดลอยอ่านง่าย ไม่ทึบ */
+section.s.alt{background:linear-gradient(180deg,#EFF6FF 0%,#F8FBFF 60%,var(--bg) 100%)}
+h2{font-size:clamp(22px,2.6vw,30px);letter-spacing:-.02em;margin:0 0 8px}
+.sub{color:var(--ink2);font-size:15.5px;max-width:760px;margin:0 0 26px}
+.kick{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--brand);font-weight:600;margin-bottom:8px}
+
+/* วงจร STEADI */
+.cycle{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.cycle .st{background:var(--surf);border:1px solid var(--line);border-radius:20px;padding:26px 22px;
+  box-shadow:0 2px 4px rgba(15,42,92,.04),0 12px 28px rgba(15,42,92,.06);text-align:center}
+.cycle .st .ic{width:74px;height:74px;margin:0 auto 14px;border-radius:22px;display:grid;place-items:center;
+  font-size:34px;background:linear-gradient(160deg,#E0EDFF,#F2F7FF);border:1px solid #DBE7FA}
+.cycle .st .no{display:inline-block;font-size:11px;letter-spacing:.1em;color:var(--brand);font-weight:700;margin-bottom:6px}
+.cycle .st h4{margin:0 0 8px;font-size:17px}
+.cycle .st p{margin:0;font-size:14px;color:var(--ink2);line-height:1.75}
+.cycle .st small{display:block;margin-top:12px;font-size:12px;color:var(--brand);font-weight:600}
+
+/* ใครทำอะไร — แผนที่ 5 ส่วนของระบบ */
+.roles{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.roles .rl{background:var(--surf);border:1px solid var(--line);border-radius:20px;padding:26px 22px;cursor:pointer;
+  box-shadow:0 2px 4px rgba(15,42,92,.04),0 12px 28px rgba(15,42,92,.06);
+  transition:border-color .16s,transform .16s,box-shadow .16s;text-align:center}
+.roles .rl:hover{border-color:var(--brand);transform:translateY(-3px);box-shadow:0 6px 12px rgba(37,99,235,.10),0 18px 40px rgba(37,99,235,.14)}
+.roles .rl .ic{width:74px;height:74px;margin:0 auto 14px;border-radius:22px;display:grid;place-items:center;
+  font-size:34px;background:linear-gradient(160deg,#E0EDFF,#F2F7FF);border:1px solid #DBE7FA}
+.roles .rl h4{margin:0 0 8px;font-size:17px}
+.roles .rl p{margin:0;font-size:14px;color:var(--ink2);line-height:1.75}
+.roles .rl .see{display:block;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);font-size:12.5px;color:var(--ink3)}
+.roles .rl .see b{color:var(--brand)}
+.roles .rl .go{display:block;margin-top:10px;font-size:13px;color:var(--brand);font-weight:600}
+.arrow{text-align:center;color:var(--ink3);font-size:13px;margin:12px 0 0}
+
+/* หลักฐาน + ขอบเขต */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:20px;padding:26px 28px;
+  box-shadow:0 2px 4px rgba(15,42,92,.04),0 12px 28px rgba(15,42,92,.06)}
+.card h4{margin:0 0 10px;font-size:15.5px}
+.card ul{margin:0;padding-left:18px;font-size:14px;color:var(--ink2)}
+.card ul li{margin-bottom:6px}
+.card ul li b{color:var(--ink)}
+.bmh{font-size:16px;margin:30px 0 10px}.bmh em{font-style:normal;color:#B45309}
+.tblwrap{overflow-x:auto}.bm{width:100%;border-collapse:collapse;font-size:14px;background:var(--surf);border:1px solid var(--line)}
+.bm th,.bm td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}.bm th{background:#F1F5F9;font-size:13px;color:var(--ink2)}
+.card.warn{border-color:#FDBA74;background:#FFF7ED}.card.ok{border-color:#86EFAC;background:#F0FDF4}
+.core{margin:26px 0 0;padding:18px 22px;border-left:4px solid #1D4E9A;background:var(--surf);border-radius:0 14px 14px 0;font-size:15.5px;line-height:1.75}
+
+.no{background:#FFF7ED;border-color:#FED7AA}
+.no h4{color:#9A3412}
+.evi{font-size:13.5px;color:var(--ink2);border-left:3px solid var(--gold);padding:8px 14px;background:var(--surf2);border-radius:0 12px 12px 0;margin-top:14px}
+.evi b{color:var(--ink)}
+.fcta{margin:14px 0 0;font-size:14px;color:var(--ink2)}
+.fcta a{font-weight:700;text-decoration:none;color:var(--brand);background:var(--surf);border:1px solid var(--line);border-radius:99px;padding:6px 14px}
+.fcta a:hover{border-color:var(--brand)}
+footer{padding:26px 0 40px;font-size:12.5px;color:var(--ink3);text-align:center;border-top:1px solid var(--line)}
+
+/* ---------- สารบัญของส่วนแนะนำ ----------
+   ส่วนแนะนำยาวกว่าหนึ่งจอมาก คนอ่านจึงต้องเห็นตั้งแต่ต้นว่ามีอะไรอยู่ข้างล่าง
+   และกระโดดถึงได้ในคลิกเดียว แถบนี้ติดอยู่ใต้แถบเมนูหลัก
+   และไฮไลต์หัวข้อที่กำลังอ่านอยู่ เพื่อบอกว่าตอนนี้อยู่ตรงไหนของหน้า */
+.toc{position:sticky;top:var(--toc-top,var(--nav-h));z-index:45;background:rgba(255,255,255,.95);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.toc .wrap{display:flex;align-items:center;gap:6px;padding-top:9px;padding-bottom:9px;
+  overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.toc .wrap::-webkit-scrollbar{display:none}
+.toc .lb{flex:none;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-right:4px}
+.toc a{flex:none;display:flex;align-items:center;gap:6px;text-decoration:none;font-size:13.5px;
+  color:var(--ink2);border:1px solid transparent;border-radius:99px;padding:6px 13px;white-space:nowrap}
+.toc a:hover{background:var(--surf2);color:var(--ink)}
+.toc a[aria-current="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+section[data-toc]{scroll-margin-top:calc(var(--nav-h) + 64px)}
+
+/* ---------- รายการยาวแบบพับได้ ----------
+   ของเดิมเป็นรายการเดียว 25 ข้อเรียงติดกัน ยาวเกินกว่าจะกวาดตาหาเรื่องที่สนใจได้
+   จึงจัดเป็นกลุ่มตามเรื่อง บอกจำนวนข้อไว้ที่หัวกลุ่ม เปิดกลุ่มแรกไว้ให้เห็นทันที
+   ที่เหลือกดเปิดเมื่อต้องการ — ข้อความทุกข้อยังอยู่ครบ ไม่ได้ตัดทิ้ง */
+.acc{border-top:1px solid var(--line)}
+.acc:first-of-type{border-top:0}
+.acc>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;
+  padding:11px 2px;font-size:14.5px;font-weight:600;color:var(--ink)}
+.acc>summary::-webkit-details-marker{display:none}
+.acc>summary::before{content:"›";flex:none;width:14px;color:var(--brand);font-size:19px;
+  line-height:1;transition:transform .15s ease}
+.acc[open]>summary::before{transform:rotate(90deg)}
+.acc>summary:hover{color:var(--brand)}
+.acc>summary .cnt{margin-left:auto;flex:none;font-size:11.5px;font-weight:500;color:var(--ink3);
+  background:var(--surf2);border-radius:99px;padding:2px 9px}
+.acc ul{padding-bottom:12px}
+
+/* ---------- แถบลำดับ 8 ขั้นตอน ----------
+   บอกภาพรวมก่อนว่ามีกี่ขั้น ขั้นไหนบังคับ (วงกลมทึบ) ขั้นไหนข้ามได้ (วงกลมจาง)
+   กดที่ขั้นใดก็ได้เพื่อกระโดดไปอ่านรายละเอียดของขั้นนั้น */
+.rail{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.rail a{flex:1 1 130px;display:flex;align-items:center;gap:8px;min-width:0;text-decoration:none;
+  background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:8px 10px;
+  font-size:12.5px;color:var(--ink2)}
+.rail a b{flex:none;width:22px;height:22px;border-radius:99px;display:grid;place-items:center;
+  background:var(--navy);color:#fff;font-family:var(--mono);font-size:11.5px}
+.rail a.op b{background:var(--surf2);color:var(--ink2)}
+.rail a span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rail a:hover{border-color:var(--brand);color:var(--ink)}
+.raillg{margin:0 0 16px;font-size:12.5px;color:var(--ink3)}
+.raillg i{display:inline-block;width:10px;height:10px;border-radius:99px;background:var(--navy);
+  vertical-align:-1px;margin:0 4px 0 10px}
+.raillg i.op{background:var(--surf2);border:1px solid var(--line)}
+.gs{scroll-margin-top:calc(var(--nav-h) + 16px)}
+.gs:target{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.14)}
+
+/* ---------- ส่วนที่ 2–5: แผงระบบงานในหน้าเดียว ---------- */
+.strip{background:var(--surf);border-bottom:1px solid var(--line)}
+.strip .wrap{display:flex;align-items:center;gap:12px;height:var(--strip-h);flex-wrap:nowrap;overflow:hidden}
+.strip .back{display:none;border:0;background:none;color:var(--brand);font-family:inherit;font-size:15px;font-weight:600;padding:6px 4px;cursor:pointer;flex:none}
+.strip .who{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--brand);font-weight:600;flex:none}
+.strip h2{font-size:16px;margin:0;white-space:nowrap;flex:none}
+.strip h2 .sm,.strip .acts .sm{display:none}
+@media(max-width:640px){.strip h2 .lg,.strip .acts .lg{display:none}
+  .strip h2 .sm,.strip .acts .sm{display:inline}
+  .strip .acts button{padding:7px 10px;font-size:12px}
+  .strip .back{font-size:14px}}
+.strip .note{margin:0;font-size:12.5px;color:var(--ink2);flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.strip .note b{color:var(--ink)}
+.strip .acts{display:flex;gap:8px;flex:none}
+.strip .acts button{border:1.5px solid var(--line2);background:var(--surf);color:var(--ink);border-radius:10px;padding:7px 12px;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.strip .acts button[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+/* กรอบระบบงานสูงพอดีจอเสมอ — ไม่ให้หน้าแม่มีแถบเลื่อนซ้อนกับแถบเลื่อนของแอป */
+/* คู่มือในส่วนที่ 2 — สูงเท่ากรอบแอป และเลื่อนในตัวเอง เพราะ body[data-sec=work] ปิดการเลื่อนของหน้าแม่ */
+.guide{display:none;height:var(--frame-h,70dvh);overflow:auto;background:var(--bg)}
+.guide[data-on="1"]{display:block}
+.guide .wrap{padding:22px 20px 60px}
+.gnote{background:#FFF7ED;border:1px solid #FED7AA;border-radius:14px;padding:14px 18px;font-size:14.5px;line-height:1.75;color:#7C2D12;margin-bottom:22px}
+.gnote b{color:#9A3412}
+.gh{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--brand);font-weight:700;margin:26px 0 12px}
+.gsteps{display:grid;gap:10px}
+.gs{display:flex;gap:14px;align-items:flex-start;background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.gs .gi{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:20px;background:var(--surf2)}
+.gs .gi.n{background:var(--navy);color:#fff;font-weight:700;font-size:16px;font-family:var(--mono)}
+.gs b{font-size:15.5px}
+.gs .gt{display:inline-block;margin-left:6px;font-size:11.5px;color:var(--ink3);background:var(--surf2);border-radius:99px;padding:2px 9px;vertical-align:middle}
+.gs p{margin:5px 0 0;font-size:14px;color:var(--ink2);line-height:1.75}
+.gs p b{color:var(--ink)}
+.gflow{display:grid;gap:8px}
+.gf{display:flex;gap:12px;align-items:flex-start;font-size:14px;color:var(--ink2);line-height:1.7}
+.gf b{flex:none;width:26px;height:26px;border-radius:99px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px;font-family:var(--mono)}
+.gf span b{width:auto;height:auto;background:none;color:var(--ink);display:inline;font-family:inherit;font-size:inherit}
+.gfoot{margin:22px 0 0;font-size:13px;color:var(--ink3);line-height:1.75;border-top:1px solid var(--line);padding-top:14px}
+.gfoot b{color:var(--ink2)}
+@media(min-width:900px){.gsteps{grid-template-columns:1fr 1fr}.gsteps .gs:only-child{grid-column:1/-1}}
+.frame{position:relative;background:#0F2A5C}
+.frame[data-on="0"]{display:none}
+.frame iframe{display:block;width:100%;height:var(--frame-h,70dvh);border:0;background:#fff}
+.frame .ld{position:absolute;inset:0;display:grid;place-items:center;color:#DCE7FA;font-size:14px;pointer-events:none}
+.frame[data-ready="1"] .ld{display:none}
+
+@media(max-width:900px){
+  .hero .wrap{grid-template-columns:1fr}
+  .cycle,.roles{grid-template-columns:repeat(2,1fr)}
+  .two{grid-template-columns:1fr}
+  .brand small{display:none}
+  nav.tabs button{font-size:13px;padding:8px 10px}
+  .cta.g{margin-left:0;margin-top:8px}
+}
+/* ---------- มือถือในส่วนระบบงาน: เหลือแถบเดียว ----------
+   จอสูง 812px มีหัวของหน้าแม่ 154px และหัวของแอปข้างในอีก 365px
+   เหลือที่เนื้อหาจริงไม่ถึง 300px ซึ่งใช้งานไม่ได้
+   จึงยุบแถบเมนู 5 ส่วนทิ้งเมื่อเข้าส่วนระบบงาน แล้วให้แถบอธิบาย
+   ทำหน้าที่เป็นแถบนำทางแทน มีปุ่มย้อนกลับไปเลือกส่วนอื่น */
+@media(max-width:900px){
+  body[data-sec="work"] .top{display:none}
+  body[data-sec="work"] .strip{position:sticky;top:0;z-index:40}
+  body[data-sec="work"] .strip .back{display:inline-flex;align-items:center;gap:3px}
+  body[data-sec="work"] .strip .who,
+  body[data-sec="work"] .strip .note{display:none}
+  body[data-sec="work"] .strip h2{font-size:15px;flex:1 1 auto;min-width:0;
+    overflow:hidden;text-overflow:ellipsis}
+}
+@media(max-width:560px){
+  .cycle,.roles{grid-template-columns:1fr}
+  .toc .wrap{gap:4px}.toc .lb{display:none}.toc a{font-size:13px;padding:6px 11px}
+  .rail a{flex:1 1 calc(50% - 4px)}
+  .top .wrap{height:auto;padding-top:8px;padding-bottom:8px;flex-wrap:wrap}
+  nav.tabs{margin-left:0;width:100%}
+  :root{--nav-h:104px}
+}
 </style>
 </head>
 <body>
-<div class="hero"><div class="wrap">
-  <div class="kick">CareSignal V3 · OIC InsurTech Award 2026</div>
-  <h1>ลูกหลานวัดแรงขาให้ผู้สูงอายุที่บ้าน<br>รู้ผลทันที · เห็นแนวโน้ม · แจ้งครอบครัวก่อนล้ม</h1>
-  <p>รุ่นนี้ไม่ใช้กล้อง เพราะเราไปถามผู้สูงอายุแล้วพบว่าทุกคนตั้งกล้องเองไม่ได้ ลูกหลานจึงเป็นคนจับเวลาแบบทดสอบมาตรฐาน 3 ท่า ด้วยเกณฑ์เดียวกับรุ่นกล้อง</p>
-  <a class="btn" href="./app.html">เปิดแอปสำหรับลูกหลาน</a>
-  <a class="btn o" href="./testkit.html">ชุดอุปกรณ์ทดสอบ (พิมพ์ได้)</a>
-  <a class="btn o" href="https://sarawut2206.github.io/CareSignal-V2/">รุ่นกล้อง (V2) ยังใช้ได้</a>
-</div></div>
 
-<section id="change"><div class="wrap">
-  <h2>เราเปลี่ยนอะไรหลังฟังผู้ใช้</h2>
-  <p class="sub">ภารกิจ Idea Validation · สัมภาษณ์และแบบสอบถาม 15–16 กันยายน 2569 · ผู้สูงอายุ 3 คน (อายุ 60, 65, 68) และลูกหลานผู้ดูแล 2 คน</p>
-  <div class="grid g3">
-    <div class="card"><span class="tag before">ก่อน · CareSignal V2</span><h3>ผู้สูงอายุตั้งกล้องวัดเอง</h3>
-      <p>แอปใช้กล้องมือถือจับท่าลุกนั่ง 5 ครั้งและลุกเดิน 3 เมตร นับครั้งและจับเวลาให้อัตโนมัติ ประมวลผลในเครื่อง ไม่ส่งภาพออก</p>
-      <ul><li>ต้องวางมือถือให้เห็นเต็มตัว</li><li>ต้องกดเมนูเองหลายขั้น</li><li>ครอบครัวเห็นผลเมื่อเชื่อมบัญชีออนไลน์</li></ul>
-      <a href="https://sarawut2206.github.io/CareSignal-V2/">ดูรุ่นกล้อง ›</a></div>
-    <div class="card"><span class="tag found">สิ่งที่พบ</span><h3>ปัญหาจริง แต่ใช้เองไม่ได้</h3>
-      <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 10px">
-        <div><div class="num">5/5<small>มีผู้สูงอายุหกล้มในปีที่ผ่านมา</small></div></div>
-        <div><div class="num">3/3<small>ผู้สูงอายุติดตั้งแอปหรือตั้งกล้องเองไม่ได้</small></div></div>
-        <div><div class="num">3/3<small>ผู้สูงอายุเลือก "ให้ลูกหลานรู้" เป็นอันดับ 1</small></div></div>
-        <div><div class="num">5/5<small>อยากประเมินได้ที่บ้าน</small></div></div>
+<div class="ribbon">ผลงานเข้าประกวด <b>OIC InsurTech Award 2026</b> · โจทย์ความเสี่ยงด้านสังคมสูงวัย — ต้นแบบเพื่อการประกวด ยังไม่ใช่ผลิตภัณฑ์ประกันภัยที่เปิดขายจริง</div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#intro"><img src="./logo-mark.png" alt=""><span><b>Care<i>Signal</i></b><small>รู้ก่อนพึ่งพิง · ป้องกันก่อนเคลม</small></span></a>
+    <nav class="tabs" role="tablist" aria-label="ส่วนของระบบ">
+      <button role="tab" data-t="intro"   aria-selected="true"><span class="n">1</span>แนะนำ</button>
+      <button role="tab" data-t="member"  aria-selected="false"><span class="n">2</span>ผู้เอาประกันและครอบครัว</button>
+      <button role="tab" data-t="care"    aria-selected="false"><span class="n">3</span>เจ้าหน้าที่ดูแล</button>
+      <button role="tab" data-t="expert"  aria-selected="false"><span class="n">4</span>ทีมผู้เชี่ยวชาญ</button>
+      <button role="tab" data-t="insurer" aria-selected="false"><span class="n">5</span>บริษัทประกัน</button>
+    </nav>
+  </div>
+</header>
+
+<!-- ============================================================
+     1) แนะนำ
+     ============================================================ -->
+<main>
+<div class="panel" id="p-intro" data-on="1" role="tabpanel">
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <span class="eyebrow">Insurance-Embedded Risk Monitoring &amp; Care Coordination</span>
+        <h1>เฝ้าระวังความเสี่ยงหกล้มในผู้สูงอายุ <em>พ่วงไปกับกรมธรรม์ที่มีอยู่</em></h1>
+        <p class="lead"><b>ลูกหลานวัดให้ที่บ้าน ไม่ต้องใช้กล้อง</b> — จับเวลาแบบทดสอบมาตรฐาน แล้วประสานทีมดูแลก่อนเกิดเคลม</p>
+        <p class="lead sub2">บริษัทประกันนำไปพ่วงกับกรมธรรม์ผู้สูงอายุ สุขภาพ หรือดูแลระยะยาว · <b>เราไม่ขายประกัน</b> · ผู้ถือกรมธรรม์ใช้ฟรี ไม่จ่ายเพิ่ม</p>
+        <button class="cta p" data-go="member">เริ่มใช้งาน · ผู้เอาประกัน</button>
+        <button class="cta g" data-go="care">เข้าสู่ระบบเจ้าหน้าที่</button>
+        <a class="cta g" href="./CareSignal-Journey.html?demo=1">ดูเดโมเส้นทางหนึ่งเคส ›</a>
+        <p class="lead sub2" style="margin-top:14px"><b>CareSignal V3</b> ปรับจากรุ่นกล้องหลังสัมภาษณ์ผู้สูงอายุและครอบครัว 5 คน · <a href="#change" style="color:inherit;text-decoration:underline">เราเปลี่ยนอะไร ›</a> · <a href="https://sarawut2206.github.io/CareSignal-V2/" style="color:inherit;text-decoration:underline">ดูรุ่นกล้อง (V2) ›</a></p>
+        <div class="vows">
+          <div><b>ไม่ใช้กล้อง</b><span>ไม่มีภาพหรือวิดีโอของท่าน</span></div>
+          <div><b>ไม่ยุ่งกับราคาและการเคลม</b><span>ผลตรวจใช้เฝ้าระวังอย่างเดียว</span></div>
+          <div><b>มนุษย์ตัดสิน</b><span>ระบบไม่อนุมัติเคสเอง</span></div>
+          <button type="button" id="csInstall"><b>ใช้ออฟไลน์ได้</b><span>ติดตั้งเป็นแอป &rsaquo;</span></button>
+        </div>
       </div>
-      <div class="quote">"กดไม่เป็น ทำไม่เป็น"<small>ผู้สูงอายุ 60 ปี</small></div>
-      <div class="quote">"ตั้งกล้องไม่เป็น"<small>ผู้สูงอายุ 65 ปี ล้ม 3 ครั้งในปีนี้</small></div>
-      <div class="quote">"พ่อไม่ชอบไปหาหมอ ไม่ชอบนั่งรอ"<small>ลูกของผู้สูงอายุ 76 ปี</small></div></div>
-    <div class="card"><span class="tag after">หลัง · CareSignal V3</span><h3>ลูกหลานเป็นคนวัดให้</h3>
-      <ul><li><b>ลูกหลานจับเวลา</b>ด้วยปุ่มใหญ่ปุ่มเดียว ผู้สูงอายุแค่ทำท่าตาม</li><li><b>วิดีโอสาธิต</b>ทีละท่า และแผ่นขั้นตอนติดผนัง</li><li><b>ผลทันที 4 สี</b>พร้อมเหตุผลภาษาง่าย และขั้นต่อไป</li><li><b>แจ้งครอบครัว</b>เป็นฟีเจอร์หลัก แชร์ผลทาง LINE ได้ทันที</li><li><b>ใบสรุปพกไปพบแพทย์</b> พิมพ์จากแอปได้เลย</li><li>เกณฑ์คะแนน<b>เหมือน V2 ทุกตัวเลข</b> ผลเทียบกันได้</li></ul>
-      <a href="./app.html">เปิดแอป ›</a></div>
+      <div class="illus" aria-hidden="true">
+        <svg viewBox="0 0 300 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="illusGlow" cx="50%" cy="42%" r="60%">
+              <stop offset="0%" stop-color="#2E5197" stop-opacity=".55"/>
+              <stop offset="100%" stop-color="#2E5197" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <circle cx="150" cy="185" r="150" fill="url(#illusGlow)"/>
+          <g stroke="#5578C4" stroke-width="1" stroke-dasharray="2 4" opacity=".55">
+            <line x1="86" y1="76" x2="150" y2="112"/>
+            <line x1="222" y1="88" x2="168" y2="128"/>
+            <line x1="66" y1="196" x2="112" y2="200"/>
+          </g>
+          <g fill="#5578C4" opacity=".6">
+            <circle cx="150" cy="112" r="3"/><circle cx="168" cy="128" r="3"/>
+            <circle cx="112" cy="200" r="3"/><circle cx="196" cy="150" r="2.5"/>
+            <circle cx="98" cy="240" r="2.5"/>
+          </g>
+          <path d="M96 360c-2-60 4-92 20-110-8-14-6-30 4-44 8-12 30-14 38-2 8 12 8 28-2 42 14 12 20 44 18 114z" fill="#F5B93E" opacity=".14"/>
+          <circle cx="132" cy="188" r="19" fill="#E8EEF7"/>
+          <path d="M113 182c2-14 15-22 26-19 10 3 15 12 13 18-9-6-19-8-27-4-6 3-10 3-12 5z" fill="#B9C7E8"/>
+          <path d="M100 358c-2-52 6-92 30-108 8 12 8 26 1 36 20 10 30 38 31 72" stroke="#CFE0FD" stroke-width="7" stroke-linecap="round" fill="none" opacity=".85"/>
+          <path d="M150 360c-3-46 3-78 20-92-7-11-8-23 0-33 9-11 27-11 36 0 8 10 7 22 0 33 15 12 22 44 20 92z" fill="#2E5197" opacity=".22"/>
+          <circle cx="188" cy="216" r="18" fill="#F3E7D2"/>
+          <path d="M170 212c1-13 10-22 20-22 11 0 20 9 20 21-5-3-9-8-11-13-5 8-16 13-29 14z" fill="#4A3B2A" opacity=".85"/>
+          <path d="M156 358c-2-42 4-72 24-86 9 11 9 24 2 33 16 8 24 34 25 63" stroke="#F5B93E" stroke-width="7" stroke-linecap="round" fill="none" opacity=".9"/>
+          <rect x="150" y="258" width="20" height="34" rx="5" fill="#0F172A" stroke="#CFE0FD" stroke-width="1.4"/>
+          <rect x="154" y="263" width="12" height="20" rx="1.5" fill="#5578C4" opacity=".55"/>
+          <g>
+            <circle cx="58" cy="66" r="30" fill="#0F2A5C" stroke="#2E5197" stroke-width="1.4"/>
+            <path d="M58 52c8 2 13 3 13 3v11c0 9-6 14-13 17-7-3-13-8-13-17V55s5-1 13-3z" stroke="#F5B93E" stroke-width="2.4" stroke-linejoin="round" fill="none"/>
+            <path d="M51 66l5 5 9-10" stroke="#F5B93E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </g>
+          <g>
+            <circle cx="238" cy="82" r="30" fill="#0F2A5C" stroke="#2E5197" stroke-width="1.4"/>
+            <path d="M223 82c0-6 5-10 10-10 3 0 6 2 7 4 1-2 4-4 7-4 5 0 10 4 10 10 0 8-9 14-17 20-8-6-17-12-17-20z" stroke="#7FADE8" stroke-width="2.2" fill="none"/>
+            <path d="M219 82h9l4-8 5 14 4-6h11" stroke="#7FADE8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </g>
+          <g>
+            <circle cx="40" cy="196" r="27" fill="#0F2A5C" stroke="#2E5197" stroke-width="1.4"/>
+            <path d="M28 198l12-11 12 11v14a2 2 0 01-2 2h-20a2 2 0 01-2-2z" stroke="#CFE0FD" stroke-width="2.2" stroke-linejoin="round" fill="none"/>
+            <path d="M35 213v-9h10v9" stroke="#CFE0FD" stroke-width="2" fill="none"/>
+          </g>
+        </svg>
+      </div>
+      <aside class="spec">
+        <h3>ระบบนี้ทำอะไรได้จริงบ้าง</h3>
+
+        <details open>
+          <summary>สิ่งที่ระบบวัด <span class="cnt">7 อย่าง</span></summary>
+          <div class="r"><span>ทดสอบลุกนั่ง 5 ครั้ง (FTSST)</span><b>อัตโนมัติ</b></div>
+          <div class="r"><span>ลุกเดิน 3 เมตร (TUG)</span><b>ยืนยันระยะด้วยป้าย</b></div>
+          <div class="r"><span>ทรงตัว 4 ท่า (CDC STEADI)</span><b>ผู้ดูแลยืนยันผล</b></div>
+          <div class="r"><span>ประวัติหกล้ม · ยา · กิจวัตร (ADL)</span><b>ทุก 3 เดือน</b></div>
+          <div class="r"><span>ความปลอดภัยในบ้าน (CDC STEADI)</span><b>7 ข้อ · ไม่เข้าคะแนน</b></div>
+          <div class="r"><span>เกณฑ์เวลาประชากรไทย</span><b>10.0–12.1 วิ</b></div>
+          <div class="r"><span>สัญญาณเสี่ยงที่ระบบเปิดเคสให้</span><b class="y">7 ประเภท</b></div>
+        </details>
+
+        <details>
+          <summary>ยาที่ใช้อยู่ — สามชั้น <span class="cnt">กดดู</span></summary>
+          <div class="r"><span>ถ่ายฉลาก อ่านชื่อ จับคู่กลุ่มเสี่ยง</span><b>ฐาน 170 ตัวยา</b></div>
+          <div class="r"><span>ยาที่ฐานในเครื่องไม่รู้จัก</span><b>ค้นทะเบียนตำรับยา อย.</b></div>
+          <div class="r"><span>ยาที่ทะเบียนก็ตอบไม่ได้</span><b class="y">เข้าคิวเภสัชกรพร้อมรูป</b></div>
+        </details>
+
+        <details>
+          <summary>ข้อมูลของผู้ใช้ถูกดูแลอย่างไร <span class="cnt">กดดู</span></summary>
+          <div class="r"><span>ภาพและวิดีโอจากการตรวจร่างกาย</span><b class="g">ไม่ส่งออกเลย</b></div>
+          <div class="r"><span>รูปฉลากยา</span><b class="y">เก็บเมื่อผู้ใช้ติ๊กยินยอม</b></div>
+          <div class="r"><span>ผู้เชี่ยวชาญขอดูข้อมูลคลินิก</span><b class="y">ต้องขออนุญาตทุกครั้ง</b></div>
+          <div class="r"><span>การประเมินแบ่งเป็น</span><b class="y">8 หัวข้อ · ยืนยันทีละขั้น</b></div>
+          <div class="r"><span>สั่งงานด้วยการยกมือ รีโมต หรือปุ่มบนจอ</span><b>ไม่ต้องเดินมากดจอ · แอปพูดทวนทุกคำสั่ง</b></div>
+        </details>
+      </aside>
+    </div>
   </div>
-</div></section>
 
-<section class="alt"><div class="wrap">
-  <h2>ใช้อย่างไร ใช้เวลา 10 นาที</h2>
-  <p class="sub">ผู้ใช้แอปคือลูกหลาน ผู้สูงอายุไม่ต้องแตะมือถือเลย</p>
-  <div class="steps">
-    <div><b>ลงทะเบียน</b>ชื่อผู้ดูแล ชื่อและอายุผู้สูงอายุ จำนวนยาที่กิน และความยินยอม ข้อมูลอยู่ในเครื่อง</div>
-    <div><b>ดูวิธีวัด</b>วิดีโอสั้น 4 คลิป หรืออ่านขั้นตอน เตรียมเก้าอี้และเส้น 3 เมตร</div>
-    <div><b>วัดวันนี้</b>ถามความปลอดภัย 4 ข้อ แล้วจับเวลา 3 ท่า และตอบ 5 คำถาม</div>
-    <div><b>ผลและแนวโน้ม</b>เห็นสีทันที กราฟเทียบกับครั้งก่อน แชร์ให้ครอบครัว พิมพ์ใบสรุป</div>
+<!-- ============================================================
+     สารบัญของส่วนแนะนำ — หน้านี้ยาว จึงต้องกระโดดถึงทุกหัวข้อได้ในคลิกเดียว
+     ลิงก์ทุกอันเป็นแฮชจริง แชร์ต่อได้ และเปิดมาแล้วอยู่ที่หัวข้อนั้นเลย
+     ============================================================ -->
+<nav class="toc" aria-label="สารบัญส่วนแนะนำ">
+  <div class="wrap">
+    <span class="lb">ในส่วนนี้</span>
+    <a href="#flow"     data-sec="flow"><span aria-hidden="true">🔄</span>วงจรการทำงาน</a>
+    <a href="#steadi"   data-sec="steadi"><span aria-hidden="true">📋</span>แนวทาง CDC STEADI</a>
+    <a href="#roles"    data-sec="roles"><span aria-hidden="true">👥</span>4 บทบาท</a>
+    <a href="#bizmodel" data-sec="bizmodel"><span aria-hidden="true">💵</span>โมเดลรายได้</a>
+    <a href="#does"     data-sec="does"><span aria-hidden="true">✅</span>ทำอะไร / ไม่ทำอะไร</a>
   </div>
-</div></section>
+</nav>
 
-<section><div class="wrap">
-  <h2>สิ่งที่ยังเหมือน V2 และสิ่งที่ต่าง</h2>
-  <p class="sub">เราไม่ได้ทิ้งของเดิม รุ่นกล้องยังเป็นทางเลือกสำหรับบ้านที่ตั้งกล้องได้ และเป็นที่มาของเกณฑ์ทั้งหมด</p>
-  <table>
-    <tr><th></th><th>V2 รุ่นกล้อง</th><th>V3 ลูกหลานวัดให้</th></tr>
-    <tr><td>ใครใช้</td><td>ผู้สูงอายุ</td><td>ลูกหลาน</td></tr>
-    <tr><td>จับเวลา</td><td>กล้องนับครั้งและจับเวลาเอง</td><td>ลูกหลานกดปุ่มเริ่ม/หยุด</td></tr>
-    <tr><td>ท่าทดสอบ</td><td colspan="2">ลุกนั่ง 5 ครั้ง · ลุกเดิน 3 เมตร · ยืนต่อเท้า 10 วินาที (เหมือนกัน)</td></tr>
-    <tr><td>เกณฑ์คะแนน</td><td colspan="2">10.0 / 11.5 / 12.1 วินาทีตามอายุ · เปลี่ยนแปลง ≥ 2.3 วินาที · ลุกเดิน ≥ 12 วินาที (เหมือนกัน)</td></tr>
-    <tr><td>แจ้งครอบครัว</td><td>เมื่อเชื่อมบัญชีออนไลน์</td><td>ฟีเจอร์หลัก แชร์ได้ทันทีเพราะลูกหลานคือผู้ใช้</td></tr>
-    <tr><td>ระบบกลางและการส่งต่อ</td><td colspan="2">ฐานข้อมูลเดียวกัน (Supabase) · ผลจาก V3 เปิดเคสให้เจ้าหน้าที่ ส่งต่อเภสัชกร นักกายภาพ แพทย์ พยาบาล ด้วยใบส่งต่อชุดเดียวกับ V2 · "บันทึกว่าล้ม" จาก V3 เปิดเคสทันที</td></tr>
-    <tr><td>ข้อมูล</td><td>ตัวเลขเข้าระบบเมื่อกดบันทึก</td><td>บันทึกในเครื่องก่อน แล้วส่งขึ้นระบบกลางเมื่อลูกหลานเชื่อมบัญชี · ไม่มีภาพ</td></tr>
-    <tr><td>สิ่งที่ยังไม่ทำ</td><td colspan="2">ไม่วินิจฉัยโรค ไม่แทนการพบแพทย์ ไม่มีระบบฉุกเฉิน (ฉุกเฉินโทร 1669)</td></tr>
-  </table>
-  <p class="sub" style="margin-top:14px">ข้อจำกัดของหลักฐาน: ผู้ให้ข้อมูล 5 คนจากโรงเรียนเดียวกัน ผู้สูงอายุยังทำงานได้ ผลนี้ใช้กับกลุ่มนี้ ไม่ใช่ข้อสรุปของผู้สูงอายุทั่วไป · ความแม่นของการจับเวลาด้วยมือยังไม่ได้เทียบกับกล้อง เป็นสิ่งที่จะวัดในรอบนำร่อง</p>
-</div></section>
+<section class="s alt" id="change" data-toc="1">
+  <style>
+    #change .cg{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+    #change .cc{background:#fff;border-radius:18px;padding:20px;box-shadow:0 1px 2px rgba(22,35,59,.05),0 6px 18px rgba(22,35,59,.06)}
+    #change .tg{display:inline-block;font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:99px;margin-bottom:6px}
+    #change .b1{background:#EAF0FE;color:#1D4ED8}#change .b2{background:#FEF3C7;color:#B45309}#change .b3{background:#E3F6EF;color:#0E9F6E}
+    #change .nm{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0}
+    #change .nm b{display:block;font-size:34px;line-height:1;color:#2563EB}#change .nm span{font-size:13.5px;color:#5B6B84}
+    #change .qt{border-left:4px solid #F59E0B;background:#FFFBEB;border-radius:0 10px 10px 0;padding:6px 12px;margin:6px 0;font-size:15px}
+    #change .qt small{display:block;color:#5B6B84}
+  </style>
+  <div class="wrap">
+    <h2>เราเปลี่ยนอะไรหลังฟังผู้ใช้</h2>
+    <p class="sub">ภารกิจ Idea Validation · สัมภาษณ์และแบบสอบถาม 15–16 กันยายน 2569 · ผู้สูงอายุ 3 คน (อายุ 60, 65, 68) และลูกหลานผู้ดูแล 2 คน</p>
+    <div class="cg">
+      <div class="cc"><span class="tg b1">ก่อน · CareSignal V2</span><h4>ผู้สูงอายุตั้งกล้องวัดเอง</h4>
+        <p>กล้องมือถือนับครั้งและจับเวลาให้อัตโนมัติ ประมวลผลในเครื่อง ต้องวางมือถือให้เห็นเต็มตัว ติดป้ายสัญลักษณ์ และกดเมนูเองหลายขั้น</p>
+        <p><a href="https://sarawut2206.github.io/CareSignal-V2/">เปิดรุ่นกล้อง (V2) ›</a></p></div>
+      <div class="cc"><span class="tg b2">สิ่งที่พบ</span><h4>ปัญหาจริง แต่ผู้สูงอายุใช้เองไม่ได้</h4>
+        <div class="nm"><div><b>5/5</b><span>มีผู้สูงอายุหกล้มในปีที่ผ่านมา</span></div><div><b>3/3</b><span>ผู้สูงอายุติดตั้งแอปหรือตั้งกล้องเองไม่ได้</span></div>
+          <div><b>3/3</b><span>ผู้สูงอายุเลือก "ให้ลูกหลานรู้" เป็นอันดับ 1</span></div><div><b>5/5</b><span>อยากประเมินได้ที่บ้าน</span></div></div>
+        <div class="qt">"กดไม่เป็น ทำไม่เป็น"<small>ผู้สูงอายุ 60 ปี</small></div>
+        <div class="qt">"ตั้งกล้องไม่เป็น"<small>ผู้สูงอายุ 65 ปี ล้ม 3 ครั้งในปีนี้</small></div>
+        <div class="qt">"พ่อไม่ชอบไปหาหมอ ไม่ชอบนั่งรอ"<small>ลูกของผู้สูงอายุ 76 ปี</small></div></div>
+      <div class="cc"><span class="tg b3">หลัง · CareSignal V3 (หน้านี้)</span><h4>ลูกหลานเป็นคนวัดให้</h4>
+        <ul><li><b>ลูกหลานจับเวลา</b>ด้วยปุ่มใหญ่ปุ่มเดียว ผู้สูงอายุแค่ทำท่าตาม</li>
+          <li><b>วิดีโอสาธิต</b>ทุกท่าก่อนวัด</li>
+          <li><b>ผลทันที 4 สี</b>พร้อมเหตุผลภาษาง่าย</li>
+          <li><b>แจ้งครอบครัว</b>เป็นฟีเจอร์หลัก</li>
+          <li><b>ระบบกลาง คอนโซลเจ้าหน้าที่ ผู้เชี่ยวชาญ และบริษัทประกัน เหมือน V2 ทุกอย่าง</b> — เปลี่ยนเฉพาะหน้าแอปสมาชิก</li></ul>
+        <p><a href="./CareSignal-App.html">เปิดแอปลูกหลาน ›</a> · <a href="./testkit.html">ชุดอุปกรณ์ทดสอบ ›</a></p></div>
+    </div>
+    <p class="sub" style="margin-top:14px">ข้อจำกัดของหลักฐาน: ผู้ให้ข้อมูล 5 คนจากโรงเรียนเดียวกัน ผู้สูงอายุยังทำงานได้ ผลนี้ใช้กับกลุ่มนี้ ไม่ใช่ข้อสรุปของผู้สูงอายุทั่วไป</p>
+  </div>
+</section>
 
-<footer><div class="wrap">ทีม CareSignal · OIC InsurTech Award 2026 · <a href="https://github.com/sarawut2206/CareSignal-V3">โค้ด V3</a> · <a href="https://github.com/sarawut2206/CareSignal-V2">โค้ด V2</a> · เป็นต้นแบบเพื่อการประกวด ยังไม่มีบริษัทประกันนำไปใช้</div></footer>
+<section class="flow" id="flow" data-toc="1">
+  <div class="wrap">
+    <h2>วงจรการทำงานตั้งแต่ประเมินจนถึงติดตามผล</h2>
+    <p class="fsub">ข้อมูลชุดเดียวเดินผ่านทุกคนที่เกี่ยวข้อง แต่ละคนเห็นเฉพาะส่วนที่จำเป็นต่อหน้าที่ตน · <b>คนเป็นผู้ตัดสินใจทุกจุด</b> ระบบจัดลำดับและอธิบายเหตุผลเท่านั้น</p>
+    <ol class="flowlist"><li class="fl-m"><b>1</b><span class="t">ลูกหลานประเมินให้</span><span class="d">จับเวลาที่บ้าน · 3 ชุดทดสอบ + 5 คำถาม</span></li><li class="fl-s"><b>2</b><span class="t">ระบบสร้างสัญญาณ</span><span class="d">4 ระดับ พร้อมเหตุผลรายข้อที่ตรวจสอบได้</span></li><li class="fl-c"><b>3</b><span class="t">เข้าคิว Care Manager</span><span class="d">จัดลำดับตามความเร่งด่วนและกำหนดเวลา</span></li><li class="fl-c"><b>4</b><span class="t">Care Manager ตรวจและตัดสิน</span><span class="d">คนเป็นผู้ตัดสินใจส่งต่อ ไม่ใช่ระบบ</span></li><li class="fl-e"><b>5</b><span class="t">ส่งต่อผู้เชี่ยวชาญ</span><span class="d">เภสัชกร · นักกายภาพ · พยาบาล · แพทย์</span></li><li class="fl-e"><b>6</b><span class="t">ผู้เชี่ยวชาญยืนยัน</span><span class="d">ยืนยัน ไม่ยืนยัน หรือขอข้อมูลเพิ่ม</span></li><li class="fl-i"><b>7</b><span class="t">บริษัทประกันอนุมัติสิทธิ์</span><span class="d">ใช้งบป้องกันก่อนเกิดเคลม</span></li><li class="fl-e"><b>8</b><span class="t">เข้าไปดูแลและบันทึกผล</span><span class="d">ผลกลับเข้าระบบเป็นข้อมูลชุดเดียวกัน</span></li><li class="fl-s"><b>9</b><span class="t">นัดติดตามซ้ำ</span><span class="d">ถี่ตามระดับ: 7 ถึง 90 วัน</span></li></ol>
+    <p class="fcta"><a href="./CareSignal-Journey.html?demo=1">▶ ดูเส้นทางหนึ่งเคสตั้งแต่ต้นจนจบ</a> — ลูกสาวแจ้งเหตุ → ประเมินที่บ้าน → สัญญาณ → ทีมดูแล → แพทย์ เภสัชกร นักกายภาพบำบัด พยาบาล → ผลถึงครอบครัว → ตัวเลขของบริษัทประกัน (ข้อมูลสังเคราะห์ ชุดเดียวกับคอนโซลสาธิต) </p>
+    <p class="fnote">สีบอกว่าใครถืองานอยู่ในขั้นนั้น — <i class="k m"></i> ผู้เอาประกัน <i class="k s"></i> ระบบ <i class="k c"></i> Care Manager <i class="k e"></i> ผู้เชี่ยวชาญ <i class="k i"></i> บริษัทประกัน</p>
+  </div>
+</section>
+
+  <section class="s" id="steadi" data-toc="1">
+    <div class="wrap">
+      <div class="kick">โครงหลักของระบบ</div>
+      <h2>วงจรการดูแลตาม CDC STEADI — คัดกรอง → ประเมิน → แผนดูแล → ติดตาม</h2>
+      <p class="sub">โครงหลักคือ<b>วงจรการดูแล</b> ไม่ใช่คะแนน — สีเขียว เหลือง แดง เป็นเพียงลำดับความสำคัญของงานในแต่ละขั้น ทุกหน้าจอตอบสามคำถามทันที: <b>พบอะไร · ใครต้องทำอะไร · ภายในเมื่อไร</b></p>
+      <div class="cycle">
+        <div class="st"><div class="ic">📋</div><div class="no">ขั้นที่ 1</div><h4>คัดกรอง</h4><p>3 คำถามหลัก + ประวัติหกล้ม 12 เดือน ตอบเองที่บ้าน หรือให้ผู้ดูแลช่วยตอบ</p><small>ผู้เอาประกัน</small></div>
+        <div class="st"><div class="ic">📏</div><div class="no">ขั้นที่ 2</div><h4>ประเมิน</h4><p>แยกเป็น <b>8 หัวข้อ</b> ทำทีละขั้น ยืนยันทีละขั้น หยุดกลางทางแล้วกลับมาทำต่อได้</p><small>ผู้เอาประกัน + ผู้ดูแล</small></div>
+        <div class="st"><div class="ic">🤝</div><div class="no">ขั้นที่ 3</div><h4>แผนดูแลและส่งต่อ</h4><p>ระบบเปิดสัญญาณเสี่ยง → เจ้าหน้าที่ทบทวน ติดต่อ วางแผน ส่งต่อผู้เชี่ยวชาญ</p><small>เจ้าหน้าที่ดูแล → ผู้เชี่ยวชาญ</small></div>
+        <div class="st"><div class="ic">🔁</div><div class="no">ขั้นที่ 4</div><h4>ติดตาม 7–90 วัน</h4><p>ประเมินซ้ำ ดูแนวโน้ม บันทึกผลลัพธ์ — ปิดเคสได้เฉพาะเมื่อมนุษย์ยืนยัน</p><small>เจ้าหน้าที่ดูแล</small></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s alt" id="roles" data-toc="1">
+    <div class="wrap">
+      <div class="kick">ใครทำอะไรในระบบ</div>
+      <h2>4 บทบาท 4 หน้าจอ — แต่ละคนเห็นเฉพาะส่วนที่ตนเกี่ยวข้อง</h2>
+      <p class="sub">ข้อจำกัดนี้บังคับที่ฐานข้อมูลด้วย Row Level Security ไม่ใช่การซ่อนที่หน้าจอ · กดการ์ดเพื่อไปยังส่วนนั้น</p>
+      <div class="roles">
+        <div class="rl" data-go="member"><div class="ic">👵</div><h4>ผู้เอาประกันและครอบครัว</h4><p>ลูกหลานวัดให้ที่บ้านด้วยปุ่มจับเวลา ดูวิดีโอสาธิต เห็นผลทันที และติดตามว่าทีมดูแลทำอะไรต่อ</p><span class="see">เห็น: <b>ข้อมูลของตนเองเท่านั้น</b></span><span class="go">เข้าส่วนนี้ ›</span></div>
+        <div class="rl" data-go="care"><div class="ic">🩺</div><h4>เจ้าหน้าที่ดูแล</h4><p>รับสัญญาณเสี่ยง ติดต่อ วางแผน ส่งต่อ และติดตามจนปิดเคส · งานของฉันขึ้นก่อน</p><span class="see">เห็น: <b>เคสทั้งพอร์ตที่ต้องดูแล</b></span><span class="go">เข้าส่วนนี้ ›</span></div>
+        <div class="rl" data-go="expert"><div class="ic">💊</div><h4>ทีมผู้เชี่ยวชาญ</h4><p>เภสัชกร พยาบาล นักกายภาพ แพทย์ — ยืนยันหรือแก้สิ่งที่เจ้าหน้าที่ส่งมา แล้วบันทึกข้อสรุปกลับ</p><span class="see">เห็น: <b>เฉพาะเคสที่ส่งถึงวิชาชีพตน</b></span><span class="go">เข้าส่วนนี้ ›</span></div>
+        <div class="rl" data-go="insurer"><div class="ic">📊</div><h4>บริษัทประกัน</h4><p>ประชากร · การกระจายความเสี่ยง · การส่งมอบการดูแล · ผลลัพธ์ เพื่อออกแบบผลิตภัณฑ์ต่อ</p><span class="see">เห็น: <b>ภาพรวมระดับกลุ่มแบบแฝงชื่อ</b></span><span class="go">เข้าส่วนนี้ ›</span></div>
+      </div>
+      <p class="arrow">ผู้เอาประกันบันทึก → เจ้าหน้าที่ติดตาม → ผู้เชี่ยวชาญยืนยัน → บริษัทประกันเห็นภาพรวม</p>
+    </div>
+  </section>
+
+  <section class="s" id="bizmodel" data-toc="1">
+    <div class="wrap">
+      <div class="kick">โมเดลธุรกิจและแผนนำร่อง</div>
+      <h2>บริษัทประกันจ่ายค่าบริการรายหัวต่อเดือน และจ่ายเพิ่มเมื่อผลลัพธ์ผ่านเกณฑ์</h2>
+      <p class="sub">B2B2C — พ่วงไปกับกรมธรรม์ผู้สูงอายุที่มีอยู่ · <b>เราไม่ขายประกัน</b> และ<b>ไม่มีส่วนในการคำนวณเบี้ยหรือพิจารณาสินไหม</b> · รายได้ผูกกับการที่ระบบทำงานจริงและวัดได้ ไม่ใช่กับการขายกรมธรรม์</p>
+      <div class="two">
+        <div class="card"><h4>โมเดลหลัก · B2B2C + ค่าบริการรายหัว + โบนัสผลลัพธ์</h4><ul>
+          <li><b>ลูกค้า</b> บริษัทประกันชีวิตหรือสุขภาพที่มีผู้เอาประกันอายุ 60 ปีขึ้นไป</li>
+          <li><b>รายได้</b> ค่าบริการรายหัวต่อเดือน (PMPM) 50–150 บาท/คน/เดือน + โบนัสเมื่อผ่านตัวชี้วัด</li>
+          <li><b>ตัวชี้วัดระยะสั้น</b> อัตราประเมินสำเร็จ · เวลาจนถึงการติดต่อ (time-to-contact) · อัตราติดตามสำเร็จ · อัตราส่งต่อถึงปลายทาง</li>
+          <li><b>ตัวชี้วัดระยะยาว</b> อัตราหกล้ม · การเข้าห้องฉุกเฉิน · ค่าสินไหม — วัดเมื่อมีข้อมูล 12–24 เดือน</li>
+          <li><b>การร่วมรับความเสี่ยง</b> ค่าบริการส่วนหนึ่งผูกกับผลลัพธ์ (fees at-risk) เมื่อมีข้อมูล 12–24 เดือน</li>
+          <li><b>ช่องทาง</b> ฝังเป็นสิทธิประโยชน์ในกรมธรรม์ผู้สูงอายุ · <b>ปฏิบัติการ</b> Care Manager ของบริษัทประกัน หรือหน่วยบริหารการดูแลภายนอก</li>
+        </ul></div>
+        <div class="card"><h4>โมเดลเสริม (ระยะถัดไป)</h4><ul>
+          <li><b>RPM</b> ร่วมกับโรงพยาบาลเพื่อเบิกจ่ายบริการติดตามทางไกล เมื่อกลไกเบิกจ่ายในไทยพร้อม</li>
+          <li><b>Licensing</b> หน่วยงานรัฐหรือองค์กรไม่แสวงกำไร สำหรับโครงการนำร่องในชุมชน</li>
+          <li><b>ขายตรง</b> เฉพาะกลุ่มที่บริษัทประกันยังไม่ครอบคลุม</li>
+        </ul></div>
+      </div>
+      <h3 class="bmh">ตัวเลขเป้าหมาย เทียบกับผู้เล่นต่างประเทศ — <em>เป็นเป้าหมายที่จะพิสูจน์ในการนำร่อง ไม่ใช่ผลที่วัดแล้ว</em></h3>
+      <div class="tblwrap"><table class="bm">
+        <thead><tr><th>ตัวชี้วัด</th><th>Omada / Nymbl (สหรัฐฯ)</th><th>CareSignal (เป้าหมาย)</th></tr></thead>
+        <tbody>
+          <tr><td>ค่าบริการรายหัว (PMPM)</td><td>37–75 ดอลลาร์ (ประกันเป็นผู้จ่าย)</td><td>50–150 บาท</td></tr>
+          <tr><td>การรับประกันผลตอบแทน</td><td>3:1 ใน 12 เดือน (Nymbl)</td><td>2:1 ใน 12–18 เดือน (ระยะแรก)</td></tr>
+          <tr><td>การเข้าร่วม</td><td>10.2% ของผู้มีสิทธิ์ (Nymbl)</td><td>≥10% ของผู้เอาประกันอายุ 60+</td></tr>
+          <tr><td>การประหยัด</td><td>3 ดอลลาร์ PMPM (Nymbl)</td><td>ลดค่าสินไหม ≥10% ใน 24 เดือน</td></tr>
+          <tr><td>รอบการขาย</td><td>12–24 เดือน (value-based)</td><td>6–12 เดือน (นำร่อง)</td></tr>
+        </tbody></table></div>
+      <div class="two" style="margin-top:18px">
+        <div class="card warn"><h4>สิ่งที่ยังไม่พิสูจน์ — เราจะไม่อ้างบนเวที</h4><ul>
+          <li><b>ยังไม่มีหลักฐานว่าลดเคลม</b> แดชบอร์ดพร้อมเก็บและแสดงผล แต่ผลด้านเคลมและการประหยัดเป็นสิ่งที่จะพิสูจน์ในโครงการนำร่อง</li>
+          <li><b>ยังไม่มีผลจากผู้ใช้จริงในจำนวนที่สรุปได้</b> ตัวเลขทุกตัวในโหมดสาธิตเป็นข้อมูลสังเคราะห์ และติดป้ายไว้ทุกหน้าจอ</li>
+          <li><b>ความแม่นของการจับเวลาด้วยมือโดยลูกหลานยังไม่ได้เทียบกับผู้ประเมินที่ผ่านการฝึก</b> — วัดในนำร่อง: ให้ลูกหลานกับนักกายภาพจับเวลาคนเดียวกันพร้อมกัน</li>
+          <li><b>โหมดเซ็นเซอร์อื่น</b> (เรดาร์ นาฬิกา) ยังเป็นการทดลอง ไม่อยู่ในเดโมหลัก</li>
+          <li><b>ภาระงานของ Care Manager</b> ยังไม่ได้วัดจริง การนำร่องต้องทดสอบทั้งเทคโนโลยีและรูปแบบการทำงาน</li>
+        </ul></div>
+        <div class="card ok"><h4>สิ่งที่พิสูจน์ก่อนในการนำร่อง 6 เดือน</h4><ul>
+          <li><b>อัตราประเมินสำเร็จ</b> ของผู้ที่ติดตั้ง (ตัวหาร: ผู้เอาประกัน 60+ ที่ได้รับเชิญ)</li>
+          <li><b>เวลาจนถึงการติดต่อ</b> เทียบกำหนด 24 / 48 / 72 ชั่วโมงตามระดับ</li>
+          <li><b>อัตราติดตามสำเร็จ</b> และ <b>อัตราส่งต่อถึงปลายทาง</b> (ผู้เชี่ยวชาญส่งผลกลับ)</li>
+          <li>แล้วจึงศึกษาผลด้านการหกล้ม การเข้าโรงพยาบาล และเคลม เมื่อมีข้อมูล 12–24 เดือน</li>
+        </ul></div>
+      </div>
+      <blockquote class="core">CareSignal ไม่ได้สัญญาว่าจะทำนายการหกล้มได้อย่างสมบูรณ์ แต่ทำให้บริษัทประกันเห็นสัญญาณความเสี่ยงเร็วขึ้น ส่งต่อให้คนที่รับผิดชอบ และตรวจสอบได้ว่าการดูแลเกิดขึ้นจริงหรือไม่ เราจะพิสูจน์คุณค่าด้วยการนำร่องที่วัดตั้งแต่การประเมินสำเร็จ การติดต่อภายในกำหนด ไปจนถึงการติดตามผล ก่อนขยายไปสู่ผลลัพธ์ด้านการหกล้มและเคลม</blockquote>
+    </div>
+  </section>
+
+  <section class="s" id="does" data-toc="1">
+    <div class="wrap">
+      <div class="two">
+        <div class="card">
+          <h4>ระบบทำอะไร</h4>
+          <details class="acc" open>
+            <summary>สัญญาณเสี่ยง เคส และการส่งต่อ<span class="cnt">5 ข้อ</span></summary>
+            <ul>
+              <li><b>สร้างสัญญาณเสี่ยง</b> 7 ประเภทจากกฎที่ประกาศไว้ล่วงหน้า (ไม่ใช่โมเดลทำนาย)</li>
+              <li><b>เปิดเคสและตั้งกำหนดติดตาม</b>อัตโนมัติตามระดับ 24 / 48 / 72 ชั่วโมง</li>
+              <li><b>ส่งต่อเป็นแบบฟอร์มสหวิชาชีพตามโครง CDC STEADI</b> — แกนกลางหนึ่งชุด (ผู้เอาประกันเท่าที่จำเป็น · เหตุผล · ประวัติล้ม · อาการ · ผลทดสอบพร้อมคุณภาพข้อมูล · ยา · บ้าน · คำถาม) บวกโมดูลของวิชาชีพ: แพทย์ (Risk Factors Checklist + ตอบรับข้อเสนอเภสัชกร) · เภสัชกร (STEADI-Rx ปัญหาการใช้ยาและข้อเสนอแนะ) · นักกายภาพบำบัด (TUG observations · 4-Stage · Chair Stand · โปรแกรมฝึก) · พยาบาล (ความดันเปลี่ยนท่า · ความปลอดภัยบ้าน · การประสานงาน) ทุกแถวบอกที่มาว่าเป็นข้อมูลจากระบบ ผู้เอาประกันตอบ หรือผู้เชี่ยวชาญกรอก และพิมพ์เป็น PDF ได้</li>
+              <li><b>ผู้เชี่ยวชาญตอบกลับด้วยปุ่มมาตรฐาน 6 แบบ</b> — ยืนยัน · ไม่ยืนยัน · ขอข้อมูลเพิ่ม · ให้คำแนะนำ · ส่งต่อวิชาชีพอื่น · นัดติดตาม พร้อมข้อค้นพบ คำแนะนำ และระดับเร่งด่วน แล้วระบบตั้งงานให้ผู้ประสานงานปรับแผนทันที ครอบครัวเห็นผลที่ยืนยันแล้วเป็นภาษาคนทั่วไป (วงจรปิด) · ระบบปฏิเสธคำแนะนำที่สั่งหยุดยาโดยตรง ต้องเป็น "ทบทวนกับผู้สั่งใช้"</li>
+              <li><b>ติดตามการส่งต่อจนถึงผลลัพธ์</b> ไม่จบที่ "ส่งต่อแล้ว" · ไทม์ไลน์เคสแสดงทุกเหตุการณ์จากทุกตาราง</li>
+            </ul>
+          </details>
+          <details class="acc">
+            <summary>การวัดโดยลูกหลาน<span class="cnt">4 ข้อ</span></summary><ul><li><b>ใช้แบบทดสอบมาตรฐานชุดเดียวกับคลินิก</b> — ลุกนั่ง 5 ครั้ง ลุกเดิน 3 เมตร และทรงตัว 4 ท่าตาม CDC STEADI เกณฑ์คะแนนเดียวกับรุ่นกล้องทุกตัวเลข ผลสองรุ่นเทียบกันได้</li><li><b>วิดีโอสาธิตก่อนวัดทุกท่า</b> — จากชุด "สูงวัยไม่ล้ม" ของ Siriraj Health Policy และภาพประกอบทีละขั้นในแอป</li><li><b>ปุ่มจับเวลาใหญ่ปุ่มเดียว และถามยืนยันเมื่อค่าผิดปกติ</b> — เช่น 0 วินาที หรือนานเกินจริง ท่าทรงตัวหยุดเองเมื่อครบ 10 วินาที</li><li><b>บันทึกว่าใครเป็นผู้วัด</b> — ผลทุกครั้งติดป้าย "ลูกหลานจับเวลา" ในใบส่งต่อ ผู้เชี่ยวชาญจึงรู้ว่าตัวเลขมาจากวิธีไหน</li></ul></details>
+          <details class="acc">
+            <summary>ความปลอดภัยของผู้ทดสอบ<span class="cnt">3 ข้อ</span></summary>
+            <ul>
+              <li><b>หยุดการทดสอบได้ทันที และบันทึกว่าหยุดเพราะอะไร</b> — ปุ่มหยุดอยู่บนจอตั้งแต่ตอนจัดท่า ไม่ใช่โผล่หลังจบท่า · ระบบหยุดจับเวลาก่อนแล้วจึงถามเหตุผล เวลาที่บันทึกจึงไม่ยาวเกินจริง · <b>เสียสมดุล เวียนศีรษะ และต้องจับพยุง แยกบันทึกคนละข้อ</b> เพราะสามอย่างนี้ส่งต่อไปคนละทาง · หยุดกลางคันแล้วไม่พาไปท่าถัดไป ตามที่ CDC STEADI กำหนดไว้ว่าท่าถัดไปยากกว่าเดิมเสมอ</li>
+              <li><b>ตอบว่าอยู่คนเดียว แล้วระบบไม่พาไปยืนขาเดียว</b> — เดิมด่านความปลอดภัยถามว่ามีผู้ดูแลไหม แล้ว<b>บันทึกไว้เฉย ๆ</b> คำตอบ "ไม่มี" ไม่เปลี่ยนอะไรเลย ผู้สูงอายุยังถูกพาไปทำท่าที่ล้มบ่อยที่สุดตามปกติ · ตอนนี้คำตอบนั้นคือสวิตช์โหมดผู้ดูแลโดยตรง และสวิตช์ในหน้าตั้งค่าก็เขียนกลับไปที่คำตอบเดียวกัน จึง<b>ไม่มีทางที่สองที่จะขัดกันเอง</b> · ทำคนเดียวเหลือ 3 ท่า ตัดเฉพาะยืนขาเดียว เพราะท่าต่อเท้าคือเกณฑ์คัดกรองหลักของ STEADI ตัดแล้วการทดสอบไม่เหลือค่า ส่วนยืนขาเดียวไม่ใช่เกณฑ์คัดกรองแต่ล้มบ่อยที่สุด · ระบบบอกตั้งแต่ก่อนเริ่มว่าวันนี้ทำสามท่า ไม่ปล่อยให้ไปเจอตอนถึงท่าที่ 4 · ท่าที่ข้ามบันทึกว่า <b>"ไม่ได้ทดสอบ"</b> ไม่ใช่ "ไม่ผ่าน" เพราะสองอย่างนี้ผู้เชี่ยวชาญอ่านคนละความหมาย คะแนนสูงสุดเมื่อคนเดียวจึงเป็น 2 ไม่ใช่ 3</li>
+              <li><b>โหมดผู้ดูแล</b> — STEADI ให้ผู้ประเมินยืนข้างผู้ทดสอบ ช่วยจัดท่า ปล่อยเมื่อนิ่ง แล้วจับเวลา แปลว่ามีคนที่สองอยู่ตรงนั้นอยู่แล้ว · เปิดโหมดนี้แล้วระบบปิดการรับท่าทางและรีโมตทั้งหมดและให้ผู้ดูแลกดเริ่มกดหยุดเอง ซึ่งแม่นกว่าการฟังเสียงในบ้านที่มีเสียงรบกวน แต่ยังพูดบอกขั้นตอนเหมือนเดิมเพราะผู้ทดสอบยืนห่างจอ</li>
+            </ul>
+          </details>
+          <details class="acc">
+            <summary>หน้าจอ การใช้งานจริง และเอกสาร<span class="cnt">7 ข้อ</span></summary>
+            <ul>
+              <li><b>ทุกหน้ารายการของคอนโซลใช้แดชบอร์ดมาตรฐานโรงพยาบาลชุดเดียวกัน</b> — คิวเคส งานของฉัน ติดตามการส่งต่อ ทบทวนยา พอร์ตความเสี่ยง บันทึกตรวจสอบ และจัดการผู้ใช้ ประกอบจากสามชิ้นเดียวกัน: <b>แถบหัวหน้า</b> (หน่วยบริการ · จำนวนรายการ · เวลาจริง) · <b>แถวตัวเลขสรุป</b> ที่กดกรองได้ และช่องที่มีเรื่องด่วนขึ้นสีแดง · <b>ตารางข้อมูลหนาแน่น</b> เรียงได้ทุกคอลัมน์ ค้นหาได้ทันที แถวเกินกำหนดย้อมสี · หน้ารายละเอียดเคสมีแถบผู้ป่วยแบบหัวเวชระเบียน รหัส ชื่อ อายุ ระดับ ขั้นตอน กำหนด อยู่บนสุด · บนจอแคบตารางพับเป็นการ์ดโดยหัวคอลัมน์ไปอยู่หน้าค่าแต่ละช่อง เจ้าหน้าที่จึงเรียนรู้ครั้งเดียวใช้ได้ทุกหน้า · แดชบอร์ดบริษัทประกันใช้โทนเดียวกัน</li>
+                            <li><b>คอนโซลเจ้าหน้าที่เป็นพื้นขาว ตัดด้วยสีสถานะ แบบระบบงานที่โรงพยาบาลใช้อยู่แล้ว</b> — เดิมเป็นน้ำเงินเข้มทั้งแอปเพื่อให้แยกจากแอปสมาชิกได้ทันที แต่บนจอเคาน์เตอร์และบนมือถือกลางแดดอ่านยาก และไม่เหมือนโปรแกรมที่พยาบาลคุ้นเคย · ตอนนี้ยึดสามข้อ: <b>พื้นขาวตัวหนังสือเข้มเสมอ</b> · <b>สีมีความหมายเดียว</b> คือแดง ส้ม เหลือง เขียวบอกระดับความเสี่ยง และน้ำเงินบอกสิ่งที่กดได้ นอกนั้นไม่มีสี · รูปทรงเรียบ เงาแทบไม่มี · การ์ดเคสบนจอวอร์ดหัวเป็นสีระดับ ตัวการ์ดขาว อ่านจากระยะสองเมตรได้ว่าต้องไปหาใครก่อน</li>
+              <li><b>เก็บความคืบหน้าระหว่างประเมิน</b> — แต่ละหัวข้อบันทึกลงเครื่องทันทีที่ยืนยัน ปิดแอปหรือแบตหมดกลางทางก็ทำต่อได้ ผลส่งเข้าระบบเมื่อกดบันทึกทั้งหมดเท่านั้น</li>
+              <li><b>โหมดสาธิตด้วยข้อมูลสังเคราะห์ และชุดเตรียมนำเสนอ</b> — <a href="./CareSignal-Journey.html?demo=1">หน้าเดโมเส้นทางหนึ่งเคส</a> เดินเรื่องผู้เอาประกันสาธิตรายเดียว (DEMO-41) ตั้งแต่ลูกสาวแจ้งเหตุ ประเมินที่บ้าน สัญญาณ ทีมดูแลติดต่อ ส่งต่อครบสี่วิชาชีพ ผลกลับถึงครอบครัว จนถึงตัวเลขของบริษัทประกัน โดยอ่านจากชุดข้อมูลเดียวกับคอนโซลสาธิต ทุกขั้นมีปุ่มเปิดหน้าจอจริงของบทบาทนั้น · คอนโซลและแดชบอร์ดเปิดด้วย <span class="mono">?demo=1</span> จะใช้ข้อมูลสังเคราะห์ในหน่วยความจำแทนฐานข้อมูลจริงทั้งหมด ทุกหน้าจอมีแถบ <b>ข้อมูลสาธิต</b> ที่ปิดไม่ได้ ทุกชื่อขึ้นต้นด้วย "สาธิต" ทุกรหัสขึ้นต้นด้วย DEMO- สลับบทบาทได้จากแถบ และรีเซ็ตกลับค่าตั้งต้นได้ทุกเมื่อ · แอปสมาชิกไม่มีโหมดนี้ เพราะผลตรวจจริงห้ามปนกับข้อมูลจำลอง · ชุดเตรียมนำเสนอเป็น PDF 13 หน้า: ประโยคแกนกลาง สถานการณ์เดโมเดียวพร้อมบทพูดจับเวลา 7 นาที แผนนำร่องหนึ่งหน้า แผนการวัดผลหนึ่งหน้า รายการสิ่งที่ยังไม่พิสูจน์ คำถามกรรมการ และตารางตรวจความสอดคล้องของตัวเลข ซึ่ง audit อ่านค่าจากแอปมาเทียบกับเว็บทุกครั้ง</li>
+              <li><b>ชุดแบบบันทึกทดสอบภาคสนาม 7 หน้าพร้อมพิมพ์</b> — สิ่งที่ขาดอยู่ตอนนี้ไม่ใช่ฟีเจอร์ แต่คือข้อมูลจากผู้ใช้จริง ชุดนี้จึงเป็นกระดาษที่พิมพ์ไปใช้ได้ทันที: ใบชี้แจงและใบยินยอมตาม PDPA · แบบบันทึกการตั้งค่า (เครื่อง แสง ระยะที่วัดจริง เวลาที่ใช้ตั้งระบบ) · แบบบันทึกผลรายบุคคลที่ให้จด<b>ทั้งค่าจากแอปและค่าจากนาฬิกาจับเวลาสองเรือน</b>เทียบกันตรง ๆ · แบบบันทึกการทรงตัวและอัตราสำเร็จของการสั่งงานด้วยการยกมือ และรีโมต · ความเห็นผู้เข้าร่วม · และเช็กลิสต์ก่อนกลับ · <b>ไม่มีช่องให้กรอกชื่อจริงแม้แต่ช่องเดียว</b> ใช้รหัสผู้เข้าร่วมแทน และหน้าสุดท้ายมีตารางแมปทุกช่องในกระดาษกับชื่อคอลัมน์ใน <span class="mono">validation_trials</span> ซึ่งสคริปต์อ่านจากฐานข้อมูลจริงมาตรวจให้ทุกครั้งที่สร้างเล่ม</li>
+              <li><b>เล่มคู่มือการใช้งานฉบับพิมพ์ 26 หน้า พร้อมภาพประกอบ 22 ภาพ</b> — ครบทุกบทบาท: ผู้เอาประกันและครอบครัว (ติดตั้ง เตรียมที่ตรวจ แปดขั้นตอนพร้อมภาพท่า ท่ายกมือ รีโมต โหมดผู้ดูแล ปุ่มหยุด ดูผลบนเว็บ) · ครอบครัว · เจ้าหน้าที่ดูแล · ผู้เชี่ยวชาญ · ผู้ดูแลระบบ · บริษัทประกัน · ความปลอดภัยของข้อมูล · แผ่นป้าย · แก้ปัญหา และภาคผนวกกฎ 25 ข้อพร้อมที่มา · สร้างจากสคริปต์ที่อ่านชื่อขั้นตอน ท่า เหตุผลหยุด และกฎจากแอปโดยตรง เทสต์จึงยืนยันได้ว่าคู่มือตรงกับแอปเสมอ ไม่มีความลับหรือรหัสตัวอย่างในเล่ม</li>
+            </ul>
+          </details>
+          <details class="acc">
+            <summary>ความเป็นส่วนตัว สิทธิ์ และการตรวจสอบ<span class="cnt">6 ข้อ</span></summary>
+            <ul>
+              <li><b>ขอความยินยอมรายครั้ง</b> — ผู้เชี่ยวชาญภายนอกต้องขอทุกครั้ง ผู้เอาประกันกดอนุญาตในแอปของตน สิทธิ์หมดอายุเองใน 8 ชั่วโมง</li>
+              <li><b>เปิดบัญชีเจ้าหน้าที่ด้วยรหัสที่ผู้ดูแลระบบออกให้</b> — ระบบไม่เปิดให้สมัครเอง ผู้ดูแลระบบกำหนดชื่อผู้ใช้และบทบาทไว้ล่วงหน้าแล้วออกรหัสหนึ่งใบ ใช้ได้ครั้งเดียวและมีวันหมดอายุ · เจ้าหน้าที่เข้าครั้งแรกด้วยชื่อผู้ใช้กับรหัสนั้น แล้ว<b>ระบบบังคับให้ตั้งรหัสผ่านของตัวเองทันที</b> เพื่อให้บันทึกตรวจสอบตอบได้ว่าใครเป็นคนลงมือจริง — รหัสที่เดินผ่านมือคนอื่นจึงไม่กลายเป็นรหัสผ่านถาวร · ฐานข้อมูลเก็บรหัสเป็นค่าที่แปลงแล้ว อ่านย้อนกลับไม่ได้แม้แต่ผู้ดูแลระบบเอง</li>
+              <li><b>สิทธิ์แก้ข้อมูลจำกัดถึงระดับคอลัมน์</b> — คอลัมน์ที่ตัดสินสิทธิ์ (บทบาท ชื่อผู้ใช้ สถานะรหัสผ่าน) ถูกถอดสิทธิ์แก้ไขออกจากฝั่งผู้ใช้ทั้งหมด เหลือทางเดียวคือฟังก์ชันฝั่งฐานข้อมูลที่ตรวจสิทธิ์และบันทึกทุกครั้ง · ยิงคำสั่งตรงเข้า API ก็ยกระดับตัวเองไม่ได้</li>
+              <li><b>ผู้ดูแลระบบเลือกลบข้อมูลได้เป็นรายบัญชี</b> — ลบเฉพาะข้อมูลสุขภาพโดยเก็บบัญชีไว้ หรือลบทั้งบัญชี · <b>บันทึกตรวจสอบไม่ถูกลบไม่ว่ากรณีใด</b> และบัญชีเจ้าหน้าที่ที่เคยลงมือทำงานจะถอนสิทธิ์ได้แต่ลบไม่ได้ เพื่อให้ประวัติยังมีผู้รับผิดชอบ</li>
+              <li><b>บันทึกหน่วยบริการที่ปฏิบัติงาน</b> — เจ้าหน้าที่ระบุทุกครั้งที่เข้าระบบ และหน่วยบริการนั้นติดไปกับคำขอทุกใบ ตอบได้ว่าใครเปิดดูข้อมูลจากที่ใด</li>
+              <li><b>บันทึกตรวจสอบ</b>ทุกการเปิดดูหรือแก้ข้อมูล แก้ย้อนหลังไม่ได้</li>
+            </ul>
+          </details>
+        </div>
+        <div class="card no">
+          <h4>ระบบไม่ทำอะไร</h4>
+          <ul>
+            <li>ไม่วินิจฉัยโรค ไม่สั่งปรับยา — ผู้เชี่ยวชาญมนุษย์เป็นผู้ตัดสิน</li>
+            <li>ไม่คิดเบี้ย ไม่กำหนดสิทธิ์ ไม่มีส่วนในการพิจารณาสินไหม</li>
+            <li>ไม่แสดง "โอกาสหกล้ม X%" — แสดงสิ่งที่พบและสิ่งที่ต้องทำต่อ</li>
+            <li>ไม่ส่ง<b>ภาพหรือวิดีโอจากการตรวจร่างกาย</b>ออกจากเครื่อง — ท่าเดิน ท่าลุกนั่ง ท่าทรงตัว ประมวลผลในเครื่องแล้วทิ้งภาพทันที เหลือไว้แต่ตัวเลขเวลา</li>
+            <li>รูปฉลากยาเป็นข้อยกเว้นเดียว และ<b>ต้องติ๊กยินยอมก่อน</b> — ไม่ติ๊กก็ใช้งานได้ครบ ระบบอ่านชื่อยาในเครื่องแล้วลบรูปทิ้ง · ถ้าติ๊ก รูปจะเก็บแบบปิด เปิดดูได้เฉพาะเจ้าของ ทีมดูแล และผู้เชี่ยวชาญที่ได้รับอนุญาตเป็นครั้ง ๆ ไป</li>
+            <li>เสียงพูดแนะนำ<b>เป็นข้อความที่เขียนไว้ล่วงหน้า ไม่ได้ต่อกับโมเดลภาษาภายนอก</b> — แอปพูดบอกขั้นตอนและพูด "รับทราบ" ทวนคำสั่งที่รับ แต่<b>ไม่ฟังเสียงผู้ใช้และไม่เปิดไมโครโฟน</b> จึงรับประกันได้ว่าจะไม่พูดข้ามเส้นไปวินิจฉัยหรือแนะนำเรื่องยา</li>
+            <li>ไม่อ้างว่าการวัดด้วยป้ายสัญลักษณ์<b>เทียบเท่าห้องปฏิบัติการ</b> — ตัวตรวจจับผ่านการทดสอบกับภาพสังเคราะห์เท่านั้น (ระยะ การหมุน การเอียง ความเบลอ สัญญาณรบกวน แสงไม่สม่ำเสมอ) <b>ยังไม่มีการทดสอบกับผู้ใช้จริง</b> ค่ามิลลิเมตรที่รายงานจึงเป็นข้อสังเกต ไม่ได้นำไปตัดสินผ่านหรือไม่ผ่าน</li>
+            <li>ยังไม่ได้เชื่อม <b>Thai Medicines Terminology (TMT)</b> ของ สมสท. ซึ่งต้องขอสิทธิ์เข้าถึงในนามโครงการก่อน — ที่เชื่อมแล้วคือทะเบียนตำรับยาของ อย.</li>
+            <li>ระบบ<b>ไม่จัดกลุ่มยาเองเมื่อทะเบียนไม่ได้ให้รหัส ATC ครบ</b> — ทะเบียนเก่าหลายรายการมีแต่รหัสหมวดกว้าง ๆ กรณีนั้นส่งเภสัชกรจัดกลุ่ม เพราะจับคู่ผิดอันตรายกว่าไม่รู้จัก</li>
+            <li>ไม่ให้ค้นหาผู้เอาประกันข้ามพอร์ต — เห็นได้เฉพาะเคสที่ถูกส่งถึงตน</li>
+            <li>ไม่ใช่ระบบส่งต่อผู้ป่วยเพื่อรักษา — ส่งต่อ<b>สัญญาณเสี่ยง</b>เพื่อทบทวนและป้องกันก่อนเกิดเคลม ไม่มีภาพรังสี ไม่มีเวชระเบียนเต็ม</li>
+          </ul>
+        </div>
+      </div>
+      <div class="evi"><b>วิธีวัดที่ใช้ไม่ใช่ของใหม่</b> — ลุกนั่ง 5 ครั้ง ลุกเดิน 3 เมตร และทรงตัว 4 ท่า เป็นแบบทดสอบมาตรฐานตาม CDC STEADI ที่ใช้นาฬิกาจับเวลาในคลินิกอยู่แล้ว เกณฑ์เวลาอิงประชากรไทย (Poncumhak 2014 · Intaruk 2021) กลุ่มยาอิง STOPPFall 2021 / AGS Beers 2023 · ชื่อยาและรหัส ATC ค้นจากทะเบียนตำรับยาของสำนักงานคณะกรรมการอาหารและยา · <b>CareSignal ยังไม่มีข้อมูลนำร่องของตัวเอง จึงไม่อ้างประสิทธิผลของระบบเอง</b></div>
+    </div>
+  </section>
+
+  <footer><div class="wrap">วิดีโอสาธิต: ชุด "สูงวัยไม่ล้ม BWSTT" · Siriraj Health Policy (YouTube) · CareSignal · ต้นแบบเพื่อการประกวด OIC InsurTech Award 2026 · ไม่ใช่การวินิจฉัยทางการแพทย์ · ไม่ใช้ตัดสินสิทธิ์หรือผลการเคลม</div></footer>
+</div>
+
+<!-- ============================================================
+     2) ผู้เอาประกันและครอบครัว — แอปสมาชิกเปิดในกรอบนี้
+     ============================================================ -->
+<div class="panel" id="p-member" role="tabpanel">
+  <div class="strip"><div class="wrap">
+    <button class="back" data-go="intro">‹ ส่วนอื่น</button><span class="who">ส่วนที่ 2</span><h2><span class="lg">ผู้เอาประกันและครอบครัว</span><span class="sm">สมาชิก</span></h2>
+    <p class="note" id="n-member"><b>ลูกหลานเป็นผู้วัดในแอปบนมือถือ</b> · หน้านี้มีวิดีโอสาธิต สิ่งที่ต้องเตรียม และปุ่มเปิดแอป</p>
+    <div class="acts">
+      <button data-mv="guide" aria-pressed="true"><span class="lg">สิ่งที่ต้องทำ</span><span class="sm">ต้องทำ</span></button>
+      <button data-mv="results" aria-pressed="false"><span class="lg">เปิดแอปลูกหลาน</span><span class="sm">แอป</span></button>
+    </div>
+  </div></div>
+
+  <!-- ---------- คู่มือ: ทุกอย่างที่แอปจะขอให้ทำ เรียงตามลำดับจริงในแอป ---------- -->
+  <div class="guide" id="g-member" data-on="1">
+    <style>
+      #g-member .vds{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin:6px 0 10px}
+      #g-member .vd{margin:0;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 1px 2px rgba(22,35,59,.05),0 6px 18px rgba(22,35,59,.06)}
+      #g-member .vf{position:relative;aspect-ratio:16/9;background:#0F2A5C}
+      #g-member .vf iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+      #g-member figcaption{padding:12px 14px}#g-member figcaption b{display:block}#g-member figcaption span{display:block;color:#5B6B84;font-size:14.5px}
+      #g-member figcaption small{display:block;margin-top:6px;color:#93A1B7;font-size:12.5px}
+      #g-member .credit{background:#F7F9FC;border:1px solid #DFE7F2;border-radius:12px;padding:10px 14px;font-size:14px;color:#5B6B84;margin:4px 0 18px}
+      #g-member .open{display:inline-block;background:#2563EB;color:#fff;font-weight:600;padding:12px 20px;border-radius:12px;text-decoration:none;margin:4px 8px 4px 0}
+      #g-member .open.s{background:#EAF0FE;color:#1D4ED8}
+    </style>
+    <div class="wrap">
+      <div class="gnote">
+        <b>ลูกหลานเป็นผู้วัดให้ ผู้สูงอายุไม่ต้องแตะมือถือ</b> — จากการสัมภาษณ์ ผู้สูงอายุทุกคนตั้งกล้องหรือใช้แอปเองไม่ได้
+        รุ่นนี้จึงให้ลูกหลานเปิดแอป อ่านคำสั่ง และกดจับเวลา ผู้สูงอายุแค่ทำท่าตาม ใช้เวลาประมาณ 10 นาที<br>
+        <a class="open" href="./CareSignal-App.html">เปิดแอปลูกหลาน</a><a class="open s" href="./testkit.html">พิมพ์ชุดอุปกรณ์ทดสอบ</a>
+      </div>
+
+      <h3 class="gh">วิดีโอสาธิต 3 ชุดทดสอบ — ดูก่อนวัดครั้งแรก</h3>
+      <div class="vds"><figure class="vd"><div class="vf"><iframe src="https://www.youtube-nocookie.com/embed/KQaDdX66OUM" title="สูงวัยไม่ล้ม BWSTT: การลุกขึ้นยืน 5 ครั้ง (Five Times Sit-to-Stand Test)" loading="lazy" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div><figcaption><b>การลุกขึ้นยืน 5 ครั้ง (Five Times Sit-to-Stand Test)</b><span>ลุกนั่ง 5 ครั้ง · วัดแรงขา</span><small>สูงวัยไม่ล้ม BWSTT · Siriraj Health Policy · <a href="https://www.youtube.com/watch?v=KQaDdX66OUM" target="_blank" rel="noopener">ดูบน YouTube</a></small></figcaption></figure><figure class="vd"><div class="vf"><iframe src="https://www.youtube-nocookie.com/embed/o_HM_3u0TZk" title="สูงวัยไม่ล้ม BWSTT: Timed Up and Go Test" loading="lazy" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div><figcaption><b>Timed Up and Go Test</b><span>ลุกเดิน 3 เมตรแล้วกลับมานั่ง · วัดการเดินและการหมุนตัว</span><small>สูงวัยไม่ล้ม BWSTT · Siriraj Health Policy · <a href="https://www.youtube.com/watch?v=o_HM_3u0TZk" target="_blank" rel="noopener">ดูบน YouTube</a></small></figcaption></figure><figure class="vd"><div class="vf"><iframe src="https://www.youtube-nocookie.com/embed/AO88b5YLFg0" title="สูงวัยไม่ล้ม BWSTT: การยืนเพื่อทดสอบการทรงตัว 4 แบบ (4-Stage Balance Test)" loading="lazy" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div><figcaption><b>การยืนเพื่อทดสอบการทรงตัว 4 แบบ (4-Stage Balance Test)</b><span>ทรงตัว 4 ท่า · ท่าละ 10 วินาที</span><small>สูงวัยไม่ล้ม BWSTT · Siriraj Health Policy · <a href="https://www.youtube.com/watch?v=AO88b5YLFg0" target="_blank" rel="noopener">ดูบน YouTube</a></small></figcaption></figure></div>
+      <div class="credit">วิดีโอสาธิตทั้ง 3 คลิปเป็นผลงานชุด <b>"สูงวัยไม่ล้ม BWSTT"</b> ของช่อง YouTube <a href="https://www.youtube.com/@SirirajHealthPolicy" target="_blank" rel="noopener">Siriraj Health Policy</a> — ลิขสิทธิ์เป็นของเจ้าของผลงาน CareSignal ฝังผ่านเครื่องเล่นของ YouTube เพื่อการเรียนรู้ ไม่ได้ดัดแปลงหรือดาวน์โหลดมาเก็บ</div>
+
+      <h3 class="gh">เตรียมก่อนวัด</h3>
+      <div class="gsteps">
+        <div class="gs"><div class="gi">🪑</div><div><b>เก้าอี้</b><p>มีพนักพิง ไม่มีล้อ ไม่มีที่วางแขน ที่นั่งสูงประมาณ 45 ซม. วางชิดผนังให้ไม่เลื่อน</p></div></div>
+        <div class="gs"><div class="gi">📏</div><div><b>เส้น 3 เมตร</b><p>วัดจากขาเก้าอี้ด้านหน้า 3 เมตร ติดเทปหรือวางวัตถุเป็นจุดหมาย ทางเดินไม่มีของขวาง</p></div></div>
+        <div class="gs"><div class="gi">👟</div><div><b>รองเท้าและพื้น</b><p>รองเท้าหุ้มส้นที่ใส่ประจำหรือเท้าเปล่า ห้ามถุงเท้าอย่างเดียว พื้นแห้ง แสงสว่างพอ</p></div></div>
+        <div class="gs"><div class="gi">🧑‍🤝‍🧑</div><div><b>ลูกหลานยืนข้าง ๆ ตลอด</b><p>อยู่ในระยะที่พยุงได้ทันที โดยเฉพาะท่ายืนต่อเท้าและยืนขาเดียว ให้ยืนข้างผนังหรือโต๊ะที่จับได้</p></div></div>
+        <div class="gs"><div class="gi">⛔</div><div><b>ห้ามวัดวันนี้ถ้า…</b><p>หน้ามืด เจ็บหน้าอก หายใจลำบาก แขนขาอ่อนแรงเฉียบพลัน เพิ่งล้ม หรือแพทย์ห้ามเดิน · ฉุกเฉินโทร <b>1669</b></p></div></div>
+      </div>
+
+      <h3 class="gh">ขั้นตอนในแอป</h3>
+      <div class="gsteps">
+        <div class="gs"><div class="gi n">1</div><div><b>ลงทะเบียนและความยินยอม</b> <span class="gt">ครั้งแรกครั้งเดียว</span><p>ชื่อผู้ดูแล ชื่อและอายุผู้สูงอายุ จำนวนยาที่กิน · เชื่อมบัญชีระบบกลางด้วยเบอร์โทรและ PIN เพื่อให้ทีมดูแลเห็นผล</p></div></div>
+        <div class="gs"><div class="gi n">2</div><div><b>ความปลอดภัย 4 ข้อ</b> <span class="gt">บังคับ</span><p>ถามผู้สูงอายุก่อนทุกครั้ง ถ้ามีอาการฉุกเฉิน แอปหยุดและแสดงปุ่มโทร 1669</p></div></div>
+        <div class="gs"><div class="gi n">3</div><div><b>ลุกนั่ง 5 ครั้ง</b> <span class="gt">จับเวลา · ข้ามได้</span><p>กอดอก ลุกยืนตรงแล้วนั่ง 5 ครั้ง กดเริ่มเมื่อพูดว่า "เริ่ม" กดหยุดเมื่อนั่งลงครั้งที่ 5</p></div></div>
+        <div class="gs"><div class="gi n">4</div><div><b>ลุกเดิน 3 เมตร</b> <span class="gt">จับเวลา · ข้ามได้</span><p>ลุก เดินไปแตะจุดหมาย หมุนกลับ มานั่ง เดินตามปกติ ใช้ไม้เท้าได้ถ้าใช้ประจำ</p></div></div>
+        <div class="gs"><div class="gi n">5</div><div><b>ทรงตัว 4 ท่า</b> <span class="gt">ท่าละ 10 วินาที · ข้ามได้</span><p>เท้าชิด → เท้าเหลื่อม → ต่อเท้า → ขาเดียว ทำต่อเมื่อผ่านท่าก่อนหน้า แอปหยุดเองเมื่อครบ 10 วินาที</p></div></div>
+        <div class="gs"><div class="gi n">6</div><div><b>5 คำถาม แล้วดูผล</b> <span class="gt">บังคับ</span><p>ประวัติล้ม ความกลัวล้ม กิจวัตรประจำวัน → ผล 4 สีพร้อมเหตุผล แชร์ให้ครอบครัว พิมพ์ใบสรุปไปพบแพทย์</p></div></div>
+      </div>
+
+      <h3 class="gh">หลังจากบันทึกผลแล้ว — ระบบเดียวกับ V2</h3>
+      <div class="gflow">
+        <div class="gf"><b>1</b><span>ผลเข้าระบบกลาง ระบบอ่านสัญญาณเสี่ยงด้วยกฎที่ประกาศไว้ ไม่ใช่โมเดลทำนาย · ใบส่งต่อระบุว่า "ลูกหลานจับเวลา"</span></div>
+        <div class="gf"><b>2</b><span>ถ้าพบสัญญาณ ทีมดูแลเปิดเคสและติดต่อลูกหลานภายใน 24–72 ชั่วโมงตามระดับ · กด "บันทึกว่าล้ม" ก็เปิดเคสทันที</span></div>
+        <div class="gf"><b>3</b><span>ทีมดูแลส่งชุดข้อมูลให้แพทย์ เภสัชกร นักกายภาพ หรือพยาบาล ตามชนิดของสัญญาณ</span></div>
+        <div class="gf"><b>4</b><span>ผู้เชี่ยวชาญตอบกลับ แล้วสถานะการดูแลขึ้นให้ลูกหลานเห็นในแอป</span></div>
+      </div>
+      <p class="gfoot">ผลใช้เพื่อ<b>เฝ้าระวังและประสานการดูแล</b>เท่านั้น ไม่ใช่การวินิจฉัย ไม่มีผลต่อเบี้ยประกันหรือการพิจารณาเคลม</p>
+    </div>
+  </div>
+
+  <!-- ---------- ผลที่ผู้เชี่ยวชาญยืนยันแล้ว: แอปในโหมดดูผลเท่านั้น ไม่มีหน้าตรวจ ---------- -->
+  <div class="frame" id="f-member" data-on="0"><div class="ld">กำลังเปิดแอปลูกหลาน…</div></div>
+</div>
+
+<!-- ============================================================
+     3) เจ้าหน้าที่ดูแล และ 4) ทีมผู้เชี่ยวชาญ — คอนโซลเดียวกัน
+        เมนูภายในต่างกันตามบทบาทที่ล็อกอิน (บังคับที่ฐานข้อมูล)
+     ============================================================ -->
+<div class="panel" id="p-care" role="tabpanel">
+  <div class="strip"><div class="wrap">
+    <button class="back" data-go="intro">‹ ส่วนอื่น</button><span class="who">ส่วนที่ 3</span><h2><span class="lg">เจ้าหน้าที่ดูแล</span><span class="sm">เจ้าหน้าที่</span></h2>
+    <p class="note">รับสัญญาณเสี่ยง ติดต่อ วางแผน ส่งต่อ ติดตามจนปิดเคส · เห็น<b>เคสทั้งพอร์ต</b>เพราะต้องจัดสรรงาน · เปิดคอนโซลมาเจอ<b>บอร์ดวันนี้</b>ก่อน แล้วค่อยเจาะเข้าคิวเคสทีละราย</p>
+    <p class="note">เข้าใช้งานด้วย<b>ชื่อผู้ใช้และรหัสที่ผู้ดูแลระบบออกให้</b> ไม่มีการสมัครเอง — เข้าครั้งแรกแล้วตั้งรหัสผ่านของตัวเองทันที · สำหรับการนำเสนอ: <a href="./CareSignal-Staff.html?demo=1" target="_blank" rel="noopener">โหมดสาธิตด้วยข้อมูลสังเคราะห์</a> ติดป้ายทุกหน้าจอ ไม่เชื่อมฐานข้อมูล</p>
+  </div></div>
+</div>
+
+<div class="panel" id="p-expert" role="tabpanel">
+  <div class="strip"><div class="wrap">
+    <button class="back" data-go="intro">‹ ส่วนอื่น</button><span class="who">ส่วนที่ 4</span><h2><span class="lg">ทีมผู้เชี่ยวชาญ</span><span class="sm">ผู้เชี่ยวชาญ</span></h2>
+    <p class="note">เภสัชกร พยาบาล นักกายภาพ แพทย์ — เห็น<b>เฉพาะเคสที่ส่งถึงวิชาชีพตน</b> · ขอความยินยอมก่อนเปิดดูข้อมูลคลินิก · บทบาทมาจาก<b>รหัสที่ผู้ดูแลระบบออกให้</b> ตั้งบทบาทให้ตัวเองไม่ได้ — ข้อจำกัดนี้บังคับถึงระดับคอลัมน์ในฐานข้อมูล</p>
+  </div></div>
+</div>
+
+<!-- คอนโซลเจ้าหน้าที่/ผู้เชี่ยวชาญ: กรอบเดียว แสดงร่วมกันทั้งส่วนที่ 3 และ 4
+     ไม่ย้าย DOM เพื่อไม่ให้เบราว์เซอร์โหลดคอนโซลซ้ำตอนสลับส่วน -->
+<div class="panel" id="p-staffshared" role="presentation">
+  <div class="frame" id="f-staff"><div class="ld">กำลังเปิดคอนโซล…</div></div>
+</div>
+
+<!-- ============================================================
+     5) บริษัทประกัน — ภาพรวมระดับกลุ่ม
+     ============================================================ -->
+<div class="panel" id="p-insurer" role="tabpanel">
+  <div class="strip"><div class="wrap">
+    <button class="back" data-go="intro">‹ ส่วนอื่น</button><span class="who">ส่วนที่ 5</span><h2><span class="lg">บริษัทประกัน</span><span class="sm">บริษัทประกัน</span></h2>
+    <p class="note">ตัวเลขที่ต้องรู้ · ความเสี่ยงและงานค้าง · แนวโน้มรายเดือน · วงจรการดูแล — <b>ระดับกลุ่มแบบแฝงชื่อ</b> กลุ่มเล็กกว่า 10 คนปิดตัวเลข · สำหรับการนำเสนอ: <a href="./CareSignal-Portfolio-Dashboard.html?demo=1" target="_blank" rel="noopener">โหมดสาธิตด้วยข้อมูลสังเคราะห์</a></p>
+  </div></div>
+  <div class="frame" id="f-insurer"><div class="ld">กำลังเปิดแดชบอร์ดพอร์ต…</div></div>
+</div>
+</main>
+
+<script>
+/* ============================================================
+   สลับส่วน — หน้าเดียว ไม่พาออกไปไหน
+   ระบบงานแต่ละส่วนโหลดเมื่อเปิดครั้งแรกเท่านั้น (ไม่โหลดทั้ง 4 ตัวพร้อมกัน)
+   ============================================================ */
+var TABS = document.querySelectorAll('nav.tabs [data-t]');
+var SRC = {
+  /* V3: แอปลูกหลานไม่ใช้กล้อง จึงเปิดในกรอบนี้ได้ทั้งแอป */
+  member : "./CareSignal-App.html?embed=1",
+  staff  : "./CareSignal-Staff.html",
+  insurer: "./CareSignal-Portfolio-Dashboard.html"
+};
+/* ส่วนที่ 3 และ 4 ใช้คอนโซลตัวเดียวกัน — เมนูภายในต่างกันตามบทบาทที่ล็อกอิน
+   กรอบอยู่ในแผงร่วม (#p-staffshared) ที่เปิดพร้อมกับส่วน 3 หรือ 4 */
+
+function mountFrame(host, key){
+  if (host.querySelector("iframe")) return;
+  var f = document.createElement("iframe");
+  f.src = SRC[key];
+  f.title = "CareSignal " + key;
+  f.setAttribute("allow", "fullscreen");
+  f.addEventListener("load", function(){ host.dataset.ready = "1"; });
+  host.appendChild(f);
+  return f;
+}
+function mountStaff(which){
+  mountFrame(document.getElementById("f-staff"), "staff");
+  document.getElementById("p-staffshared").dataset.on = "1";
+  document.querySelectorAll('#p-staffshared .hint').forEach(function(h){ h.style.display = h.dataset.for === which ? "" : "none"; });
+}
+/* ============================================================
+   ความสูงของกรอบ — วัดจากของจริง ไม่ใช่ค่าที่เดาไว้ใน CSS
+   ------------------------------------------------------------
+   ความสูงของแถบเมนูเปลี่ยนตามความกว้างจอ (มือถือขึ้นบรรทัดใหม่)
+   และแถบอธิบายมีเส้นขอบ 1px ที่ calc() มองข้ามได้ง่าย
+   ถ้าคำนวณพลาดแม้ 2px หน้าแม่จะมีแถบเลื่อนซ้อนกับแถบเลื่อนของแอป
+   ============================================================ */
+function fitFrame(){
+  var nav=document.querySelector(".top");
+  var strip=document.querySelector('.panel[data-on="1"] .strip');
+  var used=(nav?nav.getBoundingClientRect().height:0)+(strip?strip.getBoundingClientRect().height:0);
+  document.documentElement.style.setProperty("--frame-h",
+    Math.max(320, Math.round(window.innerHeight-used))+"px");
+  /* สารบัญต้องติดพอดีใต้แถบเมนู ไม่เหลือช่องให้เนื้อหาโผล่คั่น
+     ความสูงแถบเมนูเปลี่ยนตามความกว้างจอ จึงวัดจากของจริงเช่นกัน */
+  document.documentElement.style.setProperty("--toc-top",
+    (nav?Math.round(nav.getBoundingClientRect().height):0)+"px");
+}
+window.addEventListener("resize", fitFrame);
+window.addEventListener("orientationchange", fitFrame);
+/* แถบเมนูสูงไม่เท่ากันในแต่ละความกว้างจอ และเปลี่ยนตอนหมุนจอหรือเมื่อฟอนต์โหลดเสร็จ
+   จึงเฝ้าดูกล่องจริงของมัน ไม่รอเฉพาะเหตุการณ์ resize ซึ่งบางครั้งยิงก่อนจัดหน้าเสร็จ
+   ทำให้ค่าที่วัดได้เป็นของรอบก่อน แล้วสารบัญลอยห่างจากแถบเมนู */
+(function(){ var nav=document.querySelector(".top");
+  if (nav && window.ResizeObserver) new ResizeObserver(function(){ fitFrame() }).observe(nav); })();
+
+function show(t, push){
+  /* ส่วนที่ 2–5 ฝังแอปที่มีหัวของตัวเอง จึงลดหัวของหน้าแม่ให้เหลือน้อยที่สุด
+     ริบบิ้นซ่อน · แถบอธิบายเหลือบรรทัดเดียว · หน้าแม่ไม่มีแถบเลื่อน */
+  document.body.dataset.sec = (t === "intro") ? "intro" : "work";
+  document.querySelectorAll(".panel").forEach(function(p){ p.dataset.on = (p.id === "p-" + t) ? "1" : "0"; });
+  TABS.forEach(function(b){ b.setAttribute("aria-selected", b.dataset.t === t ? "true" : "false"); });
+  if (t === "member")  showMember(MV);
+  if (t === "care" || t === "expert") mountStaff(t);
+  if (t === "insurer") mountFrame(document.getElementById("f-insurer"), "insurer");
+  if (push !== false && location.hash !== "#" + t) history.replaceState(null, "", "#" + t);
+  window.scrollTo(0, 0);
+  fitFrame();
+}
+TABS.forEach(function(b){ b.addEventListener("click", function(){ show(b.dataset.t); }); });
+document.querySelectorAll("[data-go]").forEach(function(el){ el.addEventListener("click", function(){ show(el.dataset.go); }); });
+
+/* ส่วนที่ 2: คู่มือ ↔ ผลที่ผู้เชี่ยวชาญยืนยันแล้ว
+   คู่มือเป็นหน้าเว็บธรรมดา ส่วนผลเปิดแอปในโหมดดูผลเท่านั้น และเปิดต่อเมื่อถูกเลือก
+   ไม่โหลดล่วงหน้า เพราะคนส่วนใหญ่มาอ่านว่าต้องทำอะไร ไม่ได้มาล็อกอิน */
+var MV = "guide";
+function showMember(which){
+  MV = which;
+  document.getElementById("g-member").dataset.on = which === "guide" ? "1" : "0";
+  document.getElementById("f-member").dataset.on = which === "results" ? "1" : "0";
+  document.querySelectorAll('#p-member [data-mv]').forEach(function(x){ x.setAttribute("aria-pressed", x.dataset.mv === which ? "true" : "false"); });
+  if (which === "results") mountFrame(document.getElementById("f-member"), "member");
+  fitFrame();
+}
+document.querySelectorAll('#p-member [data-mv]').forEach(function(b){
+  b.addEventListener("click", function(){ showMember(b.dataset.mv); });
+});
+
+/* เปิดตามแฮช และรองรับปุ่มย้อนกลับ */
+var VALID = ["intro","member","care","expert","insurer"];
+function fromHash(){
+  var h = (location.hash || "#intro").slice(1);
+  if (VALID.indexOf(h) >= 0) { show(h, false); return; }
+  /* แฮชอื่นคือลิงก์ไปยังหัวข้อย่อยในหน้า เช่น #bizmodel หรือ #st4
+     ของเดิมเด้งกลับหน้าแรกทุกครั้ง ลิงก์ที่แชร์กันจึงไปไม่ถึงที่หมาย
+     ตอนนี้เปิดส่วนที่หัวข้อนั้นอยู่ก่อน แล้วค่อยเลื่อนไปหา */
+  var el = document.getElementById(h), pan = el && el.closest(".panel");
+  if (!pan) { show("intro", false); return; }
+  if (pan.dataset.on !== "1") show(pan.id.replace(/^p-/, ""), false);
+  el.scrollIntoView({ block: "start" });
+}
+
+/* ไฮไลต์หัวข้อที่กำลังอ่านในสารบัญ — วัดจากตำแหน่งจริงของแต่ละหัวข้อ
+   เทียบกับขอบล่างของแถบเมนู ไม่ใช่เดาจากระยะเลื่อน เพราะความสูงของ
+   แถบเมนูเปลี่ยนตามความกว้างจอ */
+(function(){
+  var links = [].slice.call(document.querySelectorAll("nav.toc a[data-sec]"));
+  if (!links.length) return;
+  var secs = links.map(function(a){ return document.getElementById(a.dataset.sec) }).filter(Boolean);
+  var queued = false;
+  function spy(){
+    queued = false;
+    var top = document.querySelector(".top");
+    var line = (top ? top.getBoundingClientRect().height : 0) + 72;
+    var cur = null;
+    secs.forEach(function(sec){ if (sec.getBoundingClientRect().top <= line) cur = sec.id });
+    links.forEach(function(a){ a.setAttribute("aria-current", a.dataset.sec === cur ? "true" : "false") });
+  }
+  addEventListener("scroll", function(){ if (!queued) { queued = true; requestAnimationFrame(spy) } }, { passive: true });
+  addEventListener("resize", spy);
+  spy();
+})();
+window.addEventListener("hashchange", fromHash);
+fromHash();
+
+/* ============================================================
+   ติดตั้งเป็นแอป (PWA)
+   ------------------------------------------------------------
+   ปัญหาที่แก้: หน้านี้เขียนคำว่า "ติดตั้งเป็นแอป" ไว้ในการ์ดคำมั่น แต่เป็น
+   ข้อความประดับ ไม่ใช่ปุ่ม ผู้ใช้กดแล้วไม่มีอะไรเกิดขึ้น และทั้งหน้าไม่มี
+   ทางติดตั้งเลย จึงเข้าใจว่าระบบติดตั้งไม่ได้
+
+   หลักที่ยึด: กดแล้วต้องได้คำตอบเสมอ ทุกเครื่องทุกเบราว์เซอร์
+   เบราว์เซอร์ที่ฝังในแอปแชท (LINE · Facebook) ติดตั้งเว็บแอปไม่ได้เลย
+   ซึ่งเป็นทางที่คนไทยเปิดลิงก์กันมากที่สุด จึงต้องบอกให้ไปเปิดในเบราว์เซอร์
+   จริงก่อน ไม่ใช่ปล่อยให้กดแล้วเงียบ
+   ============================================================ */
+(function(){
+  var btn = document.getElementById("csInstall");
+  if (!btn) return;
+  var ua = navigator.userAgent;
+  var isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  var isAndroid = /Android/.test(ua);
+  /* เบราว์เซอร์ที่ฝังมากับแอปอื่น — ไม่มีทั้ง API ติดตั้งและเมนูติดตั้ง */
+  var inApp = /\bLine\/|FB_IAB|FBAN|FBAV|Instagram|Messenger|MicroMessenger|TikTok/i.test(ua);
+  var defer = null;
+
+  function installed(){
+    try { return matchMedia("(display-mode: standalone)").matches || navigator.standalone === true; }
+    catch (e) { return false; }
+  }
+
+  function sheet(title, body){
+    var o = document.createElement("div");
+    o.className = "isheet";
+    o.innerHTML = '<div class="isheet-card" role="dialog" aria-modal="true">' +
+      '<h3>' + title + '</h3><div class="isheet-body">' + body + '</div>' +
+      '<button type="button" class="isheet-ok">เข้าใจแล้ว</button></div>';
+    document.body.appendChild(o);
+    var ok = o.querySelector(".isheet-ok");
+    function close(){ o.remove(); document.removeEventListener("keydown", esc); try { btn.focus(); } catch (e) {} }
+    function esc(e){ if (e.key === "Escape") close(); }
+    ok.addEventListener("click", close);
+    o.addEventListener("click", function(e){ if (e.target === o) close(); });
+    document.addEventListener("keydown", esc);
+    ok.focus();
+  }
+
+  /* เบราว์เซอร์ไม่ให้ปุ่มติดตั้งอัตโนมัติ — บอกวิธีทำมือตามเครื่องที่ใช้จริง */
+  function howto(){
+    if (installed())
+      return sheet("ติดตั้งไว้แล้ว",
+        "ตอนนี้คุณกำลังเปิดจากแอปที่ติดตั้งไว้อยู่แล้ว ใช้งานได้แม้ไม่มีอินเทอร์เน็ต");
+    if (inApp)
+      return sheet("เปิดในเบราว์เซอร์ก่อน",
+        "หน้านี้เปิดอยู่ในเบราว์เซอร์ที่ฝังมากับแอปแชท ซึ่ง<b>ติดตั้งแอปไม่ได้</b>" +
+        "<ol><li>แตะปุ่ม <b>⋯</b> หรือ <b>⋮</b> ที่มุมขวาบน</li>" +
+        "<li>เลือก <b>เปิดในเบราว์เซอร์</b> (Chrome หรือ Safari)</li>" +
+        "<li>กด <b>ติดตั้งเป็นแอป</b> อีกครั้งในหน้านั้น</li></ol>");
+    if (isIOS)
+      return sheet("ติดตั้งบน iPhone / iPad",
+        "<ol><li>แตะปุ่ม <b>แชร์</b> (สี่เหลี่ยมมีลูกศรชี้ขึ้น) ที่แถบล่างของ Safari</li>" +
+        "<li>เลื่อนลงหา <b>เพิ่มลงในหน้าจอโฮม</b></li>" +
+        "<li>แตะ <b>เพิ่ม</b> — ไอคอน CareSignal จะอยู่บนหน้าจอเหมือนแอปทั่วไป</li></ol>" +
+        '<p class="isheet-note">iPhone ติดตั้งเว็บแอปได้จาก Safari เท่านั้น ถ้าเปิดอยู่ด้วย Chrome ให้เปลี่ยนมาเปิดใน Safari ก่อน</p>');
+    if (isAndroid)
+      return sheet("ติดตั้งบน Android",
+        "<ol><li>แตะปุ่ม <b>⋮</b> ที่มุมขวาบนของ Chrome</li>" +
+        "<li>เลือก <b>ติดตั้งแอป</b> หรือ <b>เพิ่มลงในหน้าจอหลัก</b></li>" +
+        "<li>แตะ <b>ติดตั้ง</b></li></ol>" +
+        '<p class="isheet-note">ถ้ายังไม่เห็นเมนูนี้ ให้เปิดหน้านี้ค้างไว้สักครู่แล้วลองใหม่ — Chrome จะเสนอให้ติดตั้งเมื่ออยู่บนเว็บนานพอ</p>');
+    return sheet("ติดตั้งบนคอมพิวเตอร์",
+      "<ol><li>ดูที่แถบที่อยู่เว็บด้านบน จะมีไอคอนรูปจอที่มีลูกศรลง หรือเครื่องหมาย <b>+</b></li>" +
+      "<li>คลิกแล้วเลือก <b>ติดตั้ง</b></li></ol>" +
+      '<p class="isheet-note">ใช้ได้กับ Chrome และ Edge · Firefox กับ Safari บนคอมพิวเตอร์ยังไม่รองรับการติดตั้งเว็บแอป</p>');
+  }
+
+  btn.addEventListener("click", function(){
+    /* มีปุ่มติดตั้งของเบราว์เซอร์ให้ใช้ = เรียกเลย ผู้ใช้ไม่ต้องทำเอง */
+    if (defer){
+      defer.prompt();
+      defer.userChoice.then(function(){ defer = null; }, function(){ defer = null; });
+      return;
+    }
+    howto();
+  });
+
+  window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); defer = e; });
+  window.addEventListener("appinstalled", function(){
+    defer = null; btn.hidden = true;
+    sheet("ติดตั้งเรียบร้อยแล้ว",
+      "เปิด CareSignal จากไอคอนบนหน้าจอได้เลย ครั้งต่อไปใช้งานได้แม้ไม่มีอินเทอร์เน็ต");
+  });
+
+  if (installed()) btn.hidden = true;
+})();
+
+/* ---------- Service Worker: ใช้ออฟไลน์ได้และอัปเดตเงียบ ---------- */
+if ("serviceWorker" in navigator && location.protocol !== "file:") {
+  navigator.serviceWorker.register("./sw.js").then(function(reg){
+    reg.addEventListener("updatefound", function(){
+      var nw = reg.installing;
+      nw && nw.addEventListener("statechange", function(){
+        if (nw.state === "installed" && navigator.serviceWorker.controller) nw.postMessage("SKIP_WAITING");
+      });
+    });
+  }).catch(function(){});
+  var refreshed = false;
+  navigator.serviceWorker.addEventListener("controllerchange", function(){ if (!refreshed){ refreshed = true; location.reload(); } });
+}
+</script>
 </body>
 </html>

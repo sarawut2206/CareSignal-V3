@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CareSignal · เส้นทางหนึ่งเคส ตั้งแต่แจ้งเหตุที่บ้านถึงรายงานของบริษัทประกัน (ข้อมูลสาธิต)</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="./logo-mark.png">
+<!-- ============================================================
+     เส้นทางหนึ่งเคส — เดโมเดินเรื่องเดียวตั้งแต่ต้นจนจบ
+     ------------------------------------------------------------
+     หน้านี้ไม่มีข้อมูลของตัวเอง ทุกตัวเลขอ่านจากชุดข้อมูลสังเคราะห์ชุดเดียวกับ
+     คอนโซลเจ้าหน้าที่และแดชบอร์ดบริษัทประกัน (cs-demo.js) จึงตรงกันเสมอ:
+     ผู้เอาประกันสาธิต DEMO-41 คือคนเดียวกับที่เห็นในคิวงานของผู้ประสานงาน
+     ในรายการส่งต่อของแพทย์ เภสัชกร นักกายภาพบำบัด พยาบาล และในตัวเลขของบริษัทประกัน
+     ปุ่ม "เปิดหน้าจอจริง" เปิดคอนโซลจริงในโหมดสาธิตของบทบาทนั้น ตรงที่รายการนั้น
+     หน้านี้ต้องเปิดด้วย ?demo=1 เท่านั้น ไม่มีทางไปถึงฐานข้อมูลจริง
+     ============================================================ -->
+<style>
+:root{--navy:#0F2A5C;--navy2:#1D4E9A;--brand:#2563EB;--gold:#F5B300;--bg:#F6F8FC;--surf:#fff;--surf2:#EEF2F8;
+  --line:#DCE3EE;--ink:#0B1730;--ink2:#3E4E68;--ink3:#7C8AA5;
+  --fam:#2563EB;--cm:#059669;--sp:#7C3AED;--ins:#B45309;--sys:#475569;
+  --sans:"Sarabun","Noto Sans Thai",system-ui,-apple-system,"Segoe UI",sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,monospace}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--bg);font-size:15.5px;line-height:1.7;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+a{color:var(--brand)}
+/* ---------- หัว ---------- */
+.hero{background:radial-gradient(120% 90% at 50% 10%,var(--navy2) 0%,var(--navy) 60%,#0A1E45 100%);color:#fff;padding:34px 0 30px}
+.hero .eyebrow{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.hero h1{font-size:clamp(24px,3.4vw,34px);line-height:1.25;margin:8px 0 10px;letter-spacing:-.01em}
+.hero h1 em{font-style:normal;color:#FDE68A}
+.hero p{margin:0;color:#DCE7FA;max-width:760px}
+.hero .back{display:inline-block;margin-bottom:14px;color:#DCE7FA;text-decoration:none;font-size:13.5px;border:1px solid rgba(255,255,255,.35);border-radius:99px;padding:4px 12px}
+.hero .back:hover{background:rgba(255,255,255,.12)}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:22px}
+.sum div{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:12px 14px}
+.sum b{display:block;font-size:22px;line-height:1.2;font-family:var(--mono)}
+.sum span{font-size:12.5px;color:#C7D5F0}
+/* ---------- ตำนานผู้เกี่ยวข้อง ---------- */
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;padding:14px 0;border-bottom:1px solid var(--line);font-size:13px;color:var(--ink2)}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:99px;vertical-align:-1px;margin-right:6px}
+/* ---------- เส้นเวลา ---------- */
+.tl{position:relative;padding:26px 0 40px}
+.tl::before{content:"";position:absolute;left:78px;top:0;bottom:0;width:2px;background:var(--line)}
+.st{position:relative;display:grid;grid-template-columns:60px 1fr;gap:28px;margin:0 0 22px}
+.st .day{text-align:right;padding-top:14px}
+.st .day b{display:block;font-family:var(--mono);font-size:13px;color:var(--ink)}
+.st .day span{font-size:11.5px;color:var(--ink3)}
+.st .dot{position:absolute;left:71px;top:18px;width:16px;height:16px;border-radius:99px;border:3px solid #fff;box-shadow:0 0 0 2px var(--c)}
+.st .card{--c:var(--sys);background:var(--surf);border:1px solid var(--line);border-left:4px solid var(--c);border-radius:16px;padding:16px 20px 18px;
+  box-shadow:0 2px 4px rgba(15,42,92,.04),0 10px 24px rgba(15,42,92,.05)}
+.st[data-actor="family"] .card,.st[data-actor="family"] .dot{--c:var(--fam)}
+.st[data-actor="member"] .card,.st[data-actor="member"] .dot{--c:var(--fam)}
+.st[data-actor="system"] .card,.st[data-actor="system"] .dot{--c:var(--sys)}
+.st[data-actor="cm"] .card,.st[data-actor="cm"] .dot{--c:var(--cm)}
+.st[data-actor="sp"] .card,.st[data-actor="sp"] .dot{--c:var(--sp)}
+.st[data-actor="insurer"] .card,.st[data-actor="insurer"] .dot{--c:var(--ins)}
+.who{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--c);background:color-mix(in srgb,var(--c) 10%,#fff);border-radius:99px;padding:3px 10px 3px 6px;margin-bottom:8px}
+.who .ic{font-size:15px}
+.card h3{margin:0 0 6px;font-size:17.5px;line-height:1.35}
+.card p{margin:0 0 8px;color:var(--ink2);font-size:14.5px}
+.card p b{color:var(--ink)}
+.two{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-top:10px}
+@media(max-width:760px){.two{grid-template-columns:1fr}.tl::before{left:18px}.st{grid-template-columns:1fr;gap:0}.st .day{text-align:left;padding:0 0 4px 34px}.st .dot{left:11px;top:6px}}
+.pane{background:var(--surf2);border-radius:12px;padding:12px 14px;font-size:13.5px}
+.pane h4{margin:0 0 8px;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13.5px}
+.kv span:nth-child(odd){color:var(--ink3);white-space:nowrap}
+.kv span:nth-child(even){color:var(--ink);font-weight:500}
+.kv .m{font-family:var(--mono)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px;background:#fff;border-radius:10px;overflow:hidden}
+.tbl th,.tbl td{padding:6px 9px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{background:#E7EDF7;font-weight:600;color:var(--ink2);font-size:12px}
+.tbl td.m{font-family:var(--mono)}
+.tbl .up{color:#059669;font-weight:700}.tbl .dn{color:#B91C1C;font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:12.5px;border-radius:99px;padding:3px 10px;background:#fff;border:1px solid var(--line)}
+.chip.lv-decline{background:#FEF3C7;border-color:#FCD34D;color:#92400E}
+.chip.lv-urgent{background:#FEE2E2;border-color:#FCA5A5;color:#991B1B}
+.chip.lv-watch{background:#FEF9C3;border-color:#FDE047;color:#854D0E}
+.chip.lv-stable{background:#DCFCE7;border-color:#86EFAC;color:#166534}
+.chip .to{color:var(--ink3)}
+.ul{margin:0;padding-left:18px;font-size:13.5px}.ul li{margin:2px 0}
+.did{display:flex;gap:8px;align-items:flex-start;margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);font-size:14px}
+.did .k{flex:none;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);font-weight:600;padding-top:3px;width:70px}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font-size:13.5px;font-weight:600;border-radius:11px;padding:8px 14px;
+  background:var(--navy);color:#fff;border:1px solid var(--navy)}
+.btn:hover{background:var(--navy2)}
+.btn.g{background:#fff;color:var(--navy);border-color:var(--line)}
+.btn.g:hover{border-color:var(--navy)}
+.note{font-size:12.5px;color:var(--ink3);margin-top:8px}
+.rv{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px}
+.rv .row{display:grid;grid-template-columns:82px 1fr;gap:6px 10px;font-size:13.5px;padding:3px 0}
+.rv .row span:first-child{color:var(--ink3)}
+.stagebar{display:flex;gap:4px;margin:8px 0}
+.stg{flex:1;font-size:11px;text-align:center;padding:4px 2px;border-radius:6px;background:var(--surf2);color:var(--ink3)}
+.stg[data-on="done"]{background:#DCFCE7;color:#166534}.stg[data-on="1"]{background:var(--navy);color:#fff}
+.fam{border:2px solid var(--fam);border-radius:16px;padding:14px 16px;background:#fff;max-width:420px}
+.fam .lvl{display:inline-block;border-radius:8px;padding:2px 10px;font-weight:700;font-size:14px}
+.warn{font-size:12.5px;color:#92400E;background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:8px 12px;margin-top:10px}
+.ins{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.ins div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.ins b{display:block;font-family:var(--mono);font-size:20px;line-height:1.2}
+.ins span{font-size:12px;color:var(--ink3)}
+footer{padding:20px 0 50px;font-size:12.5px;color:var(--ink3);text-align:center;border-top:1px solid var(--line)}
+.err{margin:40px auto;max-width:640px;background:#FEF2F2;border:1px solid #FCA5A5;border-radius:14px;padding:18px 22px;color:#7F1D1D}
+</style>
+</head>
+<body>
+<div class="hero"><div class="wrap">
+  <a class="back" href="./index.html">‹ กลับหน้าหลัก</a>
+  <div class="eyebrow">เดโมเดินเรื่องเดียว · ข้อมูลสังเคราะห์ทั้งหมด</div>
+  <h1>เส้นทางหนึ่งเคส <em>ตั้งแต่ลูกสาวแจ้งเหตุที่บ้าน จนถึงตัวเลขบนโต๊ะบริษัทประกัน</em></h1>
+  <p>ทุกตัวเลขในหน้านี้อ่านจากชุดข้อมูลสาธิตชุดเดียวกับคอนโซลเจ้าหน้าที่และแดชบอร์ดบริษัทประกัน
+     ผู้เอาประกันสาธิตรายนี้จึงเป็นคนเดียวกับที่เห็นในคิวงาน ในรายการส่งต่อของผู้เชี่ยวชาญทั้งสี่ และในรายงานเชิงกลุ่ม
+     กดปุ่ม <b>เปิดหน้าจอจริง</b> ที่ขั้นใดก็ได้ เพื่อดูหน้าจอของบทบาทนั้นตรงรายการนั้น</p>
+  <div class="sum" id="sum"></div>
+</div></div>
+
+<div class="wrap">
+  <div class="legend">
+    <span><i style="background:var(--fam)"></i>ผู้เอาประกันและครอบครัว</span>
+    <span><i style="background:var(--sys)"></i>ระบบ (กฎที่ประกาศไว้ ไม่ใช่โมเดลทำนาย)</span>
+    <span><i style="background:var(--cm)"></i>ทีมดูแลของบริษัทประกัน</span>
+    <span><i style="background:var(--sp)"></i>ผู้เชี่ยวชาญ แพทย์ · เภสัชกร · นักกายภาพบำบัด · พยาบาล</span>
+    <span><i style="background:var(--ins)"></i>บริษัทประกัน (เห็นเฉพาะภาพรวม)</span>
+  </div>
+  <div class="tl" id="tl"></div>
+</div>
+<footer><div class="wrap">CareSignal · ต้นแบบเพื่อการประกวด OIC InsurTech Award 2026 · ข้อมูลในหน้านี้สังเคราะห์ทั้งหมด ไม่ใช่บุคคลจริง ไม่ใช่การวินิจฉัย</div></footer>
+
+<script src="./cs-backend.js?v=4"></script>
+<script src="./cs-demo.js"></script>
+<script src="./cs-referral-forms.js?v=1"></script>
+<script>
+(function () {
+  /* หน้านี้มีความหมายเฉพาะในโหมดสาธิต — ถ้าเปิดมาโดยไม่มี ?demo ให้เติมให้เอง
+     ไม่มีทางไปถึงฐานข้อมูลจริง เพราะ cs-demo.js ทับทุกฟังก์ชันของ backend */
+  if (!window.CS_DEMO) { var p = new URLSearchParams(location.search); p.set("demo", "1"); location.replace(location.pathname + "?" + p.toString()); return; }
+  var S = CS_DEMO.state();
+  var D = 864e5, H = 36e5;
+  var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+  var m = null; S.members.forEach(function (x) { if (x.flagship) m = x; });
+  if (!m) { document.getElementById("tl").innerHTML = '<div class="err">ชุดข้อมูลสาธิตในแท็บนี้เป็นรุ่นเก่า ไม่มีเคสเดินเรื่อง — กด "รีเซ็ตข้อมูลสาธิต" ที่แถบด้านบน</div>'; return; }
+  var by = function (arr, f) { return arr.filter(f); };
+  var t = function (s) { return new Date(s).getTime(); };
+  var A = by(S.assess, function (a) { return a.user_id === m.id; }).sort(function (a, b) { return t(a.assessed_at) - t(b.assessed_at); });
+  var SG = by(S.signals, function (s) { return s.user_id === m.id; }).sort(function (a, b) { return t(a.created_at) - t(b.created_at); });
+  var C = by(S.cases, function (c) { return c.user_id === m.id; })[0];
+  var R = by(S.refs, function (r) { return r.user_id === m.id; }).sort(function (a, b) { return t(a.created_at) - t(b.created_at); });
+  var MD = by(S.meds, function (x) { return x.user_id === m.id; });
+  var PL = by(S.plans, function (x) { return x.user_id === m.id; })[0];
+  var FU = by(S.fups, function (x) { return x.user_id === m.id; }).sort(function (a, b) { return t(a.due_at) - t(b.due_at); });
+  var CT = by(S.contacts, function (x) { return x.user_id === m.id; }).sort(function (a, b) { return t(a.created_at) - t(b.created_at); });
+  var EV = by(S.events, function (x) { return x.user_id === m.id; }).sort(function (a, b) { return t(a.created_at) - t(b.created_at); });
+  var MR = by(S.medrev, function (x) { return x.user_id === m.id; })[0];
+  var a1 = A[0], a2 = A[A.length - 1], s1 = SG[0], s2 = SG[SG.length - 1];
+  var T0 = EV.length ? t(EV[0].created_at) : t(a1.assessed_at);
+  var day = function (s) { return Math.round((t(s) - T0) / D); };
+  var LV = { stable: "คงที่", watch: "เฝ้าสังเกต", decline: "ถดถอย", urgent: "เร่งด่วน" };
+  var DEST = { doctor: "แพทย์", pharmacist: "เภสัชกร", physio: "นักกายภาพบำบัด", nurse: "พยาบาล" };
+  var DEST_IC = { doctor: "🩺", pharmacist: "💊", physio: "🏃", nurse: "🏠" };
+  var DEMO_ROLE = { doctor: "doctor", pharmacist: "pharmacist", physio: "physio", nurse: "nurse" };
+  var NEXT = { sufficient: "ข้อมูลเพียงพอ ไม่ต้องทำเพิ่ม", need_more_info: "ขอข้อมูลเพิ่มเติม", book_assessment: "นัดประเมินต่อกับผู้เชี่ยวชาญ", refer_doctor: "ส่งต่อแพทย์", follow_plan: "ติดตามตามแผนดูแล" };
+  var FR = { 2: "เสี่ยงสูง", 1: "เสี่ยงปานกลาง", 0: "ไม่เพิ่มความเสี่ยง" };
+  var thd = function (s) { var d = new Date(s); return d.toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" }); };
+  var age = (new Date().getFullYear() + 543) - m.birth_year_be;
+  var sec = function (v) { return v == null ? "—" : (Math.round(v * 10) / 10).toFixed(1) + " วิ"; };
+  var refOf = function (dest) { return by(R, function (r) { return r.destination === dest; })[0]; };
+  var refLink = function (r, label) { return r ? '<a class="btn" target="_blank" rel="noopener" href="./CareSignal-Staff.html?demo=' + DEMO_ROLE[r.destination] + '#ref=' + r.id + '">เปิดหน้าจอจริง · ' + esc(DEST[r.destination]) + '</a>' : ""; };
+
+  /* ---------- สรุปบนหัว ---------- */
+  var lastDay = day(a2.assessed_at);   /* นับถึงวันประเมินซ้ำ ไม่ใช่วันที่แก้เคสล่าสุด */
+  document.getElementById("sum").innerHTML =
+    '<div><b>' + lastDay + ' วัน</b><span>จากแจ้งเหตุถึงประเมินซ้ำ</span></div>' +
+    '<div><b>' + R.length + '</b><span>ส่งต่อผู้เชี่ยวชาญ ' + R.map(function (r) { return DEST[r.destination]; }).join(" · ") + '</span></div>' +
+    '<div><b>' + A.length + '</b><span>การประเมินที่บ้าน</span></div>' +
+    '<div><b>' + esc(LV[s1.level]) + ' → ' + esc(LV[s2.level]) + '</b><span>ระดับก่อนและหลังการดูแล</span></div>';
+
+  /* ---------- ขั้นตอน ---------- */
+  var ST = [];
+  function stage(o) { ST.push(o); }
+  function who(actor, ic, nm) { return '<span class="who"><span class="ic">' + ic + '</span>' + esc(nm) + '</span>'; }
+  function kv(rows) { return '<div class="kv">' + rows.map(function (r) { return '<span>' + esc(r[0]) + '</span><span' + (r[2] ? ' class="m"' : '') + '>' + r[1] + '</span>'; }).join("") + '</div>'; }
+  function pane(h, body) { return '<div class="pane"><h4>' + esc(h) + '</h4>' + body + '</div>'; }
+  function chips(sigs) { return '<div class="chips">' + sigs.map(function (s) { return '<span class="chip">' + esc(s.nm) + ' <span class="to">→ ' + esc(DEST[s.dest] || s.dest) + '</span></span>'; }).join("") + '</div>'; }
+  function review(r) {
+    var v = r.review || {};
+    return '<div class="rv">' +
+      '<div class="row"><span>ข้อค้นพบ</span><span>' + esc(v.finding || "—") + '</span></div>' +
+      '<div class="row"><span>คำแนะนำ</span><span>' + esc(v.recommend || "—") + '</span></div>' +
+      '<div class="row"><span>ขั้นถัดไป</span><span><b>' + esc(NEXT[v.next_step] || v.next_step || "—") + '</b></span></div>' +
+      (v.note ? '<div class="row"><span>หมายเหตุ</span><span>' + esc(v.note) + '</span></div>' : "") +
+      (v.form && window.CSReferralForms ? '<div class="row"><span>แบบฟอร์ม</span><span>' + esc(CSReferralForms.L.verdict[v.form.verdict] || "") + CSReferralForms.moduleSummaryHTML(r, false) + '</span></div>' : "") +
+      (r.outcome ? '<div class="row"><span>ผลหลังรับบริการ</span><span>' + esc({ improved: "ดีขึ้น", same: "เท่าเดิม", worse: "แย่ลง" }[r.outcome.result] || r.outcome.result) + (r.outcome.note ? ' — ' + esc(r.outcome.note) : "") + '</span></div>' : "") +
+      '</div>';
+  }
+
+  /* 0 · ครอบครัวแจ้งเหตุ */
+  if (EV.length) stage({ at: EV[0].created_at, actor: "family", who: who("family", "👩‍👧", "ลูกสาว · แอปสมาชิก (บัญชีครอบครัว)"),
+    title: "แจ้งเหตุ: แม่ล้มในห้องน้ำ ไม่บาดเจ็บ",
+    lead: "ลูกสาวกดปุ่ม <b>แจ้งเหตุ</b> ในแอป เลือกชนิดเหตุการณ์และความรุนแรง ระบบไม่วินิจฉัยอะไร แต่แนะนำให้ทำการประเมินที่บ้านภายใน 3 วัน และเหตุการณ์นี้จะติดไปกับผลประเมิน",
+    see: pane("สิ่งที่ครอบครัวเห็น", kv([["ชนิดเหตุการณ์", "หกล้ม"], ["ความรุนแรง", esc({ low: "เล็กน้อย", medium: "ปานกลาง", high: "รุนแรง" }[EV[0].severity])], ["บันทึกโดย", "ครอบครัว"], ["คำแนะนำจากแอป", "ทำการประเมิน 8 ขั้นตอนภายใน 3 วัน · ถ้ามีอาการผิดปกติให้ไปพบแพทย์ก่อน"]])),
+    did: "แอปตั้งเตือนให้ประเมิน และเหตุการณ์ถูกเก็บไว้ในเครื่องจนกว่าจะบันทึกผลประเมิน",
+    acts: '<a class="btn g" href="./index.html#st1">ดูคู่มือ 8 ขั้นตอนของสมาชิก</a>' });
+
+  /* 1 · ประเมินที่บ้าน */
+  var p1 = a1.parts || {};
+  stage({ at: a1.assessed_at, actor: "member", who: who("member", "👵", "ผู้เอาประกัน · แอปสมาชิกบนมือถือ"),
+    title: "ประเมินที่บ้าน 8 ขั้นตอน ใช้กล้องมือถือกับป้ายกระดาษ",
+    lead: "นั่งห่างจอ 2–3 เมตร สั่งด้วยการยกมือ แอปพูดบอกทุกขั้น กล้องนับครั้งลุกนั่งและจับเวลาลุกเดิน ผลดิบทั้งหมดอยู่ในเครื่อง ส่งออกเฉพาะตัวเลขเวลาและคะแนน",
+    see: pane("ผลดิบที่แอปวัดได้ (ครั้งที่ 1)",
+      '<table class="tbl"><tr><th>ขั้นตอน</th><th>ผล</th><th>คะแนนย่อย</th></tr>' +
+      '<tr><td>ประวัติหกล้ม 12 เดือน</td><td>' + esc(a1.falls_detail.falls12m) + ' ครั้ง' + (a1.falls_detail.injured ? " มีบาดเจ็บ" : " ไม่บาดเจ็บ") + '</td><td class="m">' + esc(p1.falls) + '/3</td></tr>' +
+      '<tr><td>ยาที่ใช้ประจำ (ถ่ายฉลาก)</td><td>' + MD.length + ' รายการ · เสี่ยงสูง ' + by(MD, function (x) { return x.frid_level === 2; }).length + ' · ระบบไม่รู้จัก ' + by(MD, function (x) { return x.frid_group === "unknown"; }).length + '</td><td class="m">' + esc(p1.meds) + '/1</td></tr>' +
+      '<tr><td>ลุกนั่ง 5 ครั้ง</td><td class="m">' + sec(a1.ftsst_seconds) + '</td><td class="m">' + esc(p1.ftsst) + '/3</td></tr>' +
+      '<tr><td>ลุกเดิน 3 เมตร</td><td class="m">' + sec(a1.tug_seconds) + '</td><td>ยืนยันระยะด้วยป้าย · ไม่เข้าคะแนน</td></tr>' +
+      '<tr><td>การทรงตัว 4 ท่า</td><td>' + esc(a1.balance_text || "—") + '</td><td class="m">' + esc(p1.balance) + '/3</td></tr>' +
+      '<tr><td>กิจวัตรประจำวัน</td><td>' + esc(a1.adl_text || "—") + '</td><td class="m">' + esc(p1.adl) + '/2</td></tr>' +
+      '<tr><td>ความปลอดภัยในบ้าน</td><td>' + esc(a1.home_detail.count) + ' จุดเสี่ยง' + (a1.home_detail.alone ? " · อยู่คนเดียวกลางวัน" : "") + '</td><td>ใช้วางแผน · ไม่เข้าคะแนน</td></tr>' +
+      '<tr><th>คะแนนรวม</th><th class="m">' + esc(a1.score) + ' / ' + esc(a1.score_max) + '</th><th>ระดับ ' + esc(a1.tier) + '</th></tr></table>'),
+    did: "แอปบันทึกลงเครื่องทันทีทุกหัวข้อ แล้วส่งผลเข้าระบบเมื่อกดบันทึกผลทั้งหมด",
+    note: "หน้านี้ไม่แสดงหน้าจอของแอปสมาชิกในโหมดสาธิต เพราะแอปสมาชิกเก็บผลตรวจจริง จึงห้ามมีข้อมูลสังเคราะห์ปนอยู่ในนั้น" });
+
+  /* 2 · ระบบสร้างสัญญาณ เปิดเคส */
+  stage({ at: s1.created_at, actor: "system", who: who("system", "⚙️", "ระบบ · กฎที่ประกาศไว้ล่วงหน้า (rules v" + esc(s1.engine_version) + ")"),
+    title: "สร้างสัญญาณเสี่ยง " + s1.signals.length + " สัญญาณ ระดับ " + LV[s1.level] + " → เปิดเคสให้ทีมดูแล SLA " + C.sla_hours + " ชั่วโมง",
+    lead: "ไม่ใช่โมเดลทำนายและไม่แสดงเปอร์เซ็นต์ความเสี่ยง — แต่ละสัญญาณมีกฎอ่านได้ว่าเกิดจากอะไร และมีปลายทางที่ควรส่งต่อระบุไว้ในตัว",
+    see: '<div class="two">' + pane("สัญญาณและปลายทาง", chips(s1.signals)) +
+         pane("เคสที่เปิดอัตโนมัติ", kv([["รหัสผู้เอาประกัน", '<span class="m">' + esc(m.pseudonym) + '</span>'], ["ระดับ", '<span class="chip lv-' + esc(s1.level) + '">' + esc(LV[s1.level]) + '</span>'],
+           ["ต้องติดต่อภายใน", C.sla_hours + " ชม. (" + thd(C.due_at) + ")"], ["ประเมินซ้ำใน", s1.next_days + " วัน"], ["สถานะแรก", "เคสใหม่ · ยังไม่มีผู้รับผิดชอบ"]])) + '</div>',
+    did: "เคสเข้าคิวงานของผู้ประสานงานทันที ผู้เอาประกันเห็นในแอปว่า “ทีมดูแลจะติดต่อกลับภายใน 48 ชั่วโมง”" });
+
+  /* 3 · ผู้ประสานงานทบทวนและติดต่อ */
+  var c1 = CT[0];
+  stage({ at: c1 ? c1.created_at : C.contacted_at, actor: "cm", who: who("cm", "🗂️", "ผู้ประสานงานดูแล · คอนโซลเจ้าหน้าที่"),
+    title: "รับเคสจากคิว โทรหาลูกสาวภายใน " + Math.round((t(C.contacted_at) - t(C.opened_at)) / H) + " ชั่วโมง",
+    lead: "คิวงานเรียงตามความเร่งด่วนและเวลาที่เหลือก่อนเกิน SLA ผู้ประสานงานเห็นผลประเมิน ยา เหตุการณ์ และสัญญาณในหน้าเดียว แล้วบันทึกการติดต่อทุกครั้ง",
+    see: pane("บันทึกการติดต่อ", '<table class="tbl"><tr><th>วันที่</th><th>ช่องทาง</th><th>ผล</th><th>บันทึก</th></tr>' +
+      CT.slice(0, 2).map(function (c) { return '<tr><td>' + esc(thd(c.created_at)) + '</td><td>' + esc({ phone: "โทรศัพท์", line: "LINE", visit: "เยี่ยมบ้าน" }[c.channel] || c.channel) + '</td><td>' + esc({ reached: "ติดต่อได้", plan_confirmed: "ยืนยันแผน", no_answer: "ไม่รับสาย", booked: "นัดแล้ว", referred_ok: "ส่งต่อแล้ว" }[c.result] || c.result) + '</td><td>' + esc(c.note) + '</td></tr>'; }).join("") + '</table>'),
+    did: "ครอบครัวยินยอมให้ส่งข้อมูลถึงผู้เชี่ยวชาญ ผู้ประสานงานตกลงแผนเบื้องต้น: หยุดใช้ห้องน้ำคนเดียวตอนกลางคืนจนกว่าจะติดราวจับ",
+    acts: '<a class="btn" target="_blank" rel="noopener" href="./CareSignal-Staff.html?demo=1">เปิดหน้าจอจริง · คิวงานผู้ประสานงาน</a>' });
+
+  /* 4 · ส่งต่อ 4 ทาง */
+  var r0 = R[0], pk = r0 && r0.package;
+  stage({ at: r0.created_at, actor: "cm", who: who("cm", "📦", "ผู้ประสานงานดูแล · ส่งต่อเป็นชุดข้อมูลมีโครงสร้าง"),
+    title: "ส่งต่อ " + R.length + " ทางในวันเดียว ผู้เชี่ยวชาญแต่ละคนได้คำถามเฉพาะเรื่องของตน",
+    lead: "ไม่ใช่การส่ง “ผู้ป่วยไปตรวจ” แต่ส่ง<b>ชุดข้อมูล ณ เวลาส่ง</b> พร้อมเหตุผลและคำถาม ผู้เชี่ยวชาญตอบกลับเป็นโครงสร้างเดียวกันทุกคน ทีมดูแลจึงรวมผลได้",
+    see: '<table class="tbl"><tr><th>ถึง</th><th>ขอให้ทำ</th><th>คำถามที่แนบไป</th><th>ตอบภายใน</th></tr>' +
+      R.map(function (r) { return '<tr><td>' + DEST_IC[r.destination] + ' ' + esc(DEST[r.destination]) + '</td><td>' + esc(r.action) + '</td><td>' + (r.questions || []).map(esc).join("<br>") + '</td><td>' + Math.round((t(r.reply_due) - t(r.created_at)) / H) + ' ชม.</td></tr>'; }).join("") + '</table>' +
+      (pk ? '<div class="note">ชุดข้อมูลที่แนบ: หกล้ม ' + esc(pk.falls.falls12m) + ' ครั้ง · ยา ' + (pk.medications || []).length + ' รายการ · ลุกนั่ง ' + sec(pk.mobility.ftsst_last) + ' · ลุกเดิน ' + sec(pk.mobility.tug_last) + ' · กิจวัตร ' + esc(pk.adl.last) + ' · บ้าน ' + esc(pk.home.count) + ' จุดเสี่ยง · ความยินยอม: มี</div>' : ""),
+    did: "สถานะเคสเปลี่ยนเป็น “ส่งต่อแล้ว” นาฬิกาตอบกลับของแต่ละรายการเดินแยกกัน",
+    acts: '<a class="btn" target="_blank" rel="noopener" href="./CareSignal-Staff.html?demo=1#ref=' + r0.id + '">เปิดหน้าจอจริง · ใบส่งต่อฉบับแรก</a>' });
+
+  /* 5–8 · ผู้เชี่ยวชาญตอบกลับ เรียงตามเวลาตอบ */
+  R.slice().sort(function (a, b) { return t(a.reviewed_at || a.created_at) - t(b.reviewed_at || b.created_at); }).forEach(function (r) {
+    var extra = "";
+    if (r.destination === "pharmacist" && MR) extra = pane("รายการยาที่ทบทวน", '<table class="tbl"><tr><th>ยา</th><th>ขนาด</th><th>กลุ่มเสี่ยงหกล้ม</th></tr>' +
+      MD.map(function (x) { return '<tr><td>' + esc(x.inn || x.brand_text) + '</td><td>' + esc(x.dose_text) + '</td><td>' + esc(x.frid_level == null ? "ระบบไม่รู้จัก — ส่งให้เภสัชกรระบุ" : FR[x.frid_level]) + '</td></tr>'; }).join("") + '</table>');
+    var when = r.reviewed_at || r.completed_at || r.acknowledged_at || r.created_at;
+    stage({ at: when, actor: "sp", who: who("sp", DEST_IC[r.destination], DEST[r.destination] + " · คอนโซลเจ้าหน้าที่ (เห็นเฉพาะงานที่ส่งถึงตน)"),
+      title: ({ pharmacist: "เภสัชกรทบทวนยา พบยานอนหลับกลุ่มเสี่ยงสูง", doctor: "แพทย์ตรวจ พบความดันตกเมื่อลุกยืน ปรับยาและให้ลดยานอนหลับ", physio: "นักกายภาพบำบัดประเมิน ให้โปรแกรมฝึกกำลังขาที่บ้าน 4 สัปดาห์", nurse: "พยาบาลเยี่ยมบ้าน วางแผนกับครอบครัว ติดราวจับและเก้าอี้อาบน้ำ" })[r.destination],
+      lead: "รับเรื่อง " + thd(r.acknowledged_at) + (r.booked_at ? " · นัด " + thd(r.booked_at) : "") + (r.completed_at ? " · รับบริการ " + thd(r.completed_at) : "") + " · ส่งผลกลับ " + thd(r.reviewed_at),
+      see: '<div class="two">' + '<div>' + pane("ผลที่ส่งกลับ (โครงสร้างเดียวกันทุกวิชาชีพ)", review(r)) + '</div>' + (extra || pane("คำถามที่ได้รับ", '<ul class="ul">' + (r.questions || []).map(function (q) { return "<li>" + esc(q) + "</li>"; }).join("") + '</ul>')) + '</div>',
+      did: ({ pharmacist: "ปิดการทบทวนยาเป็น “แนะนำพบแพทย์” ระบบเปิดใบส่งต่อแพทย์ให้ผู้ประสานงานเห็นทันที ไม่มีการสั่งหยุดยาเองในระบบ", doctor: "ผลกลับถึงทีมดูแลและครอบครัวพร้อมกัน แผนลดยาทำผ่านแพทย์ผู้สั่งยาเท่านั้น", physio: "โปรแกรมฝึกกลายเป็นรายการในแผนดูแล ผู้ประสานงานโทรติดตามรายสัปดาห์", nurse: "ประสานหน่วยบริการปฐมภูมิติดตั้งราวจับ บันทึกผลหลังรับบริการว่าติดตั้งแล้ว" })[r.destination],
+      acts: refLink(r) });
+  });
+
+  /* 9 · แผนดูแลที่ตกลงกัน + ติดตาม */
+  if (PL) stage({ at: PL.created_at, actor: "cm", who: who("cm", "🤝", "ผู้ประสานงานดูแล · รวมผลจากผู้เชี่ยวชาญเป็นแผนเดียว"),
+    title: "แผนดูแล " + PL.items.length + " ข้อ ตกลงกับครอบครัวแล้ว และตั้งวันติดตาม",
+    lead: "ผลจากผู้เชี่ยวชาญสี่คนถูกรวมเป็นแผนที่ครอบครัวทำได้จริง แต่ละข้อติ๊กได้ว่าทำแล้วหรือยัง ผู้ประสานงานโทรติดตามตามกำหนด",
+    see: '<div class="two">' + pane("รายการในแผน", '<ul class="ul">' + PL.items.map(function (i) { return '<li>' + (i.done ? "✅ " : "⬜ ") + esc(i.nm) + '</li>'; }).join("") + '</ul>') +
+      pane("การติดตาม", '<table class="tbl"><tr><th>กำหนด</th><th>เรื่อง</th><th>สถานะ</th></tr>' + FU.map(function (f) { return '<tr><td>' + esc(thd(f.due_at)) + '</td><td>' + esc(f.kind) + '</td><td>' + (f.status === "done" ? "ทำแล้ว" + (f.note ? " · " + esc(f.note) : "") : "รอถึงกำหนด") + '</td></tr>'; }).join("") + '</table>') + '</div>',
+    did: "สถานะเคส: " + esc({ care_plan_agreed: "ตกลงแผนดูแลแล้ว", service_completed: "รับบริการแล้ว", follow_up_due: "ถึงกำหนดติดตาม" }[C.status] || C.status) + " · งานถัดไป: " + esc(C.next_action || "—"),
+    acts: '<a class="btn" target="_blank" rel="noopener" href="./CareSignal-Staff.html?demo=1">เปิดหน้าจอจริง · เคสในคิวงาน</a>' });
+
+  /* 10 · ประเมินซ้ำ */
+  if (A.length > 1) {
+    var p2 = a2.parts || {};
+    var cmp = function (nm, v1, v2, lowerBetter, unit) {
+      var better = lowerBetter ? v2 < v1 : v2 > v1, same = v1 === v2;
+      return '<tr><td>' + esc(nm) + '</td><td class="m">' + esc(v1) + (unit || "") + '</td><td class="m">' + esc(v2) + (unit || "") + '</td><td class="' + (same ? "" : better ? "up" : "dn") + '">' + (same ? "เท่าเดิม" : better ? "ดีขึ้น" : "แย่ลง") + '</td></tr>';
+    };
+    stage({ at: a2.assessed_at, actor: "member", who: who("member", "👵", "ผู้เอาประกัน · ประเมินซ้ำที่บ้านตามนัด"),
+      title: "ประเมินซ้ำวันที่ " + day(a2.assessed_at) + ": ลุกนั่งเร็วขึ้น " + (Math.round((a1.ftsst_seconds - a2.ftsst_seconds) * 10) / 10) + " วินาที ระดับ " + LV[s1.level] + " → " + LV[s2.level],
+      lead: "เทียบกับตัวเองครั้งก่อน ไม่ใช่กับค่าเฉลี่ยประชากร ระบบเปลี่ยนระดับตามกฎเดิม และตั้งรอบประเมินถัดไปตามระดับใหม่",
+      see: '<table class="tbl"><tr><th>ตัวชี้วัด</th><th>ครั้งที่ 1</th><th>ครั้งที่ 2</th><th>แนวโน้ม</th></tr>' +
+        cmp("ลุกนั่ง 5 ครั้ง", a1.ftsst_seconds, a2.ftsst_seconds, true, " วิ") + cmp("ลุกเดิน 3 เมตร", a1.tug_seconds, a2.tug_seconds, true, " วิ") +
+        cmp("การทรงตัว (คะแนนย่อย)", p1.balance, p2.balance, false) + cmp("กิจวัตรประจำวัน (คะแนนย่อย)", p1.adl, p2.adl, false) +
+        cmp("จุดเสี่ยงในบ้าน", a1.home_detail.count, a2.home_detail.count, true, " จุด") + cmp("ยากลุ่มเสี่ยงสูง", (a1.meds_detail || {}).high, (a2.meds_detail || {}).high, true, " รายการ") +
+        cmp("คะแนนรวม", a1.score, a2.score, false, "/12") + '</table>' +
+        '<div class="note">ระดับใหม่ <span class="chip lv-' + esc(s2.level) + '">' + esc(LV[s2.level]) + '</span> · ประเมินซ้ำครั้งถัดไปใน ' + s2.next_days + ' วัน · สัญญาณที่เหลือ: ' + (s2.signals.length ? s2.signals.map(function (x) { return esc(x.nm); }).join(", ") : "ไม่มี") + '</div>',
+      did: "ผู้ประสานงานยืนยันกับครอบครัวแล้วจะปิดเคส บริษัทประกันนับเป็น 1 รายที่ดีขึ้นหลังการดูแล" });
+  }
+
+  /* 11 · ครอบครัวเห็นอะไร */
+  var REF_ST = { sent: "ส่งให้ทีมดูแลแล้ว", received: "ผู้เชี่ยวชาญรับเรื่องแล้ว", returned: "ผู้เชี่ยวชาญส่งผลกลับแล้ว", closed: "ปิดเรื่องแล้ว" };
+  var ORDER = ["sent", "received", "returned", "closed"];
+  function famCard(r) {
+    var k = (r.status === "outcome_recorded" || r.status === "completed") ? "closed" : (r.review ? "returned" : (r.acknowledged_at ? "received" : "sent")), j = ORDER.indexOf(k), v = r.review || {};
+    return '<div class="rv"><div class="row"><span>ปลายทาง</span><span>' + esc(DEST[r.destination]) + '</span></div>' +
+      '<div class="stagebar">' + ORDER.map(function (x, i) { return '<div class="stg" data-on="' + (i < j ? "done" : i === j ? "1" : "") + '">' + esc(REF_ST[x]) + '</div>'; }).join("") + '</div>' +
+      '<div class="row"><span>ข้อค้นพบ</span><span>' + esc(v.finding || "—") + '</span></div><div class="row"><span>คำแนะนำ</span><span>' + esc(v.recommend || "—") + '</span></div></div>';
+  }
+  stage({ at: a2.assessed_at, actor: "family", who: who("family", "📱", "ครอบครัว · แอปสมาชิก หน้า “ผลตรวจของท่าน”"),
+    title: "ครอบครัวเห็นเฉพาะสิ่งที่ผู้เชี่ยวชาญมนุษย์ยืนยันแล้ว ไม่เห็นคะแนนดิบจากกล้อง",
+    lead: "หน้าผลบนเว็บของสมาชิกแสดงผลที่ผู้เชี่ยวชาญส่งกลับ ทีละใบ พร้อมขั้นที่ไปถึง ตัวเลขดิบดูได้ในแอปบนมือถือที่มีบริบทของการตรวจ เพราะตัวเลขที่ยังไม่ผ่านคนจะถูกอ่านเป็นคำตัดสิน",
+    see: '<div class="fam"><b style="font-size:15px">ผลตรวจของท่าน</b><div class="note" style="margin:2px 0 8px">แสดงเฉพาะสิ่งที่ผู้เชี่ยวชาญส่งกลับมา</div>' + R.map(famCard).join("") +
+      '<div class="warn">ผลเหล่านี้ใช้เพื่อเฝ้าระวังและประสานการดูแล ไม่ใช่การวินิจฉัย การปรับยาทำผ่านแพทย์ผู้สั่งยาเท่านั้น · นัดประเมินซ้ำครั้งถัดไป ' + thd(new Date(t(a2.assessed_at) + s2.next_days * D).toISOString()) + '</div></div>',
+    did: "ครอบครัวกดดูได้ตลอด ไม่ต้องรอโทรศัพท์ · ผู้เชี่ยวชาญภายนอกที่จะเปิดข้อมูลคลินิกต้องขอความยินยอมเป็นครั้ง ๆ และหมดอายุเองใน 8 ชั่วโมง",
+    note: "แสดงเป็นภาพจำลองของหน้าจอ เพราะแอปสมาชิกไม่มีโหมดสาธิต (กัน ข้อมูลสังเคราะห์ปนกับผลตรวจจริง)" });
+
+  /* 12 · บริษัทประกันเห็นอะไร — ตัวเลขจากฟังก์ชันเดียวกับแดชบอร์ด */
+  stage({ at: new Date(Math.max(t(a2.assessed_at), t(C.updated_at)) + D).toISOString(), actor: "insurer", who: who("insurer", "📊", "บริษัทประกัน · แดชบอร์ดพอร์ตความเสี่ยง"),
+    title: "บริษัทประกันเห็นภาพรวมทั้งพอร์ต ไม่เห็นชื่อ เห็นรายนี้เป็นหนึ่งแถวในกลุ่มอายุ",
+    lead: "บัญชีบริษัทประกันไม่มีเมนูรายบุคคลเลย บังคับที่ฐานข้อมูล ตัวเลขด้านล่างมาจากฟังก์ชันเดียวกับที่แดชบอร์ดใช้ ไม่ใช่พิมพ์มือ",
+    see: '<div class="ins" id="insBox">กำลังคำนวณ…</div>',
+    did: "รายนี้ปรากฏเป็นรหัส " + esc(m.pseudonym) + " กลุ่มอายุ " + esc(age < 70 ? "60–69" : age < 80 ? "70–79" : "80+") + " · ติดต่อภายใน SLA: ใช่ · ส่งต่อครบ " + R.length + " · ระดับดีขึ้น 1 ราย · ไม่มีการคิดเบี้ยหรือพิจารณาสิทธิ์จากข้อมูลนี้",
+    acts: '<a class="btn" target="_blank" rel="noopener" href="./CareSignal-Portfolio-Dashboard.html?demo=1">เปิดหน้าจอจริง · แดชบอร์ดบริษัทประกัน</a>' });
+
+  /* ---------- วาด ---------- */
+  ST.sort(function (a, b) { return t(a.at) - t(b.at); });
+  document.getElementById("tl").innerHTML = ST.map(function (s, i) {
+    return '<div class="st" data-actor="' + s.actor + '" id="s' + i + '"><div class="day"><b>วันที่ ' + day(s.at) + '</b><span>' + esc(thd(s.at)) + '</span></div><div class="dot"></div>' +
+      '<div class="card">' + s.who + '<h3>' + s.title + '</h3><p>' + s.lead + '</p>' + s.see +
+      (s.did ? '<div class="did"><span class="k">ผลที่ตามมา</span><span>' + s.did + '</span></div>' : "") +
+      (s.note ? '<div class="note">' + esc(s.note) + '</div>' : "") +
+      (s.acts ? '<div class="acts">' + s.acts + '</div>' : "") + '</div></div>';
+  }).join("");
+
+  /* ตัวเลขบริษัทประกัน — เรียกฟังก์ชันเดียวกับแดชบอร์ด */
+  Promise.all([CSBackend.insurerOutcomes(), CSBackend.insurerFunnel()]).then(function (v) {
+    var o = v[0], f = v[1], pct = function (a, b) { return b ? Math.round(100 * a / b) + "%" : "—"; };
+    document.getElementById("insBox").innerHTML =
+      '<div><b>' + f.enrolled + '</b><span>ผู้เอาประกันในโครงการ</span></div>' +
+      '<div><b>' + o.lv_stable + ' / ' + o.lv_watch + ' / ' + o.lv_decline + ' / ' + o.lv_urgent + '</b><span>คงที่ / เฝ้าสังเกต / ถดถอย / เร่งด่วน</span></div>' +
+      '<div><b>' + pct(o.case_contacted_in_sla, o.case_contacted) + '</b><span>เคสที่ติดต่อได้ภายใน SLA</span></div>' +
+      '<div><b>' + o.n_improved + ' / ' + o.n_comparable + '</b><span>ดีขึ้น / เทียบได้ (มีผล 2 ครั้ง)</span></div>' +
+      '<div><b>' + o.n_ref_completed + ' / ' + o.n_ref + '</b><span>ส่งต่อที่รับบริการแล้ว / ทั้งหมด</span></div>' +
+      '<div><b>' + o.ev_fall + '</b><span>เหตุหกล้มที่ครอบครัวแจ้ง</span></div>';
+  }).catch(function () { document.getElementById("insBox").textContent = "คำนวณไม่ได้ในแท็บนี้"; });
+})();
+</script>
+</body>
+</html>

@@ -61,7 +61,10 @@
   }
   /* แถวที่จะเขียนลง assessments ผ่าน CSBackend.saveAssessment — ช่องเดียวกับที่ V2 ส่ง */
   function payloadOf(rec, elder, carerName) {
-    var balPassed = rec.balance == null ? null : (rec.balance >= 10 ? 3 : rec.balance >= 3 ? 2 : 1);
+    var balPassed = rec.balPassed != null ? rec.balPassed
+                  : rec.balance == null ? null : (rec.balance >= 10 ? 3 : 2);   /* ข้อมูลรุ่นแรก: รู้แค่ท่ายืนต่อเท้า */
+    var STG = ["feet_together", "semi_tandem", "tandem", "one_leg"];
+    var stages = (rec.balStages || []).map(function (sec, i) { return { stage: STG[i], seconds: sec, passed: sec >= 10 }; });
     return {
       at: rec.date, method: "manual", ftsst: rec.ftsst, tug: rec.tug,
       reps: rec.ftsst != null ? 5 : null, cv: null, gaps: null,
@@ -76,7 +79,9 @@
         method: "manual", measured_by: "carer", carer_name: carerName || null, app: "v3",
         steadi: { fell: rec.fallsCount != null && rec.fallsCount >= 1 && rec.fallsCount !== 9, worried: !!rec.worried, unsteady: null },
         tug: { out: null, back: null, distance_ok: rec.tug != null ? true : null, turn_by: null, back_by: null, ended_by: "carer", mark_turn: false, reach: null, drift: null },
-        balance: { passed: balPassed, seconds: rec.balance, label: rec.balance == null ? null : (rec.balance >= 10 ? "ยืนต่อเท้าครบ 10 วินาที" : "ยืนต่อเท้าได้ " + rec.balance + " วินาที"), stages: null, alone: false, alone_skip: false },
+        balance: { passed: balPassed, seconds: rec.balance,
+                   label: balPassed == null ? null : "ทรงตัวผ่าน " + balPassed + " จาก 4 ท่า" + (rec.balance != null ? " · ยืนต่อเท้า " + rec.balance + " วินาที" : ""),
+                   stages: stages.length ? stages : null, alone: false, alone_skip: false },
         skipped: rec.skipped || {}, note: rec.note || null,
         adl: rec.adl
       }

@@ -1,0 +1,43 @@
+{
+  "id": "./CareSignal-Staff.html",
+  "name": "CareSignal Staff — แอปเจ้าหน้าที่",
+  "short_name": "CS Staff",
+  "description": "คิวเคสของ Care Manager และพอร์ตความเสี่ยงของบริษัทประกัน — เฉพาะบัญชีเจ้าหน้าที่ที่ได้รับสิทธิ์ ข้อมูลบังคับสิทธิ์ด้วย Row Level Security",
+  "start_url": "./CareSignal-Staff.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "portrait",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
+  "lang": "th",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

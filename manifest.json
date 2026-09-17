@@ -1,17 +1,83 @@
 {
-  "id": "./app.html",
-  "name": "CareSignal V3 — ลูกหลานวัดแรงขาให้ผู้สูงอายุที่บ้าน",
+  "id": "./index.html",
+  "name": "CareSignal V3 — ลูกหลานวัดให้ผู้สูงอายุที่บ้าน",
   "short_name": "CareSignal",
-  "description": "ลูกหลานจับเวลาแบบทดสอบลุกนั่ง ลุกเดิน และทรงตัวให้ผู้สูงอายุที่บ้าน รู้ผลทันที ดูแนวโน้มย้อนหลัง และพกใบสรุปไปพบแพทย์ — ไม่ใช้กล้อง ข้อมูลอยู่ในเครื่อง",
-  "start_url": "./app.html",
+  "description": "ลูกหลานจับเวลาแบบทดสอบลุกนั่ง ลุกเดิน และทรงตัว 4 ท่าให้ผู้สูงอายุที่บ้าน ไม่ใช้กล้อง ผลเข้าระบบกลาง ทีมดูแลติดตามและส่งต่อ ผู้เชี่ยวชาญยืนยัน",
+  "start_url": "./CareSignal-App.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
   "background_color": "#0F2A5C",
   "theme_color": "#0F2A5C",
   "lang": "th",
+  "dir": "ltr",
+  "categories": [
+    "health",
+    "medical"
+  ],
   "icons": [
-    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "ลูกหลานวัดให้",
+      "short_name": "วัดวันนี้",
+      "url": "./CareSignal-App.html",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "คอนโซลเจ้าหน้าที่ดูแล",
+      "short_name": "เจ้าหน้าที่",
+      "url": "./CareSignal-Staff.html",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "เว็บไซต์ CareSignal",
+      "short_name": "เว็บไซต์",
+      "url": "./index.html?site=1",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
   ]
 }
