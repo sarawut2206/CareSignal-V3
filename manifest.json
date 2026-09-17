@@ -1,8 +1,8 @@
 {
   "id": "./index.html",
   "name": "CareSignal V3 — ลูกหลานวัดให้ผู้สูงอายุที่บ้าน",
-  "short_name": "CareSignal",
-  "description": "ลูกหลานจับเวลาแบบทดสอบลุกนั่ง ลุกเดิน และทรงตัว 4 ท่าให้ผู้สูงอายุที่บ้าน ไม่ใช้กล้อง ผลเข้าระบบกลาง ทีมดูแลติดตามและส่งต่อ ผู้เชี่ยวชาญยืนยัน",
+  "short_name": "CareSignal V3",
+  "description": "ลูกหลานจับเวลาแบบทดสอบลุกนั่ง ลุกเดิน และทรงตัว 4 ท่าให้ผู้สูงอายุที่บ้าน ไม่ใช้กล้อง บันทึกยาจากรูปซองยา ผลเข้าระบบกลาง ทีมดูแลติดตามและส่งต่อ ผู้เชี่ยวชาญยืนยันก่อนแจ้งผลเสี่ยงสูง",
   "start_url": "./CareSignal-App.html",
   "scope": "./",
   "display": "standalone",
@@ -11,7 +11,7 @@
     "minimal-ui"
   ],
   "orientation": "portrait",
-  "background_color": "#0F2A5C",
+  "background_color": "#0B7A63",
   "theme_color": "#0F2A5C",
   "lang": "th",
   "dir": "ltr",
@@ -47,9 +47,20 @@
   ],
   "shortcuts": [
     {
-      "name": "ลูกหลานวัดให้",
+      "name": "วัดวันนี้ — ลูกหลานวัดให้",
       "short_name": "วัดวันนี้",
       "url": "./CareSignal-App.html",
+      "icons": [
+        {
+          "src": "./icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "บันทึกว่าล้ม",
+      "short_name": "บันทึกว่าล้ม",
+      "url": "./CareSignal-App.html?go=fall",
       "icons": [
         {
           "src": "./icon-192.png",

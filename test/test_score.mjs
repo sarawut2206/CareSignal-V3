@@ -123,5 +123,36 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   const pm = C.payloadOf({ date: "2026-09-18", ftsst: 12, tier: 2, pending: true, medsCount: 2, fridHigh: 1, fridTotal: 3, medsItems: [{ inn: "diazepam", frid: "bzd", lv: 2 }], flags: { reds: [], yellows: [] }, trend: [] }, { name: "x", age: 70 }, "y");
   ok("payload: ส่งรายการยาและคะแนน FRID + สถานะรอผู้เชี่ยวชาญ", pm.medsDetail.n === 1 && pm.medsDetail.frid_total === 3 && pm.detail.pending_expert === true, pm.medsDetail);
 }
+/* โหมดติดตั้งลงมือถือ + โลโก้ที่ต้องต่างจาก V2 (อยู่โดเมนเดียวกัน ติดตั้งพร้อมกันได้) */
+{
+  const app = readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8");
+  const mf = JSON.parse(readFileSync(new URL("../manifest.json", import.meta.url), "utf8"));
+  ok("manifest: ชื่อย่อไม่ซ้ำ V2 และเปิดที่ตัวแอป", mf.short_name === "CareSignal V3" && mf.start_url === "./CareSignal-App.html" && mf.display === "standalone", mf.short_name);
+  ok("manifest: ไอคอนครบทั้งแบบธรรมดาและ maskable", mf.icons.filter((i) => i.purpose === "maskable").length === 2 && mf.icons.filter((i) => i.sizes === "512x512").length === 2);
+  ok("manifest: ทางลัดมีวัดวันนี้และบันทึกว่าล้ม", mf.shortcuts.some((x) => /go=fall/.test(x.url)) && mf.shortcuts.length >= 3);
+  const png = (f) => readFileSync(new URL("../" + f, import.meta.url));
+  for (const f of ["icon-192.png", "icon-512.png", "icon-maskable-192.png", "icon-maskable-512.png", "apple-touch-icon.png", "favicon-64.png", "logo-mark.png"])
+    ok("มีไฟล์ไอคอน " + f, png(f).slice(1, 4).toString() === "PNG" && png(f).length > 1000);
+  /* ไอคอน V3 เป็นนาฬิกาจับเวลาเขียว ไม่ใช่โล่น้ำเงินของ V2 — เทียบสีมุมซ้ายบนของภาพจริง */
+  const px = (f) => { const b = png(f); let i = 8, out = null;
+    while (i < b.length) { const len = b.readUInt32BE(i), typ = b.slice(i + 4, i + 8).toString();
+      if (typ === "IHDR") out = { w: b.readUInt32BE(i + 8), h: b.readUInt32BE(i + 12) };
+      i += 12 + len; if (typ === "IEND") break; }
+    return out; };
+  ok("ไอคอน 512 ขนาดถูกต้อง", px("icon-512.png").w === 512 && px("icon-512.png").h === 512, px("icon-512.png"));
+  ok("apple-touch-icon 180 · favicon 64", px("apple-touch-icon.png").w === 180 && px("favicon-64.png").w === 64);
+  const idx = readFileSync(new URL("../index.html", import.meta.url), "utf8");
+  ok("รูปแชร์ชี้ไปที่ V3 ไม่ใช่ V2", /og:image" content="https:\/\/sarawut2206\.github\.io\/CareSignal-V3\/icon-512\.png/.test(idx) && !/CareSignal-V2\/icon-512/.test(idx));
+  ok("แอปมีปุ่มติดตั้งบนหน้าแรก", /installApp\(\)">📲 ติดตั้งลงหน้าจอมือถือ/.test(app));
+  ok("รับ beforeinstallprompt แล้วเรียกหน้าต่างติดตั้งเอง", /addEventListener\("beforeinstallprompt"/.test(app) && /A2HS\.defer\.prompt\(\)/.test(app));
+  ok("บอกวิธีติดตั้งครบทุกทาง: iPhone · Android · เบราว์เซอร์ในแอปแชท · คอมพิวเตอร์",
+     ["ติดตั้งบน iPhone / iPad", "ติดตั้งบน Android", "เปิดในเบราว์เซอร์ก่อน", "ติดตั้งบนคอมพิวเตอร์"].every((k) => app.includes(k)) && /FB_IAB|FBAN/.test(app));
+  ok("ติดตั้งแล้วหรืออยู่ในกรอบเว็บ ไม่ชวนติดตั้งซ้ำ", /function installedApp/.test(app) && /if \(embedded\(\) \|\| installedApp\(\)/.test(app));
+  ok("ปิดแถบชวนติดตั้งแล้วจำไว้", /localStorage\.setItem\(A2HS\.key, "no"\)/.test(app));
+  ok("ทางลัด ?go= เปิดหน้าที่ต้องการได้", /\["fall", "test", "history", "meds", "video"\]\.indexOf\(goto\)/.test(app));
+  const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
+  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-5/.test(sw));
+}
+
 console.log("  " + pass + " ผ่าน / " + fail + " ตก");
 process.exit(fail ? 1 : 0);

@@ -12,7 +12,7 @@
    หมายเหตุความเป็นส่วนตัว: Service Worker นี้แคชเฉพาะ "ไฟล์โปรแกรม"
    ไม่แตะข้อมูลผู้ใช้ และไม่มีการส่งข้อมูลใดออกจากเครื่อง
    ============================================================ */
-var VERSION = "cs3-site-4";
+var VERSION = "cs3-site-5";
 /* โฮสต์ที่เก็บเฉพาะไฟล์คงที่ (ไลบรารี โมเดล ฟอนต์) — แคชได้ */
 var STATIC_HOSTS = /(^|\.)(fonts\.googleapis\.com|fonts\.gstatic\.com|cdn\.jsdelivr\.net|storage\.googleapis\.com|esm\.sh|cdnjs\.cloudflare\.com)$/;
 

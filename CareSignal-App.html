@@ -86,6 +86,17 @@ textarea{min-height:70px}
 .doc{background:#fff;border-radius:14px;padding:16px;font-size:14.5px;line-height:1.6;box-shadow:var(--sh)}
 .doc h2{font-size:18px;margin:0 0 6px}.doc table{border-collapse:collapse;width:100%;margin:8px 0;font-size:13px}
 .doc td,.doc th{border:1px solid var(--line);padding:5px 6px;text-align:left}
+.isheet{position:fixed;inset:0;background:rgba(15,27,51,.55);z-index:60;display:flex;align-items:flex-end;justify-content:center;padding:18px}
+.isheet .cd{background:#fff;border-radius:22px;padding:22px;max-width:420px;width:100%;max-height:82vh;overflow:auto}
+.isheet h3{margin:0 0 8px;font-size:19px}
+.isheet ol{margin:0;padding-left:20px;font-size:15px;line-height:1.9;color:var(--ink2)}
+.isheet p{font-size:13.5px;color:var(--ink3);line-height:1.7;margin:10px 0 0}
+.a2hs{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));z-index:55;
+  display:flex;gap:8px;align-items:center;background:var(--brand2);color:#fff;border-radius:99px;padding:8px 10px 8px 16px;
+  font-size:13.5px;white-space:nowrap;box-shadow:0 12px 30px rgba(15,27,51,.35);max-width:94vw}
+.a2hs button{border:0;font-family:inherit;cursor:pointer;border-radius:99px}
+.a2hs .go{background:#fff;color:var(--brand2);font-weight:700;font-size:14px;padding:8px 15px}
+.a2hs .x{background:transparent;color:#C9D6F2;font-size:15px;padding:6px 8px}
 #print{display:none}
 @media print{
   body{display:block;background:#fff}.phone,.toast{display:none!important}
@@ -264,6 +275,67 @@ function saveReg() {
 }
 function wipe() { if (confirm("ลบข้อมูลทุกอย่างในเครื่องนี้ รวมประวัติการวัดทั้งหมด?")) { localStorage.removeItem(KEY); D = load(); S.elder = null; go("reg"); } }
 
+/* ============================================================
+   ติดตั้งลงหน้าจอมือถือ (PWA)
+   กดแล้วต้องได้คำตอบเสมอ — Android เรียกหน้าต่างติดตั้งของ Chrome ได้เลย
+   iPhone ติดตั้งได้จาก Safari เท่านั้น และเบราว์เซอร์ที่ฝังมากับ LINE หรือ Facebook
+   ติดตั้งไม่ได้เลย ซึ่งเป็นทางที่คนไทยเปิดลิงก์กันมากที่สุด จึงต้องบอกให้ไปเปิด
+   ในเบราว์เซอร์จริงก่อน ไม่ใช่ปล่อยให้กดแล้วเงียบ
+   ============================================================ */
+var A2HS = { defer: null, key: "cs3:a2hs" };
+function embedded() { return window.top !== window; }
+function installedApp() {
+  try { return matchMedia("(display-mode: standalone)").matches || navigator.standalone === true; } catch (e) { return false; }
+}
+function iSheet(title, body) {
+  var o = document.createElement("div");
+  o.className = "isheet";
+  o.innerHTML = '<div class="cd" role="dialog" aria-modal="true"><h3>' + title + '</h3>' + body +
+    '<button class="btn" style="margin-top:14px">เข้าใจแล้ว</button></div>';
+  document.body.appendChild(o);
+  o.querySelector("button.btn").addEventListener("click", function () { o.remove(); });
+  o.addEventListener("click", function (e) { if (e.target === o) o.remove(); });
+}
+function installApp() {
+  var ua = navigator.userAgent;
+  var inApp = /\bLine\/|FB_IAB|FBAN|FBAV|Instagram|Messenger|MicroMessenger|TikTok/i.test(ua);
+  var isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  var a2 = document.querySelector(".a2hs"); if (a2) a2.remove();
+  if (installedApp())
+    return iSheet("ติดตั้งไว้แล้ว", '<p style="font-size:15px;color:var(--ink2)">ตอนนี้เปิดจากไอคอนที่ติดตั้งไว้อยู่แล้ว ใช้วัดได้แม้ไม่มีอินเทอร์เน็ต ผลจะส่งขึ้นระบบกลางให้เองเมื่อกลับมาออนไลน์</p>');
+  if (A2HS.defer) {
+    A2HS.defer.prompt();
+    A2HS.defer.userChoice.then(function (c) { if (c && c.outcome === "accepted") toast("ติดตั้งแล้ว เปิดจากไอคอนบนหน้าจอได้เลย"); });
+    A2HS.defer = null; return;
+  }
+  if (embedded())
+    return iSheet("เปิดแอปเต็มจอก่อน", '<ol><li>แตะ <b>เปิดแอปเต็มจอ</b> หรือเปิดลิงก์ของแอปในแท็บใหม่</li><li>แล้วกด <b>ติดตั้งลงหน้าจอมือถือ</b> อีกครั้ง</li></ol><p>ตอนนี้แอปแสดงอยู่ในกรอบของหน้าเว็บ ซึ่งติดตั้งไม่ได้</p>');
+  if (inApp)
+    return iSheet("เปิดในเบราว์เซอร์ก่อน", '<ol><li>แตะปุ่ม <b>⋯</b> หรือ <b>⋮</b> ที่มุมขวาบน</li><li>เลือก <b>เปิดในเบราว์เซอร์</b> (Chrome หรือ Safari)</li><li>กด <b>ติดตั้งลงหน้าจอมือถือ</b> อีกครั้ง</li></ol><p>หน้านี้เปิดอยู่ในเบราว์เซอร์ที่ฝังมากับแอปแชท ซึ่งติดตั้งแอปไม่ได้</p>');
+  if (isIOS)
+    return iSheet("ติดตั้งบน iPhone / iPad", '<ol><li>แตะปุ่ม <b>แชร์</b> (สี่เหลี่ยมมีลูกศรชี้ขึ้น) ที่แถบล่างของ Safari</li><li>เลื่อนลงหา <b>เพิ่มลงในหน้าจอโฮม</b></li><li>แตะ <b>เพิ่ม</b></li></ol><p>iPhone ติดตั้งเว็บแอปได้จาก Safari เท่านั้น ถ้าเปิดด้วย Chrome ให้เปลี่ยนมาเปิดใน Safari ก่อน</p>');
+  if (/Android/.test(ua))
+    return iSheet("ติดตั้งบน Android", '<ol><li>แตะปุ่ม <b>⋮</b> ที่มุมขวาบนของ Chrome</li><li>เลือก <b>ติดตั้งแอป</b> หรือ <b>เพิ่มลงในหน้าจอหลัก</b></li><li>แตะ <b>ติดตั้ง</b></li></ol><p>ถ้ายังไม่เห็นเมนูนี้ ให้เปิดหน้านี้ค้างไว้สักครู่แล้วลองใหม่</p>');
+  return iSheet("ติดตั้งบนคอมพิวเตอร์", '<ol><li>ดูที่แถบที่อยู่เว็บด้านบน จะมีไอคอนรูปจอที่มีลูกศรลง หรือเครื่องหมาย <b>+</b></li><li>คลิกแล้วเลือก <b>ติดตั้ง</b></li></ol><p>ใช้ได้กับ Chrome และ Edge</p>');
+}
+function a2hsBar() {
+  if (embedded() || installedApp() || document.querySelector(".a2hs")) return;
+  try { if (localStorage.getItem(A2HS.key) === "no") return; } catch (e) {}
+  var b = document.createElement("div");
+  b.className = "a2hs";
+  b.innerHTML = '<span>📲 ติดตั้งลงหน้าจอ</span><button class="go">ติดตั้ง</button><button class="x" aria-label="ปิด">✕</button>';
+  document.body.appendChild(b);
+  b.querySelector(".go").addEventListener("click", installApp);
+  b.querySelector(".x").addEventListener("click", function () {
+    b.remove(); try { localStorage.setItem(A2HS.key, "no"); } catch (e) {}
+  });
+}
+window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); A2HS.defer = e; a2hsBar(); });
+window.addEventListener("appinstalled", function () {
+  var b = document.querySelector(".a2hs"); if (b) b.remove();
+  toast("ติดตั้งแล้ว เปิดจากไอคอนบนหน้าจอได้เลย"); if (S.screen === "home") render();
+});
+
 /* ---------- หน้าแรก ---------- */
 function newConfirmBanner(list) {
   var n = list.filter(function (a) { return a.confirmed && !a.confirmed.seen; });
@@ -283,6 +355,7 @@ function renderHome(v) {
     '<button class="btn" onclick="startTest()">⏱️ เริ่มวัดวันนี้</button>' +
     '<button class="btn sec" onclick="go(\'video\')">▶️ ดูวิธีวัดก่อน</button>' +
     '<button class="btn sec" onclick="go(\'meds\')">💊 ยาที่ใช้อยู่ (' + medsOf(e.id).length + ')</button>' +
+    (installedApp() || embedded() ? '' : '<button class="btn ghost" onclick="installApp()">📲 ติดตั้งลงหน้าจอมือถือ</button>') +
     '<button class="btn sec" onclick="go(\'fall\')">🩹 บันทึกว่าล้ม</button>' +
     cloudCard() +
     '<div class="card" style="margin-top:14px"><h3>ทำไมลูกหลานเป็นคนวัด</h3><p class="sub" style="margin:0">จากการสัมภาษณ์ผู้สูงอายุ 3 คน ทุกคนใช้แอปหรือตั้งกล้องเองไม่ได้ และทุกคนอยากให้ "ลูกหลานรู้" เป็นอันดับหนึ่ง แอปรุ่นนี้จึงให้คุณเป็นคนจับเวลา ผู้สูงอายุแค่ทำท่าตามที่คุณบอก</p></div>' +
@@ -854,13 +927,15 @@ async function cloudRefresh() {
 }
 
 (function () {
-  var q = new URLSearchParams(location.search), pid = q.get("print");
+  var q = new URLSearchParams(location.search), pid = q.get("print"), goto = q.get("go");
   if (pid && D.elders.length) {
     var a = D.assessments.filter(function (x) { return x.id === pid; })[0];
     if (a) { S.elder = a.elderId; S.last = a; S.screen = "doc"; render(); setTimeout(docPrint, 400); return; }
   }
+  if (goto && D.elders.length && ["fall", "test", "history", "meds", "video"].indexOf(goto) >= 0) { S.screen = goto; }
   render();
 })();
+setTimeout(a2hsBar, 2500);   /* ให้ผู้ใช้เห็นแอปก่อน ค่อยชวนติดตั้ง */
 CSCloud.init().then(function () { if (S.screen === "home") render(); return cloudRefresh(); }).then(cloudRetry);
 setInterval(function () { if (CSCloud.connected() && D.assessments.some(pending)) cloudRefresh(); }, 60000);
 document.addEventListener("visibilitychange", function () { if (!document.hidden && CSCloud.connected()) cloudRefresh(); });
