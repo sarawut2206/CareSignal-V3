@@ -72,7 +72,8 @@
       engine: ENGINE, durSec: null,
       safetyGate: { answers: rec.safety || null, verdict: { safe: true, mode: "carer" } },
       fallsDetail: { count: rec.fallsCount, injury: rec.injury, getup: rec.getup },
-      medsDetail: { count: rec.medsCount },
+      medsDetail: { count: rec.medsCount, n: rec.medsItems ? rec.medsItems.length : null, items: rec.medsItems || null,
+                    frid_high: rec.fridHigh == null ? null : rec.fridHigh, frid_total: rec.fridTotal == null ? null : rec.fridTotal },
       homeDetail: null, notTested: rec.ftsst == null && rec.tug == null && rec.balance == null,
       testQuality: { measured_by: "carer", ended_by: "carer", alone: false, alone_skip: false, distance_ok: rec.tug != null ? true : null },
       detail: {
@@ -83,7 +84,7 @@
                    label: balPassed == null ? null : "ทรงตัวผ่าน " + balPassed + " จาก 4 ท่า" + (rec.balance != null ? " · ยืนต่อเท้า " + rec.balance + " วินาที" : ""),
                    stages: stages.length ? stages : null, alone: false, alone_skip: false },
         skipped: rec.skipped || {}, note: rec.note || null,
-        adl: rec.adl
+        adl: rec.adl, pending_expert: !!rec.pending
       }
     };
   }

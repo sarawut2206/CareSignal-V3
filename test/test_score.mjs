@@ -94,5 +94,34 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   console.log("  cloud: " + p2 + " ผ่าน / " + f2 + " ตก");
   pass += p2; fail += f2;
 }
+/* รอบ 2: ยาจากรูป · ส้ม/แดงรอผู้เชี่ยวชาญ · คำแนะนำมีแหล่งอ้างอิง · ใบสรุปแพทย์ */
+{
+  const b13 = S.flags({ age: 70, fridTotal: 2, fridHigh: 1, balPassed: 4 });
+  ok("ยาเสี่ยงหกล้มรวม ≥ 2 = B13 (เหลือง)", b13.yellows.some((x) => x.id === "B13") && !b13.reds.length, b13);
+  ok("ยาเสี่ยงรวม 1 ไม่ติด B13", !S.flags({ age: 70, fridTotal: 1 }).yellows.some((x) => x.id === "B13"));
+  const b6 = S.flags({ age: 70, fridTotal: 4, fridHigh: 2, balPassed: 1 });
+  ok("ยาเสี่ยงสูง ≥ 2 + ทรงตัว ≤ 1 ท่า = B6 (แดง)", b6.reds.some((x) => x.id === "B6") && b6.level === "urgent", b6);
+  ok("ยาเสี่ยงสูง 2 แต่ทรงตัวผ่าน 2 ท่า ไม่ติด B6", !S.flags({ age: 70, fridHigh: 2, balPassed: 2 }).reds.length);
+  ok("ข้อความระดับสีไม่มีคำแนะนำที่ไม่มีแหล่งอ้างอิง", ![1, 2, 3, 4].some((t) => /ไม่ปล่อย|วันละ|2–4 สัปดาห์/.test(S.TIER[t].advice)));
+  const app = readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8");
+  ok("ส้ม/แดง ตั้ง pending = tier ≤ 2", /rec\.pending = tier <= 2/.test(app));
+  ok("หน้ารอผลไม่แสดงระดับสี", /function renderResult[\s\S]*?if \(pending\(r\)\)[\s\S]*?return;\s*\}/.test(app) && !/if \(pending\(r\)\) \{[^}]*T\.nm/.test(app));
+  ok("ตรวจผลยืนยันจาก review ของใบส่งต่อ + ปิดเคส", /function applyConfirmations/.test(app) && /rv\.review\.form/.test(app) && /closed_at/.test(app));
+  ok("แจ้งเตือนเมื่อยืนยัน (toast + Notification)", /function notifyConfirmed/.test(app) && /new Notification\(/.test(app));
+  ok("ตรวจผลซ้ำเป็นระยะ", /setInterval\(function \(\) \{ if \(CSCloud\.connected\(\) && D\.assessments\.some\(pending\)\)/.test(app));
+  const ev = app.slice(app.indexOf("var EVID = {"), app.indexOf("function evidItem"));
+  const keys = ev.match(/^\s{2}\w+:\s*\{ t:/gm) || [];
+  ok("คำแนะนำทุกข้อมีแหล่งอ้างอิง (src)", keys.length >= 8 && (ev.match(/src: "/g) || []).length === keys.length, keys.length);
+  ok("อ้าง CDC STEADI · WHO 2020 · Cochrane 2019 · World Guidelines 2022 · STOPPFall · 1669", ["CDC STEADI", "WHO Guidelines on Physical Activity", "Cochrane", "World Guidelines for Falls Prevention", "STOPPFall", "1669"].every((k) => ev.includes(k)));
+  ok("ลบคำแนะนำที่ไม่มีที่มาออกแล้ว", !/ลุกนั่ง 10 ครั้ง วันละ|ไม่ปล่อยอยู่คนเดียว|ไม่ปล่อยให้อยู่คนเดียว/.test(app));
+  ok("ขั้นตอนถ่ายรูปยาอยู่ใน FLOW หลังทรงตัว", /var FLOW = \["safety", "ftsst", "tug", "balance", "meds", "q", "confirm"\]/.test(app));
+  ok("ถ่ายรูปด้วย input file (ไม่เปิดกล้องสด) + OCR + ส่งเภสัชกร", /capture="environment"/.test(app) && /tesseract\.js@5/.test(app) && /uploadMedPhoto/.test(app) && /saveMed\(/.test(app) && !/getUserMedia/.test(app));
+  ok("ไม่มีคำสั่งหยุดยา", !/ให้หยุดยา|หยุดยาทันที/.test(app));
+  ok("ใบสรุปแพทย์เป็นหน้าในแอป + พิมพ์จากแท็บใหม่เมื่อฝังในกรอบ", /function renderDoc/.test(app) && /window\.top !== window/.test(app) && /\?print=/.test(app));
+  ok("แอปโหลด cs-meds.js", /<script src="\.\/cs-meds\.js"><\/script>/.test(app));
+  const C = require("../cs-cloud.js");
+  const pm = C.payloadOf({ date: "2026-09-18", ftsst: 12, tier: 2, pending: true, medsCount: 2, fridHigh: 1, fridTotal: 3, medsItems: [{ inn: "diazepam", frid: "bzd", lv: 2 }], flags: { reds: [], yellows: [] }, trend: [] }, { name: "x", age: 70 }, "y");
+  ok("payload: ส่งรายการยาและคะแนน FRID + สถานะรอผู้เชี่ยวชาญ", pm.medsDetail.n === 1 && pm.medsDetail.frid_total === 3 && pm.detail.pending_expert === true, pm.medsDetail);
+}
 console.log("  " + pass + " ผ่าน / " + fail + " ตก");
 process.exit(fail ? 1 : 0);
