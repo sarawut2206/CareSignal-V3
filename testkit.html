@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ชุดอุปกรณ์ทดสอบ · CareSignal V3</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--ink:#16233B;--ink2:#5B6B84;--brand:#2563EB;--line:#DFE7F2;--c1:#DC2626;--acc:#FEF3C7}
+*{box-sizing:border-box}body{margin:0;background:#E9EEF5;font-family:"Prompt",system-ui,sans-serif;color:var(--ink);line-height:1.6}
+.page{background:#fff;width:auto;max-width:210mm;min-height:297mm;margin:16px auto;padding:16mm 18mm;box-shadow:0 8px 30px rgba(0,0,0,.12);page-break-after:always}
+@media(max-width:700px){.page{padding:22px 18px;min-height:auto;margin:8px}}
+h1{font-size:26px;margin:0 0 4px;color:var(--brand)}h2{font-size:20px;margin:18px 0 8px;border-bottom:2px solid var(--brand);padding-bottom:4px}
+.sub{color:var(--ink2);margin:0 0 14px}
+table{border-collapse:collapse;width:100%;margin:8px 0}td,th{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top;font-size:15px}th{background:#EAF0FE}
+.warn{background:var(--acc);border:1px solid #F5D78E;border-radius:10px;padding:10px 14px;margin:10px 0}
+.chk{list-style:none;padding:0;margin:0}.chk li{padding:6px 0 6px 34px;position:relative;border-bottom:1px dashed var(--line)}.chk li::before{content:"";position:absolute;left:0;top:9px;width:20px;height:20px;border:2px solid var(--ink2);border-radius:5px}
+.line3{height:60px;border:2px dashed var(--brand);border-radius:8px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;margin:12px 0;font-weight:600}
+.qr{display:flex;gap:24px;align-items:center;margin:14px 0}.qr div canvas,.qr div img{border:1px solid var(--line);padding:6px;background:#fff}
+.script{background:#F7F9FC;border-radius:10px;padding:12px 16px;margin:8px 0;font-size:15px}.script b{color:var(--brand)}
+.tools{position:fixed;top:12px;right:12px;display:flex;gap:8px}.tools button,.tools a{font:inherit;font-size:14px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:#fff;cursor:pointer;text-decoration:none;color:var(--ink)}
+@media print{body{background:#fff}.page{box-shadow:none;margin:0;width:auto;min-height:auto}.tools{display:none}}
+</style>
+</head>
+<body>
+<div class="tools"><a href="./index.html">‹ หน้าหลัก</a><button onclick="window.print()">🖨️ พิมพ์</button></div>
+
+<div class="page">
+  <h1>ชุดอุปกรณ์ทดสอบที่บ้าน · CareSignal V3</h1>
+  <p class="sub">แผ่นที่ 1 · สิ่งที่ต้องมี และวิธีเตรียมที่ ใช้เวลาเตรียมประมาณ 5 นาที</p>
+  <h2>ในกล่องมีอะไร</h2>
+  <ul class="chk">
+    <li><b>เก้าอี้</b> มีพนักพิง ไม่มีล้อ ไม่มีที่วางแขน ที่นั่งสูงประมาณ 45–50 ซม. (เก้าอี้กินข้าวทั่วไป)</li>
+    <li><b>เทปกาวสีหรือเชือก 1 เส้น</b> สำหรับทำจุดหมายที่ระยะ 3 เมตร</li>
+    <li><b>สายวัดหรือแผ่นวัด 3 เมตร</b> (หรือใช้ก้าวของผู้ใหญ่ประมาณ 4 ก้าว)</li>
+    <li><b>มือถือของลูกหลาน</b> เปิดแอป CareSignal V3 ใช้เป็นนาฬิกาจับเวลา</li>
+    <li><b>แผ่นขั้นตอน 3 ท่า</b> (แผ่นที่ 2 ของชุดนี้) ติดไว้ที่ผนัง</li>
+    <li><b>เบอร์ที่ควรมี</b> เขียนไว้ที่แผ่นนี้: ฉุกเฉิน 1669 · โรงพยาบาลใกล้บ้าน ________________ · ลูกหลาน ________________</li>
+  </ul>
+  <h2>เตรียมที่</h2>
+  <div class="line3"><span>🪑 ขาเก้าอี้</span><span>← 3 เมตร →</span><span>🎯 จุดหมาย</span></div>
+  <ol>
+    <li>วางเก้าอี้ชิดผนัง ให้ด้านหน้ามีทางเดินว่างอย่างน้อย 4 เมตร</li>
+    <li>วัด 3 เมตรจากขาเก้าอี้ด้านหน้า แล้วติดเทปหรือวางวัตถุที่เห็นชัดเป็นจุดหมาย</li>
+    <li>พื้นแห้ง ไม่มีพรม สายไฟ หรือของวางขวาง · แสงสว่างพอ</li>
+    <li>ผู้สูงอายุใส่รองเท้าหุ้มส้นที่ใช้ประจำ หรือเท้าเปล่า ห้ามถุงเท้าอย่างเดียว</li>
+    <li>ลูกหลานยืนข้าง ๆ ตลอด อยู่ในระยะที่พยุงได้ทันที</li>
+  </ol>
+  <div class="warn"><b>ห้ามวัดวันนี้</b> ถ้าผู้สูงอายุหน้ามืด เจ็บหน้าอก หายใจลำบาก แขนขาอ่อนแรงเฉียบพลัน เพิ่งล้ม หรือแพทย์ห้ามเดิน · ถ้ามีอาการระหว่างทำ ให้นั่งพักทันที ไม่ดีขึ้นโทร <b>1669</b></div>
+  <div class="qr">
+    <div id="qr1"></div>
+    <div><b>สแกนเพื่อเปิดแอปและวิดีโอสาธิต</b><br><span id="url1" style="font-size:14px;color:var(--ink2)"></span><br><small>เปิดครั้งแรกต้องมีอินเทอร์เน็ต ครั้งต่อไปใช้ออฟไลน์ได้</small></div>
+  </div>
+</div>
+
+<div class="page">
+  <h1>ขั้นตอน 3 ท่า ติดผนังไว้</h1>
+  <p class="sub">แผ่นที่ 2 · ลูกหลานเป็นคนบอกและจับเวลา ผู้สูงอายุแค่ทำตาม · ทั้งหมดใช้เวลาประมาณ 10 นาที</p>
+  <table>
+    <tr><th style="width:24%">ท่า</th><th>ทำอย่างไร</th><th style="width:26%">กดเริ่ม / กดหยุด</th></tr>
+    <tr><td><b>1. ลุกนั่ง 5 ครั้ง</b><br><small>วัดแรงขา</small></td><td>นั่งเก้าอี้ กอดอก (กอดไม่ได้ให้วางมือบนตัก อย่าดันเก้าอี้) ลุกยืนตรงแล้วนั่งลง ทำติดกัน 5 ครั้ง ให้เร็วเท่าที่ปลอดภัย</td><td>เริ่ม: เมื่อพูดว่า "เริ่ม"<br>หยุด: ก้นแตะเก้าอี้ครั้งที่ 5</td></tr>
+    <tr><td><b>2. ลุกเดิน 3 เมตร</b><br><small>วัดการเดินและการหมุนตัว</small></td><td>นั่งพิงพนัก ลุกขึ้น เดินไปแตะจุดหมาย 3 เมตร หมุนกลับ เดินมานั่งลง เดินตามปกติ ใช้ไม้เท้าได้ถ้าใช้ประจำ</td><td>เริ่ม: เมื่อพูดว่า "เริ่ม"<br>หยุด: นั่งลงเรียบร้อย</td></tr>
+    <tr><td><b>3. ยืนต่อเท้า</b><br><small>วัดการทรงตัว</small></td><td>ยืนข้างผนังหรือโต๊ะ วางเท้าข้างหนึ่งหน้าอีกข้าง ส้นเท้าชิดปลายเท้า ปล่อยมือแล้วยืนนิ่ง เป้าหมาย 10 วินาที</td><td>เริ่ม: เมื่อปล่อยมือ<br>หยุด: ก้าวเท้า จับผนัง หรือครบ 10 วินาที</td></tr>
+  </table>
+  <h2>หลังวัดเสร็จ แอปจะถาม 5 ข้อ</h2>
+  <ol>
+    <li>ใน 12 เดือน หกล้มกี่ครั้ง (ถ้าล้ม: บาดเจ็บแค่ไหน · ลุกเองได้ไหม)</li>
+    <li>รู้สึกไม่มั่นคงเวลาเดิน หรือกลัวล้มไหม</li>
+    <li>กิจวัตรประจำวันทำเองได้แค่ไหน</li>
+  </ol>
+  <h2>ผลออกทันที 4 สี</h2>
+  <table>
+    <tr><td style="background:#E3F6EF"><b>เขียว</b> คงที่</td><td>วัดซ้ำทุก 3 เดือน คงการออกกำลังขา</td></tr>
+    <tr><td style="background:#FEF6DE"><b>เหลือง</b> เฝ้าสังเกต</td><td>วัดซ้ำใน 1 เดือน ปรับบ้านให้ปลอดภัย เริ่มออกกำลังขา</td></tr>
+    <tr><td style="background:#FDECD8"><b>ส้ม</b> ถดถอย</td><td>พบแพทย์หรือนักกายภาพใน 2–4 สัปดาห์ พร้อมใบสรุปจากแอป</td></tr>
+    <tr><td style="background:#FEE9E9"><b>แดง</b> ต้องพบแพทย์</td><td>พาไปพบแพทย์โดยเร็ว ไม่ปล่อยอยู่คนเดียว</td></tr>
+  </table>
+  <p style="font-size:13.5px;color:var(--ink2)">เกณฑ์เดียวกับ CareSignal รุ่นกล้อง: ลุกนั่ง 10.0 / 11.5 / 12.1 วินาทีตามช่วงอายุ (Poncumhak 2014) · เปลี่ยนแปลงมีความหมาย ≥ 2.3 วินาที (Meretta 2006) · ลุกเดิน ≥ 12 วินาที และยืนต่อเท้า &lt; 10 วินาที (CDC STEADI) · เป็นการคัดกรองเบื้องต้น ไม่ใช่การวินิจฉัย</p>
+</div>
+
+<div class="page">
+  <h1>บทวิดีโอสาธิต 4 คลิป</h1>
+  <p class="sub">แผ่นที่ 3 · สำหรับทีมถ่ายทำ · คลิปละไม่เกิน 1 นาที แนวตั้ง มีซับไทย · ให้สมาชิกทีมเป็นผู้แสดง ไม่ใช้ผู้สูงอายุที่ให้สัมภาษณ์</p>
+  <div class="script"><b>คลิป 1 · เตรียมที่ (45 วิ)</b><br>ภาพ: ห้องนั่งเล่นธรรมดา · เสียง: "ก่อนวัด เตรียมสามอย่างครับ หนึ่ง เก้าอี้มีพนัก ไม่มีล้อ วางชิดผนัง สอง วัดสามเมตรจากขาเก้าอี้ ติดเทปไว้เป็นจุดหมาย สาม เก็บของบนพื้นให้หมด ใส่รองเท้าหุ้มส้น แล้วลูกหลานยืนข้าง ๆ ตลอดครับ" · ปิดด้วยภาพเส้น 3 เมตร</div>
+  <div class="script"><b>คลิป 2 · ลุกนั่ง 5 ครั้ง (50 วิ)</b><br>ภาพ: ผู้แสดงนั่งเก้าอี้ กอดอก ลูกหลานถือมือถือ · เสียง: "ให้คุณแม่กอดอก ลูกหลานพูดว่า เริ่ม พร้อมกดจับเวลา ลุกยืนตรง นั่งลง นับหนึ่ง ทำให้ครบห้าครั้ง กดหยุดตอนก้นแตะเก้าอี้ครั้งที่ห้า ถ้าต้องใช้มือดัน หรือทำไม่ครบ ให้กดข้ามท่านี้ ไม่ต้องฝืนครับ" · แทรกภาพหน้าจอปุ่มเริ่ม/หยุด</div>
+  <div class="script"><b>คลิป 3 · ลุกเดิน 3 เมตร (50 วิ)</b><br>ภาพ: มุมข้าง เห็นเก้าอี้และเทป 3 เมตร · เสียง: "นั่งพิงพนัก มือวางตัก พูดว่า เริ่ม พร้อมกดจับเวลา ลุก เดินไปแตะจุดหมาย หมุนกลับ เดินมานั่ง กดหยุดตอนนั่งลงเรียบร้อย เดินตามปกติ ไม่ต้องรีบ ใช้ไม้เท้าได้ถ้าใช้ประจำครับ"</div>
+  <div class="script"><b>คลิป 4 · ยืนต่อเท้า (40 วิ)</b><br>ภาพ: ยืนข้างผนัง ซูมที่เท้า · เสียง: "ยืนข้างผนังที่จับได้ วางเท้าข้างหนึ่งหน้าอีกข้าง ส้นเท้าชิดปลายเท้า ปล่อยมือ กดเริ่ม ยืนนิ่งให้ครบสิบวินาที ถ้าก้าวเท้าหรือจับผนัง กดหยุดตรงนั้น บันทึกวินาทีที่ยืนได้ครับ" · ปิดด้วยคำเตือน "หน้ามืด เจ็บหน้าอก หยุดทันที โทร 1669"</div>
+  <h2>เมื่อถ่ายเสร็จ</h2>
+  <p>อัปโหลด YouTube แบบไม่เป็นสาธารณะ (unlisted) แล้วใส่รหัสวิดีโอในไฟล์ <code>app.html</code> ที่ตัวแปร <code>VIDEOS</code> ช่อง <code>id</code> — แอปจะแสดงวิดีโอแทนขั้นตอนตัวหนังสือทันที</p>
+</div>
+
+<script>
+var base = location.origin + location.pathname.replace(/testkit\.html$/, "");
+document.getElementById("url1").textContent = base + "app.html";
+if (window.QRCode) new QRCode(document.getElementById("qr1"), { text: base + "app.html", width: 132, height: 132 });
+</script>
+</body>
+</html>

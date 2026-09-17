@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CareSignal V3 — ลูกหลานวัดแรงขาให้ผู้สูงอายุที่บ้าน</title>
+<meta name="description" content="หลังสัมภาษณ์ผู้สูงอายุและครอบครัว 5 คน CareSignal ปรับจากให้ผู้สูงอายุตั้งกล้องเอง เป็นให้ลูกหลานจับเวลาแบบทดสอบให้ ผลทันที แนวโน้ม และใบสรุปพกไปพบแพทย์">
+<link rel="manifest" href="./manifest.json"><link rel="icon" href="./icon-192.png"><meta name="theme-color" content="#0F2A5C">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F2F6FB;--ink:#16233B;--ink2:#5B6B84;--brand:#2563EB;--brand2:#1D4ED8;--line:#DFE7F2;--surf:#fff;--c4:#0E9F6E;--c1:#DC2626;--acc:#FEF3C7}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:"Prompt",system-ui,sans-serif;color:var(--ink);line-height:1.65;font-size:17px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+.hero{background:linear-gradient(135deg,#0F2A5C,var(--brand2) 60%,#3B82F6);color:#fff;padding:56px 0 48px}
+.hero .kick{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:#FCD34D;font-weight:600}
+.hero h1{font-size:clamp(28px,4.5vw,44px);margin:8px 0 12px;line-height:1.25}
+.hero p{font-size:19px;opacity:.9;max-width:720px;margin:0 0 22px}
+.btn{display:inline-block;background:#fff;color:var(--brand2);font-weight:600;padding:14px 22px;border-radius:14px;text-decoration:none;margin:6px 8px 6px 0;font-size:17px}
+.btn.o{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.4)}
+section{padding:44px 0}section h2{font-size:26px;margin:0 0 6px}section .sub{color:var(--ink2);margin:0 0 22px;font-size:16.5px}
+.grid{display:grid;gap:16px}.g3{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.card{background:var(--surf);border-radius:18px;padding:22px;box-shadow:0 1px 2px rgba(22,35,59,.04),0 6px 18px rgba(22,35,59,.05)}
+.card h3{margin:0 0 8px;font-size:19px}.card ul{padding-left:20px;margin:8px 0}.card li{margin:4px 0}
+.tag{display:inline-block;font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:99px;margin-bottom:8px}
+.before{background:#EAF0FE;color:var(--brand2)}.found{background:var(--acc);color:#B45309}.after{background:#E3F6EF;color:var(--c4)}
+.num{font-size:40px;font-weight:700;color:var(--brand);line-height:1}.num small{font-size:15px;color:var(--ink2);font-weight:500;display:block;margin-top:4px}
+.quote{border-left:4px solid #F59E0B;padding:8px 14px;background:#FFFBEB;border-radius:0 12px 12px 0;margin:8px 0;font-size:15.5px}
+.quote small{display:block;color:var(--ink2)}
+.steps{counter-reset:s;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.steps div{background:var(--surf);border-radius:16px;padding:18px 18px 18px 56px;position:relative;box-shadow:0 1px 2px rgba(22,35,59,.04)}
+.steps div::before{counter-increment:s;content:counter(s);position:absolute;left:16px;top:16px;width:30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;font-weight:700;text-align:center;line-height:30px}
+.steps b{display:block;margin-bottom:4px}
+.alt{background:#fff}
+table{border-collapse:collapse;width:100%}td,th{border:1px solid var(--line);padding:9px 12px;text-align:left;font-size:15.5px}th{background:#EAF0FE}
+footer{padding:28px 0 40px;color:var(--ink2);font-size:14px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div class="hero"><div class="wrap">
+  <div class="kick">CareSignal V3 · OIC InsurTech Award 2026</div>
+  <h1>ลูกหลานวัดแรงขาให้ผู้สูงอายุที่บ้าน<br>รู้ผลทันที · เห็นแนวโน้ม · แจ้งครอบครัวก่อนล้ม</h1>
+  <p>รุ่นนี้ไม่ใช้กล้อง เพราะเราไปถามผู้สูงอายุแล้วพบว่าทุกคนตั้งกล้องเองไม่ได้ ลูกหลานจึงเป็นคนจับเวลาแบบทดสอบมาตรฐาน 3 ท่า ด้วยเกณฑ์เดียวกับรุ่นกล้อง</p>
+  <a class="btn" href="./app.html">เปิดแอปสำหรับลูกหลาน</a>
+  <a class="btn o" href="./testkit.html">ชุดอุปกรณ์ทดสอบ (พิมพ์ได้)</a>
+  <a class="btn o" href="https://sarawut2206.github.io/CareSignal-V2/">รุ่นกล้อง (V2) ยังใช้ได้</a>
+</div></div>
+
+<section id="change"><div class="wrap">
+  <h2>เราเปลี่ยนอะไรหลังฟังผู้ใช้</h2>
+  <p class="sub">ภารกิจ Idea Validation · สัมภาษณ์และแบบสอบถาม 15–16 กันยายน 2569 · ผู้สูงอายุ 3 คน (อายุ 60, 65, 68) และลูกหลานผู้ดูแล 2 คน</p>
+  <div class="grid g3">
+    <div class="card"><span class="tag before">ก่อน · CareSignal V2</span><h3>ผู้สูงอายุตั้งกล้องวัดเอง</h3>
+      <p>แอปใช้กล้องมือถือจับท่าลุกนั่ง 5 ครั้งและลุกเดิน 3 เมตร นับครั้งและจับเวลาให้อัตโนมัติ ประมวลผลในเครื่อง ไม่ส่งภาพออก</p>
+      <ul><li>ต้องวางมือถือให้เห็นเต็มตัว</li><li>ต้องกดเมนูเองหลายขั้น</li><li>ครอบครัวเห็นผลเมื่อเชื่อมบัญชีออนไลน์</li></ul>
+      <a href="https://sarawut2206.github.io/CareSignal-V2/">ดูรุ่นกล้อง ›</a></div>
+    <div class="card"><span class="tag found">สิ่งที่พบ</span><h3>ปัญหาจริง แต่ใช้เองไม่ได้</h3>
+      <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 10px">
+        <div><div class="num">5/5<small>มีผู้สูงอายุหกล้มในปีที่ผ่านมา</small></div></div>
+        <div><div class="num">3/3<small>ผู้สูงอายุติดตั้งแอปหรือตั้งกล้องเองไม่ได้</small></div></div>
+        <div><div class="num">3/3<small>ผู้สูงอายุเลือก "ให้ลูกหลานรู้" เป็นอันดับ 1</small></div></div>
+        <div><div class="num">5/5<small>อยากประเมินได้ที่บ้าน</small></div></div>
+      </div>
+      <div class="quote">"กดไม่เป็น ทำไม่เป็น"<small>ผู้สูงอายุ 60 ปี</small></div>
+      <div class="quote">"ตั้งกล้องไม่เป็น"<small>ผู้สูงอายุ 65 ปี ล้ม 3 ครั้งในปีนี้</small></div>
+      <div class="quote">"พ่อไม่ชอบไปหาหมอ ไม่ชอบนั่งรอ"<small>ลูกของผู้สูงอายุ 76 ปี</small></div></div>
+    <div class="card"><span class="tag after">หลัง · CareSignal V3</span><h3>ลูกหลานเป็นคนวัดให้</h3>
+      <ul><li><b>ลูกหลานจับเวลา</b>ด้วยปุ่มใหญ่ปุ่มเดียว ผู้สูงอายุแค่ทำท่าตาม</li><li><b>วิดีโอสาธิต</b>ทีละท่า และแผ่นขั้นตอนติดผนัง</li><li><b>ผลทันที 4 สี</b>พร้อมเหตุผลภาษาง่าย และขั้นต่อไป</li><li><b>แจ้งครอบครัว</b>เป็นฟีเจอร์หลัก แชร์ผลทาง LINE ได้ทันที</li><li><b>ใบสรุปพกไปพบแพทย์</b> พิมพ์จากแอปได้เลย</li><li>เกณฑ์คะแนน<b>เหมือน V2 ทุกตัวเลข</b> ผลเทียบกันได้</li></ul>
+      <a href="./app.html">เปิดแอป ›</a></div>
+  </div>
+</div></section>
+
+<section class="alt"><div class="wrap">
+  <h2>ใช้อย่างไร ใช้เวลา 10 นาที</h2>
+  <p class="sub">ผู้ใช้แอปคือลูกหลาน ผู้สูงอายุไม่ต้องแตะมือถือเลย</p>
+  <div class="steps">
+    <div><b>ลงทะเบียน</b>ชื่อผู้ดูแล ชื่อและอายุผู้สูงอายุ จำนวนยาที่กิน และความยินยอม ข้อมูลอยู่ในเครื่อง</div>
+    <div><b>ดูวิธีวัด</b>วิดีโอสั้น 4 คลิป หรืออ่านขั้นตอน เตรียมเก้าอี้และเส้น 3 เมตร</div>
+    <div><b>วัดวันนี้</b>ถามความปลอดภัย 4 ข้อ แล้วจับเวลา 3 ท่า และตอบ 5 คำถาม</div>
+    <div><b>ผลและแนวโน้ม</b>เห็นสีทันที กราฟเทียบกับครั้งก่อน แชร์ให้ครอบครัว พิมพ์ใบสรุป</div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>สิ่งที่ยังเหมือน V2 และสิ่งที่ต่าง</h2>
+  <p class="sub">เราไม่ได้ทิ้งของเดิม รุ่นกล้องยังเป็นทางเลือกสำหรับบ้านที่ตั้งกล้องได้ และเป็นที่มาของเกณฑ์ทั้งหมด</p>
+  <table>
+    <tr><th></th><th>V2 รุ่นกล้อง</th><th>V3 ลูกหลานวัดให้</th></tr>
+    <tr><td>ใครใช้</td><td>ผู้สูงอายุ</td><td>ลูกหลาน</td></tr>
+    <tr><td>จับเวลา</td><td>กล้องนับครั้งและจับเวลาเอง</td><td>ลูกหลานกดปุ่มเริ่ม/หยุด</td></tr>
+    <tr><td>ท่าทดสอบ</td><td colspan="2">ลุกนั่ง 5 ครั้ง · ลุกเดิน 3 เมตร · ยืนต่อเท้า 10 วินาที (เหมือนกัน)</td></tr>
+    <tr><td>เกณฑ์คะแนน</td><td colspan="2">10.0 / 11.5 / 12.1 วินาทีตามอายุ · เปลี่ยนแปลง ≥ 2.3 วินาที · ลุกเดิน ≥ 12 วินาที (เหมือนกัน)</td></tr>
+    <tr><td>แจ้งครอบครัว</td><td>เมื่อเชื่อมบัญชีออนไลน์</td><td>ฟีเจอร์หลัก แชร์ได้ทันทีเพราะลูกหลานคือผู้ใช้</td></tr>
+    <tr><td>ข้อมูล</td><td>ตัวเลขเข้าระบบเมื่อกดบันทึก</td><td>อยู่ในเครื่องลูกหลาน ยังไม่ส่งไปที่ใด</td></tr>
+    <tr><td>สิ่งที่ยังไม่ทำ</td><td colspan="2">ไม่วินิจฉัยโรค ไม่แทนการพบแพทย์ ไม่มีระบบฉุกเฉิน (ฉุกเฉินโทร 1669)</td></tr>
+  </table>
+  <p class="sub" style="margin-top:14px">ข้อจำกัดของหลักฐาน: ผู้ให้ข้อมูล 5 คนจากโรงเรียนเดียวกัน ผู้สูงอายุยังทำงานได้ ผลนี้ใช้กับกลุ่มนี้ ไม่ใช่ข้อสรุปของผู้สูงอายุทั่วไป · ความแม่นของการจับเวลาด้วยมือยังไม่ได้เทียบกับกล้อง เป็นสิ่งที่จะวัดในรอบนำร่อง</p>
+</div></section>
+
+<footer><div class="wrap">ทีม CareSignal · OIC InsurTech Award 2026 · <a href="https://github.com/sarawut2206/CareSignal-V3">โค้ด V3</a> · <a href="https://github.com/sarawut2206/CareSignal-V2">โค้ด V2</a> · เป็นต้นแบบเพื่อการประกวด ยังไม่มีบริษัทประกันนำไปใช้</div></footer>
+</body>
+</html>
