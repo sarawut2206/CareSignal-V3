@@ -12,7 +12,10 @@
    หมายเหตุความเป็นส่วนตัว: Service Worker นี้แคชเฉพาะ "ไฟล์โปรแกรม"
    ไม่แตะข้อมูลผู้ใช้ และไม่มีการส่งข้อมูลใดออกจากเครื่อง
    ============================================================ */
-var VERSION = "cs3-site-2";
+var VERSION = "cs3-site-3";
+/* โฮสต์ที่เก็บเฉพาะไฟล์คงที่ (ไลบรารี โมเดล ฟอนต์) — แคชได้ */
+var STATIC_HOSTS = /(^|\.)(fonts\.googleapis\.com|fonts\.gstatic\.com|cdn\.jsdelivr\.net|storage\.googleapis\.com|esm\.sh|cdnjs\.cloudflare\.com)$/;
+
 /* V2 กับ V3 อยู่บนโดเมนเดียวกัน (sarawut2206.github.io) แคชจึงอยู่ถังเดียวกัน
    ลบเฉพาะแคชของ V3 เอง (ขึ้นต้น cs3-) ห้ามลบของ V2 */
 var PREFIX = "cs3-";
@@ -105,6 +108,10 @@ self.addEventListener("fetch", function (e) {
       })
     );
   } else {
+    /* ข้อมูลจากฐานข้อมูล (Supabase) และบริการอื่นต้องสดเสมอ — ไม่แตะเลย
+       เดิมแคชทุกคำขอข้ามโดเมน ทำให้คิวงานเจ้าหน้าที่ได้คำตอบชุดแรก (0 เคส) ซ้ำตลอด
+       แม้ฐานข้อมูลจะมีเคสใหม่แล้ว */
+    if (!STATIC_HOSTS.test(url.hostname)) return;
     /* CDN (โมเดล ไลบรารี ฟอนต์): cache-first */
     e.respondWith(
       caches.match(req).then(function (m) {
