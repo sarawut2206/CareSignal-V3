@@ -7,7 +7,7 @@
 <meta name="description" content="ลูกหลานจับเวลาแบบทดสอบลุกนั่ง ลุกเดิน และทรงตัวให้ผู้สูงอายุที่บ้าน รู้ผลทันที ดูแนวโน้ม พกใบสรุปไปพบแพทย์ — ไม่ใช้กล้อง">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon-192.png">
-<meta name="theme-color" content="#0F2A5C">
+<meta name="theme-color" content="#F4F6F8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -97,6 +97,76 @@ textarea{min-height:70px}
 .a2hs button{border:0;font-family:inherit;cursor:pointer;border-radius:99px}
 .a2hs .go{background:#fff;color:var(--brand2);font-weight:700;font-size:14px;padding:8px 15px}
 .a2hs .x{background:transparent;color:#C9D6F2;font-size:15px;padding:6px 8px}
+/* ================= หน้าตาชุดใหม่ ================= */
+:root{
+  --bg:#F4F6F8; --surf2:#E7F6F3; --line:#E1E8EE; --line2:#EEF3F6;
+  --brand:#0F9C8C; --brand2:#0B766A; --brandt:#E7F6F3; --ink:#1E2A33; --ink2:#5E6B75; --ink3:#97A3AD;
+  --sh:0 1px 2px rgba(30,42,51,.04),0 8px 22px rgba(30,42,51,.06);
+}
+.bar{position:relative;background:var(--bg);color:var(--ink);padding:calc(env(safe-area-inset-top) + 16px) 20px 10px}
+.bar .kick{color:var(--ink3);font-size:11.5px;letter-spacing:.12em}
+.bar h1{color:var(--brand2);font-size:25px;font-weight:700;padding-right:48px}
+.bar p{color:var(--ink2);opacity:1}
+.backb{color:var(--brand2);opacity:1;font-weight:600;font-size:15px}
+.prog i{background:#D3E7E3}.prog i.on{background:var(--brand)}
+.bell{position:absolute;right:14px;top:calc(env(safe-area-inset-top) + 12px);width:44px;height:44px;border:0;border-radius:50%;
+  background:transparent;color:var(--ink3);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.bell svg{width:28px;height:28px}.bell i{position:absolute;top:8px;right:9px;width:10px;height:10px;border-radius:50%;background:var(--c1);border:2px solid var(--bg)}
+.view{padding:6px 16px 24px}
+.tabs{gap:0;padding:8px 4px calc(env(safe-area-inset-bottom) + 6px);border-top:0;border-radius:22px 22px 0 0;box-shadow:0 -6px 20px rgba(30,42,51,.06)}
+.tabs button{background:transparent;color:var(--ink3);border-radius:12px;font-size:12.5px;font-weight:500;padding:6px 2px;white-space:nowrap}
+.tabs button .ic{height:28px;margin-bottom:3px;display:flex;align-items:center;justify-content:center}
+.tabs button .ic svg{width:27px;height:27px}
+.tabs button.on{background:transparent;color:var(--brand)}
+.tabs button.on .ic svg{stroke-width:2.2}
+.tabs .dot{top:4px;right:calc(50% - 18px)}
+.card{border-radius:20px}
+.btn{border-radius:999px;background:var(--brand);font-size:18px;padding:15px}
+.btn.sec{background:#fff;color:var(--brand2);border:1.5px solid var(--line);box-shadow:none}
+.opt button.on{border-color:var(--brand);background:var(--brandt)}
+.steps div::before{background:var(--brand)}
+.pend{background:#F2FAF8;border-color:#9FD3CA}.pend b{color:var(--brand2)}
+.a2hs{background:var(--brand2)}.a2hs .go{color:var(--brand2)}
+/* หน้าแนะนำ */
+.phone.bare .bar,.phone.bare .tabs{display:none}
+.intro{height:100%;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 10px) 22px calc(env(safe-area-inset-bottom) + 18px)}
+.intro .skip{align-self:flex-end;border:0;background:none;color:var(--ink3);font:inherit;font-size:15px;padding:8px;cursor:pointer}
+.intro .art{flex:1;display:flex;align-items:center;justify-content:center}
+.intro .glow{width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,#BFEAE3 0%,#E3F5F2 48%,rgba(244,246,248,0) 72%);
+  display:flex;align-items:center;justify-content:center;position:relative}
+.intro .glow .e1{font-size:92px;line-height:1}
+.intro .glow .e2{position:absolute;right:28px;bottom:40px;font-size:46px;background:#fff;border-radius:50%;width:74px;height:74px;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh)}
+.intro h2{text-align:center;font-size:24px;margin:0 0 6px}
+.intro p{text-align:center;color:var(--ink2);font-size:16px;margin:0 0 18px;min-height:52px}
+.dots{display:flex;gap:8px;justify-content:center;margin-bottom:16px}.dots i{width:9px;height:9px;border-radius:50%;background:#CFD8DE}.dots i.on{background:var(--ink2)}
+/* แดชบอร์ดหน้าแรก */
+.who{display:flex;gap:12px;align-items:center;background:#fff;border-radius:20px;padding:12px 14px;box-shadow:var(--sh);margin-bottom:12px}
+.who .av{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#34C3B0,#0B766A);color:#fff;font-size:22px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.who b{display:block;font-size:17px;line-height:1.3}.who small{color:var(--ink2);font-size:13.5px}
+.who .chip{margin-left:auto;font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;white-space:nowrap}
+.hero{border-radius:22px;padding:16px 18px;margin-bottom:14px;color:#fff;background:linear-gradient(135deg,#17B3A1,#0B766A);box-shadow:var(--sh)}
+.hero .k{font-size:12.5px;opacity:.85}.hero b{display:block;font-size:22px;margin:2px 0}.hero span{display:block;font-size:14px;opacity:.92}
+.hero .go{margin-top:12px;border:0;border-radius:999px;background:#fff;color:var(--brand2);font:inherit;font-weight:700;font-size:16px;padding:11px 18px;cursor:pointer}
+.hero.t4{background:linear-gradient(135deg,#22B77E,#0E8B5F)}.hero.t3{background:linear-gradient(135deg,#E0AE16,#B8860B)}
+.hero.t2{background:linear-gradient(135deg,#F08A24,#C2610C)}.hero.t1{background:linear-gradient(135deg,#E5484D,#B42318)}
+.hero.pd{background:linear-gradient(135deg,#6B7F8E,#44545F)}
+.bn{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px 6px;padding:0 16px 8px;scrollbar-width:none}
+.bn::-webkit-scrollbar{display:none}
+.bn .it{flex:0 0 86%;scroll-snap-align:start;border-radius:20px;padding:14px 16px;background:#fff;box-shadow:var(--sh);display:flex;gap:12px;align-items:center;border:1px solid var(--line2)}
+.bn .it .em{font-size:34px;flex:none}.bn .it b{display:block;font-size:15.5px;line-height:1.35}.bn .it small{display:block;color:var(--ink2);font-size:12.5px;line-height:1.45}
+.bn .it button{margin-left:auto;flex:none;border:0;border-radius:999px;background:var(--brandt);color:var(--brand2);font:inherit;font-weight:600;font-size:13.5px;padding:8px 12px;cursor:pointer}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;margin:14px 2px 8px}
+.sec-h h2{margin:0;font-size:19px}.sec-h span{font-size:13px;color:var(--ink2)}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:6px}
+.tile{border:0;background:#fff;border-radius:18px;padding:12px 4px 10px;box-shadow:var(--sh);font:inherit;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;position:relative}
+.tile .ti{width:44px;height:44px;border-radius:14px;background:var(--brandt);color:var(--brand);display:flex;align-items:center;justify-content:center}
+.tile .ti svg{width:26px;height:26px}
+.tile span{font-size:12.5px;line-height:1.3;text-align:center}
+.tile em{position:absolute;top:6px;right:8px;font-style:normal;font-size:11px;font-weight:700;background:var(--brand);color:#fff;border-radius:99px;padding:0 6px}
+.tile.hot .ti{background:var(--brand);color:#fff}
+.me-row{display:flex;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid var(--line2);cursor:pointer;background:none;border-left:0;border-right:0;border-top:0;width:100%;font:inherit;color:var(--ink);text-align:left}
+.me-row .ti{width:38px;height:38px;border-radius:12px;background:var(--brandt);color:var(--brand);display:flex;align-items:center;justify-content:center;flex:none}
+.me-row .ti svg{width:22px;height:22px}.me-row span{flex:1;font-size:15.5px}.me-row small{display:block;color:var(--ink2);font-size:12.5px}.me-row::after{content:"›";color:var(--ink3);font-size:22px}
 #print{display:none}
 @media print{
   body{display:block;background:#fff}.phone,.toast{display:none!important}
@@ -202,23 +272,56 @@ function toast(m) { var t = $("toast"); t.textContent = m; t.classList.add("on")
 function elder() { return D.elders.filter(function (e) { return e.id === S.elder; })[0] || D.elders[0] || null; }
 function assessmentsOf(id) { return D.assessments.filter(function (a) { return a.elderId === id; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; }); }
 
+/* ไอคอนเส้นชุดเดียวทั้งแอป — วาดเอง ไม่โหลดจากภายนอก */
+var IC = {
+  home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  play: '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9l5 3-5 3z"/>',
+  watch: '<circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.5 2M9.5 2.5h5M12 2.5V6M18.5 6.5l1.5-1.5"/>',
+  chart: '<path d="M3 20h18"/><path d="M5 16l4.5-5 3.5 3 6-7"/><circle cx="19" cy="7" r="1.2"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+  pill: '<rect x="2.5" y="8.5" width="19" height="7" rx="3.5" transform="rotate(-35 12 12)"/><path d="M9.6 8.6l4.8 6.8"/>',
+  fall: '<circle cx="16.5" cy="4.5" r="2"/><path d="M14.5 8.5L9.5 12l3.5 2.5-1.5 6"/><path d="M9.5 12L4 11.5M13 14.5l5 .5 2 4.5"/><path d="M3 21h8"/>',
+  doc: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/>',
+  team: '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c.8-3.5 3-5 6-5s5.2 1.5 6 5M15.5 15c2.8 0 4.7 1.4 5.5 4.5"/>',
+  phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+  bell: '<path d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+  cloud: '<path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 9.5a4.25 4.25 0 0 1-.5 8.5z"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  install: '<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3M10 18.5h4"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>',
+  lock: '<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>'
+};
+function ic(k) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[k] || "") + '</svg>'; }
+function unseenConfirm() { return D.assessments.filter(function (a) { return a.confirmed && !a.confirmed.seen; }); }
+function bellClick() {
+  var n = unseenConfirm();
+  if (n.length) { S.last = n[n.length - 1]; return go("result"); }
+  var pd = D.assessments.filter(pending);
+  toast(pd.length ? "ยังไม่มีผลยืนยันใหม่ · รอผู้เชี่ยวชาญ " + pd.length + " รายการ" : "ยังไม่มีการแจ้งเตือน");
+}
 function head(kick, h, p, back, prog) {
+  var hasBell = D.caregiver && D.elders.length && !prog && S.screen !== "reg";
   $("bar").innerHTML = (back ? '<button class="backb" onclick="go(\'' + back + '\')">‹ ย้อนกลับ</button>' : "") +
+    (hasBell ? '<button class="bell" aria-label="การแจ้งเตือน" onclick="bellClick()">' + ic("bell") + (unseenConfirm().length ? '<i></i>' : '') + '</button>' : '') +
     '<div class="kick">' + esc(kick) + '</div><h1>' + esc(h) + '</h1>' + (p ? '<p>' + esc(p) + '</p>' : "") +
     (prog ? '<div class="prog">' + prog.map(function (on) { return '<i class="' + (on ? "on" : "") + '"></i>'; }).join("") + '</div>' : "");
 }
 function tabs() {
-  var t = [["home", "🏠", "หน้าแรก"], ["video", "▶️", "วิธีวัด"], ["test", "⏱️", "วัดวันนี้"], ["history", "📈", "แนวโน้ม"]];
+  var t = [["home", "home", "หน้าแรก"], ["video", "play", "วิธีวัด"], ["test", "watch", "วัดวันนี้"], ["history", "chart", "แนวโน้ม"], ["me", "user", "ส่วนตัว"]];
   var cur = S.screen.split(":")[0];
   var unseen = D.assessments.some(function (a) { return a.confirmed && !a.confirmed.seen; });
-  $("tabs").innerHTML = t.map(function (x) { return '<button class="' + (cur === x[0] ? "on" : "") + '" onclick="go(\'' + x[0] + '\')"><span class="ic">' + x[1] + '</span>' + x[2] + (x[0] === "home" && unseen ? '<i class="dot"></i>' : '') + '</button>'; }).join("");
+  $("tabs").innerHTML = t.map(function (x) { return '<button class="' + (cur === x[0] ? "on" : "") + '" onclick="go(\'' + x[0] + '\')"><span class="ic">' + ic(x[1]) + '</span>' + x[2] + (x[0] === "home" && unseen ? '<i class="dot"></i>' : '') + '</button>'; }).join("");
 }
 function go(sc) { if (S.sw && S.sw.t) { clearInterval(S.sw.t); S.sw = null; } S.screen = sc; render(); $("view").scrollTop = 0; }
 
+function introSeen() { try { return localStorage.getItem("cs3:intro") === "1"; } catch (e) { return true; } }
 function render() {
   var v = $("view"), sc = S.screen;
+  if ((!D.caregiver || !D.elders.length) && sc !== "reg" && sc !== "intro") sc = S.screen = introSeen() ? "reg" : "intro";
+  document.querySelector(".phone").classList.toggle("bare", sc === "intro");
   tabs();
-  if (!D.caregiver || !D.elders.length) { if (sc !== "reg") { S.screen = "reg"; sc = "reg"; } }
+  if (sc === "intro") return renderIntro(v);
+  if (sc === "me") return renderMe(v);
   if (sc === "reg") return renderReg(v);
   if (sc === "home") return renderHome(v);
   if (sc === "video") return renderVideo(v);
@@ -344,26 +447,85 @@ function newConfirmBanner(list) {
   return '<div class="conf" style="cursor:pointer" onclick="S.last=D.assessments.filter(function(x){return x.id===\'' + a.id + '\'})[0];go(\'result\')"><h3>🔔 มีผลยืนยันจากผู้เชี่ยวชาญ</h3><p class="sub" style="margin:0">ผลวัด ' + thDate(a.date) + ' · แตะเพื่อดูผลและคำแนะนำ</p></div>';
 }
 function renderHome(v) {
-  var e = elder(), list = assessmentsOf(e.id), last = list[list.length - 1];
+  var e = elder(), list = assessmentsOf(e.id), last = list[list.length - 1], meds = medsOf(e.id).length;
   var due = last ? CSScore.nextDueDays(last.tier) - Math.round((Date.now() - new Date(last.date)) / 864e5) : 0;
-  head("CareSignal V3", "สวัสดี " + D.caregiver.name, "วัดให้ " + e.name + " อายุ " + e.age + " ปี");
+  var cloud = CSCloud.mode() === "cloud";
+  head("CareSignal V3", "สวัสดี " + D.caregiver.name, null);
+  var lastId = last ? "S.last=D.assessments.filter(function(x){return x.id==='" + last.id + "'})[0];go('result')" : "";
+  /* สถานะหลัก — ส้ม/แดงที่ยังไม่ยืนยัน ไม่แสดงสี */
+  var hero = !last
+    ? '<div class="hero"><div class="k">ยังไม่เคยวัด</div><b>เริ่มวัดครั้งแรก</b><span>ใช้เวลาประมาณ 10 นาที · ดูวิดีโอสาธิตก่อนได้</span><button class="go" onclick="startTest()">เริ่มวัดวันนี้</button></div>'
+    : pending(last)
+    ? '<div class="hero pd" onclick="' + lastId + '" style="cursor:pointer"><div class="k">วัดล่าสุด ' + thDate(last.date) + '</div><b>⏳ รอผู้เชี่ยวชาญยืนยันผล</b><span>แอปจะแจ้งเตือนเมื่อแพทย์ เภสัชกร พยาบาล หรือนักกายภาพบำบัดยืนยันแล้ว</span></div>'
+    : '<div class="hero ' + CSScore.TIER[last.tier].cls + '" onclick="' + lastId + '" style="cursor:pointer"><div class="k">ผลล่าสุด ' + thDate(last.date) + (last.confirmed ? ' · ยืนยันโดยผู้เชี่ยวชาญ ✅' : '') + '</div><b>' + CSScore.TIER[last.tier].nm + '</b><span>' + (due > 0 ? "วัดครั้งต่อไปในอีก " + due + " วัน" : "ถึงกำหนดวัดซ้ำแล้ว") + '</span>' + (due > 0 ? '' : '<button class="go" onclick="event.stopPropagation();startTest()">วัดซ้ำวันนี้</button>') + '</div>';
+  var chip = !last ? '<span class="chip" style="background:var(--brandt);color:var(--brand2)">ยังไม่วัด</span>'
+    : pending(last) ? '<span class="chip" style="background:#EEF1F4;color:var(--ink2)">รอยืนยัน</span>'
+    : '<span class="chip ' + CSScore.TIER[last.tier].cls + '">' + CSScore.TIER[last.tier].nm.split(" ·")[0] + '</span>';
+  /* แบนเนอร์เลื่อน — สร้างจากสถานะจริงของบ้านนี้ ไม่ใช่โฆษณา */
+  var bn = [];
+  if (last && due <= 0 && !pending(last)) bn.push(["⏱️", "ถึงกำหนดวัดซ้ำแล้ว", "วัดซ้ำตามรอบเพื่อดูว่าดีขึ้นหรือแย่ลง", "วัดเลย", "startTest()"]);
+  bn.push(["▶️", "ดูวิดีโอสาธิตท่าที่ถูกต้อง", "ชุด \"สูงวัยไม่ล้ม\" · Siriraj Health Policy", "ดูวิดีโอ", "go('video')"]);
+  if (!meds) bn.push(["💊", "ถ่ายรูปซองยาให้เภสัชกรช่วยดู", "ยาบางกลุ่มทำให้เวียนหัวและเสี่ยงล้ม", "ถ่ายรูป", "go('meds')"]);
+  if (!cloud) bn.push(["☁️", "เชื่อมระบบกลาง", "ให้ทีมดูแลและผู้เชี่ยวชาญเห็นผล และยืนยันผลให้", "เชื่อม", "go('cloud')"]);
+  if (!installedApp() && !embedded()) bn.push(["📲", "ติดตั้งลงหน้าจอมือถือ", "เปิดง่ายเหมือนแอป ใช้วัดได้แม้ไม่มีเน็ต", "ติดตั้ง", "installApp()"]);
+  var T = [
+    ["watch", "วัดวันนี้", "startTest()", "", 1], ["play", "วิธีวัด", "go('video')", "", 0],
+    ["pill", "ยาที่ใช้", "go('meds')", meds ? String(meds) : "", 0], ["fall", "บันทึกว่าล้ม", "go('fall')", "", 0],
+    ["chart", "แนวโน้ม", "go('history')", list.length ? String(list.length) : "", 0], ["doc", "ใบสรุปแพทย์", list.length ? "S.last=null;go('doc')" : "toast('ยังไม่มีผลวัด')", "", 0],
+    ["team", "ทีมดูแล", "go('cloud')", "", 0], ["phone", "เบอร์ฉุกเฉิน", "go('contacts')", "", 0]
+  ];
   v.innerHTML =
     newConfirmBanner(list) +
-    (last && pending(last) ? '<div class="pend" onclick="S.last=D.assessments.filter(function(x){return x.id===\'' + last.id + '\'})[0];go(\'result\')" style="cursor:pointer"><b>⏳ รอผู้เชี่ยวชาญยืนยันผล</b><span>วัดล่าสุด ' + thDate(last.date) + ' · แอปจะแจ้งเตือนเมื่อมีผลยืนยัน</span></div>'
-    : last ? '<div class="tier ' + CSScore.TIER[last.tier].cls + '"><b>' + CSScore.TIER[last.tier].nm + (last.confirmed ? ' ✅' : '') + '</b><span>ครั้งล่าสุด ' + thDate(last.date) + ' · ' + (due > 0 ? "วัดครั้งต่อไปในอีก " + due + " วัน" : "ถึงกำหนดวัดซ้ำแล้ว") + '</span></div>'
-          : '<div class="card"><h3>ยังไม่เคยวัด</h3><p class="sub">ดูวิธีวัด 3 นาที แล้วเริ่มวัดครั้งแรก ใช้เวลาประมาณ 10 นาที</p></div>') +
-    '<button class="btn" onclick="startTest()">⏱️ เริ่มวัดวันนี้</button>' +
-    '<button class="btn sec" onclick="go(\'video\')">▶️ ดูวิธีวัดก่อน</button>' +
-    '<button class="btn sec" onclick="go(\'meds\')">💊 ยาที่ใช้อยู่ (' + medsOf(e.id).length + ')</button>' +
-    (installedApp() || embedded() ? '' : '<button class="btn ghost" onclick="installApp()">📲 ติดตั้งลงหน้าจอมือถือ</button>') +
-    '<button class="btn sec" onclick="go(\'fall\')">🩹 บันทึกว่าล้ม</button>' +
+    '<div class="who"><div class="av">' + esc((e.name || "?").trim().charAt(0)) + '</div><div><b>' + esc(e.name) + '</b><small>อายุ ' + e.age + ' ปี' + (e.aid ? ' · ใช้' + (e.aid === "cane" ? "ไม้เท้า" : "วอล์กเกอร์") : '') + '</small></div>' + chip + '</div>' +
+    hero +
+    '<div class="bn">' + bn.map(function (b) { return '<div class="it"><span class="em">' + b[0] + '</span><div><b>' + b[1] + '</b><small>' + esc(b[2]) + '</small></div><button onclick="' + b[4] + '">' + b[3] + '</button></div>'; }).join("") + '</div>' +
+    '<div class="sec-h"><h2>บริการในแอป</h2><span>แตะเพื่อเริ่ม</span></div>' +
+    '<div class="tiles">' + T.map(function (t) { return '<button class="tile' + (t[4] ? ' hot' : '') + '" onclick="' + t[2] + '"><span class="ti">' + ic(t[0]) + '</span><span>' + t[1] + '</span>' + (t[3] ? '<em>' + t[3] + '</em>' : '') + '</button>'; }).join("") + '</div>' +
+    '<div class="sec-h"><h2>ทีมที่ดูแล</h2><span>ผู้ประสานงานและผู้เชี่ยวชาญ</span></div>' +
     cloudCard() +
-    '<div class="card" style="margin-top:14px"><h3>ทำไมลูกหลานเป็นคนวัด</h3><p class="sub" style="margin:0">จากการสัมภาษณ์ผู้สูงอายุ 3 คน ทุกคนใช้แอปหรือตั้งกล้องเองไม่ได้ และทุกคนอยากให้ "ลูกหลานรู้" เป็นอันดับหนึ่ง แอปรุ่นนี้จึงให้คุณเป็นคนจับเวลา ผู้สูงอายุแค่ทำท่าตามที่คุณบอก</p></div>' +
-    '<button class="btn ghost" onclick="go(\'reg\')">แก้ไขข้อมูล · ' + esc(e.name) + '</button>' +
-    '<button class="btn ghost" onclick="go(\'contacts\')">📞 เบอร์ที่ควรมี และโรงพยาบาลใกล้บ้าน</button>';
+    '<p class="sub" style="font-size:12.5px;text-align:center;margin:10px 0 0">คัดกรองเบื้องต้นโดยครอบครัว ไม่ใช่การวินิจฉัย · ฉุกเฉินโทร 1669</p>';
 }
-
-/* ---------- 2. วิดีโอสาธิต ---------- */
+/* หน้าแนะนำ 4 หน้า — แสดงครั้งแรกก่อนลงทะเบียน */
+var INTRO = [
+  ["🏠", "⏱️", "วัดความเสี่ยงหกล้มที่บ้าน", "ลูกหลานกดจับเวลา 3 ท่า ลุกนั่ง ลุกเดิน และยืนทรงตัว ประมาณ 10 นาที ไม่ต้องใช้กล้อง"],
+  ["🧑‍⚕️", "✅", "ผู้เชี่ยวชาญยืนยันผลให้", "ผลเสี่ยงสูงส่งให้แพทย์ เภสัชกร พยาบาล หรือนักกายภาพบำบัดตรวจก่อน แล้วแอปจะแจ้งเตือน"],
+  ["💊", "📷", "ถ่ายรูปซองยา", "เภสัชกรช่วยดูว่ายาตัวไหนอาจทำให้เวียนหัวหรือเสี่ยงล้ม ระบบไม่สั่งหยุดยาเอง"],
+  ["📈", "📄", "ดูแนวโน้มและพกใบสรุปไปพบแพทย์", "เห็นว่าดีขึ้นหรือแย่ลงจากครั้งก่อน และเปิดใบสรุปให้แพทย์ดูได้ทันที"]
+];
+function renderIntro(v) {
+  var i = Math.max(0, Math.min(INTRO.length - 1, S.intro || 0)), x = INTRO[i], lastPage = i === INTRO.length - 1;
+  v.innerHTML = '<div class="intro"><button class="skip" onclick="introDone()">ข้าม</button>' +
+    '<div class="art"><div class="glow"><span class="e1">' + x[0] + '</span><span class="e2">' + x[1] + '</span></div></div>' +
+    '<h2>' + x[2] + '</h2><p>' + x[3] + '</p>' +
+    '<div class="dots">' + INTRO.map(function (_, k) { return '<i class="' + (k === i ? "on" : "") + '"></i>'; }).join("") + '</div>' +
+    '<button class="btn" style="margin-top:0" onclick="' + (lastPage ? 'introDone()' : 'S.intro=' + (i + 1) + ';render()') + '">' + (lastPage ? 'เริ่มใช้งาน' : 'ถัดไป') + '</button></div>';
+  var box = v.querySelector(".intro"), x0 = null;
+  box.addEventListener("touchstart", function (ev) { x0 = ev.touches[0].clientX; }, { passive: true });
+  box.addEventListener("touchend", function (ev) {
+    if (x0 == null) return; var dx = ev.changedTouches[0].clientX - x0; x0 = null;
+    if (Math.abs(dx) < 50) return;
+    S.intro = Math.max(0, Math.min(INTRO.length - 1, i + (dx < 0 ? 1 : -1))); render();
+  });
+}
+function introDone() { try { localStorage.setItem("cs3:intro", "1"); } catch (e) {} S.intro = 0; S.screen = "reg"; render(); }
+/* หน้าข้อมูลส่วนตัว — รวมการตั้งค่าที่เคยกระจายอยู่ท้ายหน้าแรก */
+function renderMe(v) {
+  var e = elder(), c = D.caregiver, m = CSCloud.mode();
+  head("ข้อมูลส่วนตัว", c.name, "ผู้ดูแลของ " + e.name);
+  function row(k, t, sub, fn) { return '<button class="me-row" onclick="' + fn + '"><span class="ti">' + ic(k) + '</span><span>' + t + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span></button>'; }
+  v.innerHTML =
+    '<div class="who"><div class="av">' + esc((c.name || "?").trim().charAt(0)) + '</div><div><b>' + esc(c.name) + '</b><small>' + esc(c.phone || "ยังไม่ใส่เบอร์") + '</small></div></div>' +
+    '<div class="card" style="padding:4px 16px">' +
+      row("edit", "แก้ไขข้อมูลผู้ดูแลและผู้สูงอายุ", e.name + " · " + e.age + " ปี", "go('reg')") +
+      row("cloud", "บัญชีระบบกลาง", m === "cloud" ? "เชื่อมแล้ว" : "ยังไม่เชื่อม — เชื่อมเพื่อให้ผู้เชี่ยวชาญยืนยันผล", "go('cloud')") +
+      row("pill", "ยาที่ใช้อยู่", medsOf(e.id).length + " รายการ", "go('meds')") +
+      row("phone", "เบอร์ที่ควรมี และโรงพยาบาลใกล้บ้าน", "", "go('contacts')") +
+      row("info", "ดูหน้าแนะนำการใช้งานอีกครั้ง", "", "S.intro=0;S.screen='intro';render()") +
+    '</div>' +
+    (installedApp() || embedded() ? '' : '<button class="btn sec" onclick="installApp()">📲 ติดตั้งลงหน้าจอมือถือ</button>') +
+    '<div class="card" style="margin-top:14px"><h3>ความเป็นส่วนตัว</h3><p class="sub" style="margin:0">ข้อมูลเก็บในเครื่องนี้ และส่งขึ้นระบบกลางเฉพาะเมื่อคุณเชื่อมบัญชี · แอปนี้ไม่ใช้กล้อง รูปที่ถ่ายมีแค่รูปซองยาให้เภสัชกรดู · ผู้สูงอายุยินยอมก่อนบันทึกและก่อนแชร์ผล</p></div>' +
+    '<div class="card"><h3>ทำไมลูกหลานเป็นคนวัด</h3><p class="sub" style="margin:0">จากการสัมภาษณ์ผู้สูงอายุ 3 คน ทุกคนใช้แอปหรือตั้งกล้องเองไม่ได้ และทุกคนอยากให้ "ลูกหลานรู้" เป็นอันดับหนึ่ง แอปรุ่นนี้จึงให้คุณเป็นคนจับเวลา</p></div>';
+}
 function renderVideo(v) {
   head("ส่วนที่ 2", "วิธีวัด 3 ชุด", "วิดีโอสาธิตจาก Siriraj Health Policy · ดูครั้งแรกให้จบ");
   v.innerHTML = '<div class="warn"><b>หยุดทันที</b>ถ้าผู้สูงอายุหน้ามืด เจ็บหน้าอก หายใจลำบาก หรือเซจนต้องจับ · ให้นั่งพัก ถ้าไม่ดีขึ้นโทร 1669 · วันที่เพิ่งล้มหรือแพทย์ห้ามเดิน อย่าวัด</div>' +
