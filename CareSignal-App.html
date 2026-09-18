@@ -750,6 +750,12 @@ function dataUrlBlob(d) {
   for (var i = 0; i < b.length; i++) a[i] = b.charCodeAt(i);
   return new Blob([a], { type: "image/jpeg" });
 }
+/* ข้อมูลประกอบรายตัวจากฐานยา — ชื่อไทย กลุ่ม ใช้รักษา ข้อควรระวัง (ไม่มีข้อความสั่งหยุด/ปรับยา) */
+function medInfoHTML(inn) {
+  var i = inn && CSMeds.info ? CSMeds.info(inn) : null; if (!i) return "";
+  return '<small style="color:var(--ink2)">' + esc(i.th) + ' · ' + esc(i.cls) + ' · ใช้รักษา ' + esc(i.use) + '</small>' +
+    (i.note ? '<small style="color:var(--accent2)">⚠️ ' + esc(i.note) + '</small>' : '');
+}
 function medsOf(eid) { D.meds = D.meds || []; return D.meds.filter(function (m) { return m.elderId === eid && !m.retired; }); }
 function medsCountCode(n) { return n === 0 ? 0 : n <= 3 ? 1 : n <= 5 ? 2 : n <= 9 ? 3 : 4; }
 function medsSummary(eid) { return CSMeds.summarize(medsOf(eid).map(function (m) { return { inn: m.inn, frid: m.frid, lv: m.lv }; })); }
@@ -769,7 +775,7 @@ function renderMeds(v, prog) {
       (list.length ? list.map(function (m) {
         var cl = m.frid && m.frid !== "unknown" ? (CSMeds.FRID[m.frid] ? CSMeds.FRID[m.frid].nm : m.frid) : "รอเภสัชกรจัดกลุ่ม";
         return '<div class="medi">' + (m.thumb ? '<img src="' + m.thumb + '" alt="">' : '<span style="font-size:30px">💊</span>') +
-          '<div class="nm"><b>' + esc(m.inn || m.name || "ไม่ทราบชื่อ (ดูจากรูป)") + '</b><small>' + esc(cl) + (m.lv === 2 ? ' · เสี่ยงหกล้มสูง' : m.lv === 1 ? ' · เสี่ยงปานกลาง' : '') + (m.cloudId ? ' · ส่งเภสัชกรแล้ว' : '') + '</small></div>' +
+          '<div class="nm"><b>' + esc(m.inn || m.name || "ไม่ทราบชื่อ (ดูจากรูป)") + '</b><small>' + esc(cl) + (m.lv === 2 ? ' · เสี่ยงหกล้มสูง' : m.lv === 1 ? ' · เสี่ยงปานกลาง' : '') + (m.cloudId ? ' · ส่งเภสัชกรแล้ว' : '') + '</small>' + medInfoHTML(m.inn) + '</div>' +
           '<button class="pill" style="border:0;background:var(--c1b);color:var(--c1)" onclick="medRemove(\'' + m.id + '\')">ลบ</button></div>';
       }).join("") : '<p class="sub" style="margin:0">ยังไม่มีรายการ</p>') +
       (sum.high || sum.mod ? '<div class="flag"><b>' + esc(CSMeds.MSG.flagged) + '</b><span class="src">ที่มา: ' + esc(EVID.meds.src) + '</span></div>' : '') +
@@ -1063,9 +1069,11 @@ function docHTML(r) {
       meds.map(function (m) {
         var fr = m.frid && m.frid !== "unknown" ? m.frid : null, ev = fr ? EV.FRID[fr] : null;
         var grp = fr === "none" ? "ไม่อยู่ในกลุ่มเสี่ยงหกล้ม" : fr ? (CSMeds.FRID[fr] ? CSMeds.FRID[fr].nm : fr) + (m.lv === 2 ? " · เสี่ยงสูง" : m.lv === 1 ? " · เสี่ยงปานกลาง" : "") : "ระบบไม่รู้จัก — ตรวจจากรูปซองยา";
-        return '<tr><td>' + esc(m.inn || m.name || "ไม่ทราบชื่อ") + (m.dose ? '<br><small>' + esc(m.dose) + (m.freq ? ' · ' + esc(m.freq) : '') + '</small>' : '') +
+        var mi = m.inn && CSMeds.info ? CSMeds.info(m.inn) : null;
+        return '<tr><td>' + esc(m.inn || m.name || "ไม่ทราบชื่อ") + (mi ? '<br><small>' + esc(mi.th) + ' · ' + esc(mi.cls) + '</small>' : '') + (m.dose ? '<br><small>' + esc(m.dose) + (m.freq ? ' · ' + esc(m.freq) : '') + '</small>' : '') +
           (m.source === "photo_ocr" ? '<br><small>อ่านจากรูปซองยา' + (m.conf != null ? ' (ความมั่นใจ ' + Math.round(m.conf * 100) + '%)' : '') + '</small>' : '') + '</td><td>' + esc(grp) + '</td>' +
-          '<td>' + (ev ? esc(ev.mech) : '—') + '</td><td>' + (ev ? esc(ev.consider) + cite(ev.refs) : fr === "none" ? 'ทบทวนรายการยาตามรอบปกติ' : 'ขอให้เภสัชกรตรวจชื่อยาจากรูปซองยาและจัดกลุ่ม') + '</td></tr>';
+          '<td>' + (ev ? esc(ev.mech) : '—') + '</td><td>' + (ev ? esc(ev.consider) + cite(ev.refs) : fr === "none" ? 'ทบทวนรายการยาตามรอบปกติ' : 'ขอให้เภสัชกรตรวจชื่อยาจากรูปซองยาและจัดกลุ่ม') +
+          (mi && mi.note ? '<br><small>ข้อควรระวัง: ' + esc(mi.note) + (/^Beers 2023/.test(mi.note) ? cite(["beers"]) : '') + '</small>' : '') + '</td></tr>';
       }).join("") + '</table>' +
       '<p>คะแนนยาเสี่ยงหกล้ม = ยาเสี่ยงสูง ' + sumM.high + ' × 2 + เสี่ยงปานกลาง ' + sumM.mod + ' = <b>' + sumM.total + '</b>' + (sumM.unknown ? ' · ยาที่ระบบไม่รู้จัก ' + sumM.unknown + ' รายการ' : '') +
       ' (ระบบขึ้นสัญญาณเมื่อ ≥ 2)' + cite(["stoppfall", "seppala"]) + '</p>' +
