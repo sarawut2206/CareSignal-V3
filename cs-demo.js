@@ -121,7 +121,7 @@
 
   function build() {
     var r = rng(20260919), BE = new Date().getFullYear() + 543;
-    var S = { v: 1, members: [], assess: [], signals: [], cases: [], refs: [], medrev: [], meds: [], unknown: [],
+    var S = { v: 2, members: [], assess: [], signals: [], cases: [], refs: [], medrev: [], meds: [], unknown: [],
       fups: [], plans: [], contacts: [], events: [], audit: [], invites: [], access: [], sessions: [] };
     /* ระดับล่าสุดของ 40 คน: 24 คงที่ · 8 เฝ้าสังเกต · 5 ถดถอย · 3 เร่งด่วน (คนแรก ๆ คือเคสเดโม) */
     var LV = ["decline", "urgent", "watch", "decline", "watch", "urgent", "watch", "decline", "watch", "urgent",
@@ -240,6 +240,10 @@
       S.plans.push({ id: uuid(10, n), user_id: m.id, assessment_id: null, level: m.level, items: [{ id: "P1", nm: "ฝึกลุกนั่งจากเก้าอี้แบบเพิ่มระดับ", done: ix % 2 === 0 }, { id: "P3", nm: "สำรวจจุดเสี่ยงในบ้าน", done: false }], due_at: ahead(24 * 14), created_at: ago(24 * 20) });
       S.fups.push({ id: uuid(11, n * 2), user_id: m.id, plan_id: uuid(10, n), kind: "โทรติดตามการฝึก", due_at: ix < 2 ? ago(6) : ahead(24 * 3), status: ix === 4 ? "done" : "pending", done_at: ix === 4 ? ago(24) : null, note: null });
       S.fups.push({ id: uuid(11, n * 2 + 1), user_id: m.id, plan_id: uuid(10, n), kind: "นัดประเมินซ้ำ", due_at: ahead(24 * NEXT_DAYS[m.level]), status: "pending", done_at: null, note: null });
+    });
+    /* นัดโทรติดตามที่ถึงกำหนดวันนี้ — ให้หน้า "โทรติดตามวันนี้" มีรายชื่อให้ลองกด */
+    [[1, "checkin_7d", 3, 0], [2, "referral_check", 30, 0], [3, "review_30d", 24 * 2, 1], [6, "checkin_7d", 5, 2], [7, "reassess", -20, 0], [10, "referral_check", -30, 0]].forEach(function (f, ix) {
+      S.fups.push({ id: uuid(11, 500 + ix), user_id: S.members[f[0] - 1].id, plan_id: null, kind: f[1], due_at: ago(f[2]), status: "pending", done_at: null, note: null, attempts: f[3], last_try_at: f[3] ? ago(20) : null });
     });
     var CON = [[4, "phone", "reached", "ครอบครัวรับสาย ยินดีให้ติดตาม", 50], [5, "phone", "plan_confirmed", "ลูกสาวยืนยันจะช่วยฝึกทุกเย็น", 80], [6, "phone", "referred_ok", "ส่งพบแพทย์ รพ.สาธิต", 92],
       [8, "phone", "booked", "นัด 12 ก.ย. 09:00", 120], [10, "phone", "no_answer", "ไม่รับสาย", 90], [10, "phone", "no_answer", "ไม่รับสาย", 66], [10, "line", "no_answer", "ส่งข้อความแล้วไม่ตอบ", 40],
@@ -397,7 +401,7 @@
   /* ---------- สถานะของเดโม เก็บในแท็บ ---------- */
   var S = null;
   function load() {
-    try { var s = sessionStorage.getItem(STORE); if (s) { var o = JSON.parse(s); if (o && o.v === 1) return o; } } catch (e) {}
+    try { var s = sessionStorage.getItem(STORE); if (s) { var o = JSON.parse(s); if (o && o.v === 2) return o; } } catch (e) {}
     return build();
   }
   function save() { try { sessionStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }
@@ -510,6 +514,37 @@
       if (note) c.note = note;
       audit("case.update", id, "เลื่อนสถานะเคสเป็น " + status + (note ? " · " + note : ""));
       return Promise.resolve(c);
+    },
+    callList: function (days) {
+      if (!isCareTeam()) return Promise.resolve({ rows: [] });
+      var end = new Date(); end.setHours(0, 0, 0, 0); end = end.getTime() + (1 + Math.max(0, days || 0)) * 864e5;
+      var rows = S.fups.filter(function (f) { return f.status === "pending" && new Date(f.due_at).getTime() < end; })
+        .sort(byTime("due_at")).map(function (f) {
+          var m = memberOf(f.user_id), c = S.cases.filter(function (x) { return x.user_id === f.user_id; }).sort(byTime("opened_at", true))[0];
+          return { fu_id: f.id, user_id: f.user_id, kind: f.kind, due_at: f.due_at, attempts: f.attempts || 0, last_try_at: f.last_try_at || null, fu_note: f.note,
+            pseudonym: m.pseudonym, display_name: m.display_name, phone: m.phone, carer_name: m.carer_phone ? "ลูกหลาน (สาธิต)" : null, carer_phone: m.carer_phone,
+            age: (new Date().getFullYear() + 543) - m.birth_year_be, province: m.province, case_id: c ? c.id : null, case_level: c ? c.level : m.level, case_status: c ? c.status : null };
+        });
+      audit("calllist.view", null, "เปิดรายชื่อโทรติดตาม " + rows.length + " ราย");
+      return Promise.resolve({ rows: rows });
+    },
+    callResult: function (id, result, note) {
+      if (!isCareTeam()) return Promise.reject(new Error("ไม่มีสิทธิ์บันทึกการโทรติดตาม"));
+      if (["reached", "no_answer", "callback", "refused"].indexOf(result) < 0) return Promise.reject(new Error("ผลการโทรไม่ถูกต้อง"));
+      var f = S.fups.filter(function (x) { return x.id === id; })[0]; if (!f) return Promise.reject(new Error("ไม่พบนัดติดตาม"));
+      if (f.status !== "pending") return Promise.resolve(f);
+      var now = Date.now(), n = (f.attempts || 0) + 1, done = result === "reached" || result === "refused" || (result === "no_answer" && n >= 3);
+      f.attempts = n; f.last_try_at = iso(now);
+      f.status = result === "reached" || result === "refused" ? "done" : (result === "no_answer" && n >= 3) ? "missed" : "pending";
+      f.done_at = done ? iso(now) : null;
+      if (result === "no_answer" && !done) f.due_at = iso(now + 864e5);
+      if (result === "callback") f.due_at = iso(now + 2 * 864e5);
+      if (note) f.note = (f.note ? f.note + " · " : "") + note;
+      var c = openCases().filter(function (x) { return x.user_id === f.user_id; })[0];
+      if (c) S.contacts.unshift({ id: nid(12), case_id: c.id, user_id: f.user_id, by_staff: ME.id, channel: "phone", result: result === "callback" ? "reached" : result,
+        note: "นัดติดตาม: " + ({ checkin_7d: "โทรติดตาม 7 วัน", review_30d: "ทบทวนแผน 30 วัน", reassess: "ชวนวัดซ้ำ", referral_check: "ตามผลการส่งต่อ" }[f.kind] || f.kind) + (result === "callback" ? " · ขอให้โทรใหม่" : "") + (note ? " · " + note : ""), created_at: iso(now) });
+      audit("followup.call", f.user_id, f.kind + ": " + result);
+      return Promise.resolve(f);
     },
     logContact: function (c0, result, note, channel) {
       var c = caseById(c0.id); if (!c) return Promise.reject(new Error("ไม่พบเคส"));

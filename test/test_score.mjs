@@ -151,7 +151,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("ปิดแถบชวนติดตั้งแล้วจำไว้", /localStorage\.setItem\(A2HS\.key, "no"\)/.test(app));
   ok("ทางลัด ?go= เปิดหน้าที่ต้องการได้", /\["fall", "test", "history", "meds", "video"\]\.indexOf\(goto\)/.test(app));
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
-  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-12/.test(sw));
+  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-13/.test(sw));
 }
 
 /* ใบส่งต่อแบบเอกสารทางการ: ทุกสัญญาณต้องมีเกณฑ์ เหตุผล และเอกสารอ้างอิง */
@@ -192,6 +192,18 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("ส่งขึ้นระบบกลางครบ 4 ท่า ท่าที่ข้ามเป็น tested:false", pay.detail.balance.stages.length === 4 && pay.detail.balance.stages[3].tested === false && pay.detail.balance.stages[3].passed === null && pay.detail.balance.stages[1].passed === false, pay.detail.balance.stages);
   const f = S.flags({ age: 69, balPassed: 1, balance: 3.1 });
   ok("ผ่านต่อเนื่อง 1 ท่า = สัญญาณทรงตัว B11", f.yellows.some((x) => x.id === "B11"));
+}
+
+/* นัดหมายและการติดตามของครอบครัว */
+{
+  const app = readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8");
+  const cl = readFileSync(new URL("../cs-cloud.js", import.meta.url), "utf8");
+  ok("ดึงนัดติดตามของเจ้าหน้าที่จากระบบกลาง", /B\.listFollowUps\(null, 30\)/.test(cl) && /followUps: fu/.test(cl));
+  ok("นัดครบทุกชนิดของตาราง follow_ups", ["checkin_7d", "review_30d", "reassess", "referral_check"].every((k) => new RegExp("\\b" + k + ":\\s+\\[").test(app)));
+  ok("รอบวัดซ้ำใช้ nextDueDays ของเครื่องคิดคะแนน", /CSScore\.nextDueDays\(last\.tier\) \* 864e5/.test(app));
+  ok("ไฟล์ปฏิทินมีเตือนก่อน 1 วันและวันนัด", /TRIGGER:-P1D/.test(app) && /TRIGGER:PT0M/.test(app) && /text\/calendar/.test(app));
+  ok("เตือนถึงวันนัดวันละครั้ง", /cs3:duenote/.test(app) && /tag: "cs3-due"/.test(app));
+  ok("กระดิ่งพาไปหน้านัดเมื่อมีนัดถึงกำหนด", /if \(apptsDue\(\)\.length\) return go\("appts"\)/.test(app));
 }
 
 console.log("  " + pass + " ผ่าน / " + fail + " ตก");

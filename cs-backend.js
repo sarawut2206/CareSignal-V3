@@ -1373,6 +1373,24 @@ var CSBackend = (function () {
     if (r.error) throw r.error;
     return r.data;
   }
+  /* รายชื่อโทรติดตามรายคน (migration 26) — นัดที่ถึงกำหนดวันนี้ + p_days วันข้างหน้า
+     ยังไม่เปิด migration = คืน disabled ให้หน้าจอบอกตรง ๆ แทนการแสดงรายการว่าง */
+  async function callList(days) {
+    if (!isCloud()) return { rows: [] };
+    var r = await sb.rpc("staff_call_list", { p_days: days || 0 });
+    if (r.error) {
+      if (/staff_call_list|schema cache|does not exist/i.test(r.error.message || "")) return { rows: [], disabled: true };
+      throw r.error;
+    }
+    await audit("calllist.view", null, "เปิดรายชื่อโทรติดตาม " + (r.data || []).length + " ราย");
+    return { rows: r.data || [] };
+  }
+  async function callResult(fuId, result, note) {
+    if (!isCloud()) throw new Error("offline");
+    var r = await sb.rpc("staff_followup_result", { p_id: fuId, p_result: result, p_note: note || null });
+    if (r.error) throw r.error;
+    return r.data;
+  }
   async function completeReferral(id, note) {
     if (!isCloud()) throw new Error("offline");
     var r = await sb.from("referrals")
@@ -1430,7 +1448,7 @@ var CSBackend = (function () {
     reportEvent: reportEvent, listEvents: listEvents,
     savePlan: savePlan, latestPlan: latestPlan, updatePlanItems: updatePlanItems,
     scheduleFollowUps: scheduleFollowUps, listFollowUps: listFollowUps,
-    completeFollowUp: completeFollowUp, completeReferral: completeReferral,
+    completeFollowUp: completeFollowUp, completeReferral: completeReferral, callList: callList, callResult: callResult,
     updateNotifyTypes: updateNotifyTypes, getNotifyPrefs: getNotifyPrefs,
     saveNotifyPrefs: saveNotifyPrefs, addCheckin: addCheckin, listCheckins: listCheckins,
     saveTrial: saveTrial, listTrials: listTrials,

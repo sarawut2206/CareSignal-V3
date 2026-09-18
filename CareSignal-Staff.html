@@ -392,6 +392,22 @@ td.num{font-family:var(--mono);white-space:nowrap}
 .hdmeta .clk{font-family:var(--mono);color:var(--ink)}
 
 /* ---------- แถวตัวเลขสรุป ---------- */
+.calls{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(330px,100%),1fr));gap:12px}
+.callc{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px;border-left:5px solid var(--line)}
+.callc[data-late="1"]{border-left-color:var(--c1)}.callc[data-late="0"]{border-left-color:var(--c2)}.callc[data-late="-1"]{border-left-color:var(--line)}
+.callc .top{display:flex;gap:12px;align-items:center}
+.callc .av{width:46px;height:46px;border-radius:50%;background:var(--surf2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;flex:none;color:var(--ink2)}
+.callc .nm{flex:1;min-width:0}.callc .nm b{display:block;font-size:16px}.callc .nm small{color:var(--ink3);font-size:12px}
+.callc .due{text-align:right;font-size:12px;color:var(--ink3);white-space:nowrap}.callc .due b{display:block;font-size:14px}
+.callc .kind{display:flex;gap:8px;align-items:flex-start;background:var(--surf2);border-radius:10px;padding:8px 10px;font-size:13px;line-height:1.5}
+.callc .kind em{font-style:normal;font-size:20px;line-height:1}
+.callc .tels{display:flex;gap:8px;flex-wrap:wrap}
+.callc .tels a{flex:1;min-width:130px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:10px;padding:10px;font-weight:600;font-size:14px;background:var(--gold);color:#fff}
+.callc .tels a.alt{background:transparent;color:var(--gold);border:1.5px solid var(--gold)}
+.callc .res{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.callc .res button{font:inherit;font-size:12px;border-radius:9px;border:1px solid var(--line);background:var(--surf);color:var(--ink);padding:8px 4px;cursor:pointer;line-height:1.3}
+.callc .res button[data-r="reached"]{border-color:var(--c4);color:var(--c4);font-weight:600}
+.callc .meta{font-size:11.5px;color:var(--ink3);display:flex;justify-content:space-between;gap:8px}
 .kpirow{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin-bottom:12px}
 .kpirow .kpi{padding:10px 12px;text-align:left;display:flex;flex-direction:column;gap:2px;border-left:4px solid var(--line)}
 .kpirow .kpi b{font-size:26px;line-height:1.1;text-align:left}
@@ -474,6 +490,7 @@ td.num{font-family:var(--mono);white-space:nowrap}
     <button data-go="ward"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="7" rx="1.6"/><rect x="13" y="4" width="8" height="7" rx="1.6"/><rect x="3" y="13" width="8" height="7" rx="1.6"/><rect x="13" y="13" width="8" height="7" rx="1.6"/></svg><span>บอร์ดวันนี้</span></button>
     <button data-go="mine"><svg viewBox="0 0 24 24"><path d="M9 11l2 2 4-4"/><rect x="4" y="4" width="16" height="16" rx="3"/></svg><span>งานของฉัน</span><span class="cnt" data-cnt="mine" hidden></span></button>
     <button data-go="queue"><svg viewBox="0 0 24 24"><path d="M5 4h14v16l-7-3-7 3z"/></svg><span>คิวงาน</span><span class="cnt" data-cnt="queue" hidden></span></button>
+    <button data-go="call"><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><span>โทรติดตามวันนี้</span><span class="cnt" data-cnt="call" hidden></span></button>
     <button data-go="refer"><svg viewBox="0 0 24 24"><path d="M4 12h13"/><path d="M13 7l5 5-5 5"/><circle cx="20" cy="12" r="1.6"/></svg><span>ติดตามการส่งต่อ</span><span class="cnt" data-cnt="refer" hidden></span></button>
     <button data-go="meds"><svg viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="10" rx="2"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/><path d="M12 12v4"/></svg><span>ทบทวนยา</span><span class="cnt" data-cnt="meds" hidden></span></button>
     <div class="sgrp">ภาพรวมและรายงาน</div>
@@ -493,6 +510,7 @@ td.num{font-family:var(--mono);white-space:nowrap}
     <button data-go="ward"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="7" rx="1.6"/><rect x="13" y="4" width="8" height="7" rx="1.6"/><rect x="3" y="13" width="8" height="7" rx="1.6"/><rect x="13" y="13" width="8" height="7" rx="1.6"/></svg><b>บอร์ด</b></button>
     <button data-go="mine" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M9 11l2 2 4-4"/><rect x="4" y="4" width="16" height="16" rx="3"/></svg><b>งานของฉัน</b></button>
     <button data-go="queue"><svg viewBox="0 0 24 24"><path d="M5 4h14v16l-7-3-7 3z"/></svg><b>คิวเคส</b></button>
+    <button data-go="call"><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><b>โทรติดตาม</b></button>
     <button data-go="refer"><svg viewBox="0 0 24 24"><path d="M4 12h13"/><path d="M13 7l5 5-5 5"/><circle cx="20" cy="12" r="1.6"/></svg><b>ส่งต่อ</b></button>
     <button data-go="meds"><svg viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="10" rx="2"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/><path d="M12 12v4"/></svg><b>ทบทวนยา</b></button>
     <button data-go="port"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><b>พอร์ต</b></button>
@@ -1085,6 +1103,80 @@ async function queueV(){
   V.innerHTML='<div class="empty">กำลังโหลดคิวงาน…</div>';
   try{WL.rows=await CSBackend.cmWorklist()}catch(e){WL.rows=[]}
   renderQueue();
+}
+/* ============================================================
+   โทรติดตามวันนี้ — รายชื่อรายคนจากนัดติดตาม (follow_ups)
+   ------------------------------------------------------------
+   เรียงตามกำหนด เลยกำหนดขึ้นก่อน · กดโทรได้ทันที · บันทึกผลแล้วเลื่อนนัดให้อัตโนมัติ
+   ไม่รับสาย = เลื่อน 1 วัน · ครบ 3 ครั้ง = ขาดการติดตาม · ผลทุกครั้งลง contact_log ของเคส
+   ============================================================ */
+var CALL={days:0,done:0};
+var CALL_KIND={
+  checkin_7d:["📞","โทรติดตาม 7 วัน","ถาม: ล้มหรือเกือบล้มไหม · ทำตามคำแนะนำได้ไหม · มีอาการเวียนหัวใหม่ไหม"],
+  review_30d:["📋","ทบทวนแผน 30 วัน","ทบทวนแผนดูแลกับครอบครัว · ข้อไหนทำได้ ข้อไหนติดขัด · ต้องส่งต่อเพิ่มไหม"],
+  reassess:["⏱️","ชวนวัดซ้ำ","ชวนลูกหลานวัดซ้ำในแอปภายใน 3 วัน · ถามว่าติดขัดเรื่องอะไร"],
+  referral_check:["🏥","ตามผลการส่งต่อ","ถาม: ได้ไปพบผู้เชี่ยวชาญแล้วหรือยัง · ได้รับคำแนะนำอะไร · ต้องช่วยนัดไหม"]
+};
+var CALL_RES=[["reached","✓ คุยได้แล้ว"],["no_answer","ไม่รับสาย"],["callback","ขอให้โทรใหม่"],["refused","ไม่ประสงค์ติดตาม"]];
+async function callV(){
+  head("โทรติดตามวันนี้","รายชื่อที่ถึงนัดติดตาม — โทรทีละคน บันทึกผล ระบบเลื่อนนัดให้เอง");
+  if(!isCoordinator()){
+    V.innerHTML='<div class="warnbox"><b>หน้านี้เฉพาะผู้ประสานงานการดูแล</b><br>วิชาชีพเห็นเฉพาะเคสที่ส่งต่อมาถึงตน ไม่เห็นรายชื่อทั้งพอร์ต</div>';
+    return;
+  }
+  V.innerHTML='<div class="empty">กำลังโหลดรายชื่อ…</div>';
+  var res={rows:[]}; try{ res=await CSBackend.callList(CALL.days) }catch(e){ res={rows:[],err:e} }
+  if(res.disabled){
+    V.innerHTML='<div class="warnbox"><b>ยังไม่ได้เปิดใช้รายชื่อโทรติดตามบนฐานข้อมูลนี้</b><br>'+
+      'ผู้ดูแลระบบต้องรัน <code>supabase/26_call_list.sql</code> ก่อน · ระหว่างนี้ดูนัดติดตามรายเคสได้ในหน้ารายละเอียดเคส</div>';
+    return;
+  }
+  var rows=res.rows||[], now=Date.now(), t0=new Date(); t0.setHours(0,0,0,0); t0=t0.getTime();
+  rows.forEach(function(r){ var d=new Date(r.due_at).getTime(); r._late=d<t0?1:d<t0+864e5?0:-1; r._dd=Math.round((new Date(new Date(r.due_at).setHours(0,0,0,0))-t0)/864e5) });
+  var late=rows.filter(function(r){return r._late===1}).length, today=rows.filter(function(r){return r._late===0}).length;
+  var tried=rows.filter(function(r){return r.attempts>0}).length;
+  head("โทรติดตามวันนี้","รายชื่อที่ถึงนัดติดตาม — โทรทีละคน บันทึกผล ระบบเลื่อนนัดให้เอง",rows.length);
+  function dueTxt(r){
+    if(r._dd<0) return '<b style="color:var(--c1)">เลยนัด '+(-r._dd)+' วัน</b>';
+    if(r._dd===0) return '<b style="color:var(--c2)">วันนี้</b>';
+    return '<b>อีก '+r._dd+' วัน</b>';
+  }
+  function card(r){
+    var k=CALL_KIND[r.kind]||["📞",FU_NM[r.kind]||r.kind,"ถามอาการ การล้ม และการทำตามแผนดูแล"];
+    var tels=(r.phone?'<a href="tel:'+esc(r.phone)+'" data-dial="'+r.fu_id+'">📞 โทร '+esc(r.phone)+'</a>':'')+
+      (r.carer_phone?'<a class="alt" href="tel:'+esc(r.carer_phone)+'" data-dial="'+r.fu_id+'">👪 '+esc(r.carer_name||"ผู้ดูแล")+' '+esc(r.carer_phone)+'</a>':'');
+    return '<div class="callc" data-late="'+r._late+'">'+
+      '<div class="top"><div class="av">'+esc(String(r.display_name||"?").replace(/^สาธิต\s*/,"").charAt(0))+'</div>'+
+        '<div class="nm"><b>'+esc(r.display_name||"—")+'</b><small>'+esc(r.pseudonym||"")+(r.age?' · '+r.age+' ปี':'')+(r.province?' · '+esc(r.province):'')+'</small></div>'+
+        '<div class="due">'+dueTxt(r)+thDate(r.due_at).split(" ").slice(0,3).join(" ")+'</div></div>'+
+      '<div class="kind"><em>'+k[0]+'</em><div><b>'+esc(k[1])+'</b>'+(r.case_level?' · '+prioPill(r.case_level):'')+'<br>'+esc(k[2])+'</div></div>'+
+      (tels?'<div class="tels">'+tels+'</div>':'<div class="warnbox" style="margin:0">ไม่มีเบอร์ติดต่อในโปรไฟล์</div>')+
+      '<div class="res">'+CALL_RES.map(function(x){return '<button data-fu="'+r.fu_id+'" data-r="'+x[0]+'">'+x[1]+'</button>'}).join("")+'</div>'+
+      '<div class="meta"><span>'+(r.attempts?'โทรแล้ว '+r.attempts+'/3 ครั้ง'+(r.last_try_at?' · ล่าสุด '+esc(thDate(r.last_try_at)):''):'ยังไม่ได้โทร')+'</span>'+
+        (r.case_id?'<a href="#" data-open="'+r.case_id+'" data-uid="'+r.user_id+'" style="color:var(--gold)">เปิดเคส ›</a>':'')+'</div>'+
+      (r.fu_note?'<div class="meta"><span>บันทึก: '+esc(r.fu_note)+'</span></div>':'')+
+    '</div>';
+  }
+  V.innerHTML=kpiRow([
+      {id:"late",n:late,label:"เลยนัด",tone:"c1"},{id:"today",n:today,label:"ถึงนัดวันนี้",tone:"c2"},
+      {id:"tried",n:tried,label:"โทรแล้วยังไม่สำเร็จ",tone:"c3"},{id:"done",n:CALL.done,label:"บันทึกผลรอบนี้",tone:"c4"}])+
+    '<div class="seg" style="margin-bottom:12px">'+[[0,"วันนี้"],[3,"รวม 3 วันข้างหน้า"],[7,"รวม 7 วัน"]].map(function(x){
+      return '<button data-days="'+x[0]+'" aria-pressed="'+(CALL.days===x[0])+'">'+x[1]+'</button>'}).join("")+'</div>'+
+    (rows.length?'<div class="calls">'+rows.map(card).join("")+'</div>'
+      :'<div class="card"><div class="empty"><b>ไม่มีนัดโทรติดตามที่ถึงกำหนด</b><br>นัดเกิดจากแผนดูแล (7 วัน · 30 วัน) และการส่งต่อ · ดูช่วงถัดไปได้จากปุ่มด้านบน</div></div>')+
+    '<div class="notice">โทรจากเบอร์ของหน่วยบริการเท่านั้น · แนะนำตัวและหน่วยงานทุกครั้ง · ไม่ขอเลขบัตร รหัส OTP หรือข้อมูลการเงิน · '+
+      'ผลการโทรบันทึกลงประวัติการติดต่อของเคสและบันทึกตรวจสอบ</div>';
+  V.querySelectorAll("[data-days]").forEach(function(b){b.addEventListener("click",function(){CALL.days=+b.dataset.days;callV()})});
+  V.querySelectorAll("[data-open]").forEach(function(a){a.addEventListener("click",function(e){e.preventDefault();caseDetailV(a.dataset.open,a.dataset.uid)})});
+  V.querySelectorAll("[data-fu]").forEach(function(b){b.addEventListener("click",async function(){
+    var r=b.dataset.r, note=r==="no_answer"?"":ask(r==="reached"?"สรุปสั้น ๆ ว่าคุยอะไร (ไม่บังคับ)":r==="refused"?"เหตุผล (ไม่บังคับ)":"ให้โทรกลับช่วงไหน (ไม่บังคับ)");
+    if(note===null)return;
+    b.disabled=true;
+    try{ var f=await CSBackend.callResult(b.dataset.fu,r,note||null); CALL.done++;
+      toast(f&&f.status==="missed"?"ไม่รับสายครบ 3 ครั้ง — บันทึกว่าขาดการติดตาม":r==="no_answer"?"เลื่อนไปโทรใหม่พรุ่งนี้":r==="callback"?"เลื่อนนัดโทรอีก 2 วัน":"บันทึกผลแล้ว");
+      callV(); navCounts&&navCounts() }
+    catch(e){ toast("บันทึกไม่สำเร็จ: "+(e.message||e)); b.disabled=false }
+  })});
 }
 /* ============================================================
    มุมมองวอร์ด — คอนโซลเต็มจอสำหรับจอใหญ่ที่เคาน์เตอร์
@@ -2885,7 +2977,7 @@ async function auditV(){
   V.innerHTML=html; bindDash(null);
 }
 
-var FN={cred:credV,creds:credsV,login:loginV,ward:wardScreenV,mine:mineV,queue:queueV,refer:referV,meds:medsV,port:portV,
+var FN={cred:credV,creds:credsV,login:loginV,ward:wardScreenV,mine:mineV,queue:queueV,call:callV,refer:referV,meds:medsV,port:portV,
         reports:reportsV,audit:auditV,users:usersV,data:dataV,me:meV};
 var SIDE=document.getElementById("side");
 
@@ -3159,8 +3251,8 @@ function deepLink(){
    ไม่ใช่แค่กันตอนกดเข้า เพื่อไม่ให้เข้าใจผิดว่ามีสิทธิ์ */
 var NAV_BY_ROLE={
   /* ผู้ประสานงานเห็นทั้งพอร์ตเพราะต้องจัดสรรงานและติดตามภาพรวม */
-  care_manager:["ward","mine","queue","refer","meds","port","reports","audit","me"],
-  admin:       ["ward","mine","queue","refer","meds","port","reports","audit","users","creds","data","me"],
+  care_manager:["ward","mine","queue","call","refer","meds","port","reports","audit","me"],
+  admin:       ["ward","mine","queue","call","refer","meds","port","reports","audit","users","creds","data","me"],
   /* บริษัทประกันเห็นเฉพาะภาพรวมระดับกลุ่ม ไม่มีเมนูรายบุคคลเลย */
   insurer:     ["port","me"],
   /* วิชาชีพเห็นเฉพาะงานที่ส่งมาถึงตน ไม่มีคิวรวมทั้งพอร์ต
@@ -3193,6 +3285,7 @@ async function navCounts(){
     try{ var c=await CSBackend.caseQueue();
          n.queue=c.filter(function(x){return ["stable","closed"].indexOf(x.status)<0}).length }catch(e){}
     try{ n.meds=(await CSBackend.medReviewQueue()).length }catch(e){}
+    try{ n.call=(await CSBackend.callList(0)).rows.length }catch(e){}
   }
   try{ n.refer=(await (isClinician()?CSBackend.myReferrals():CSBackend.listReferralQueue()))
          .filter(function(r){return ["outcome_recorded","declined"].indexOf(r.status)<0}).length }catch(e){}
