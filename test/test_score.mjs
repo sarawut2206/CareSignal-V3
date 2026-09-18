@@ -151,7 +151,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("ปิดแถบชวนติดตั้งแล้วจำไว้", /localStorage\.setItem\(A2HS\.key, "no"\)/.test(app));
   ok("ทางลัด ?go= เปิดหน้าที่ต้องการได้", /\["fall", "test", "history", "meds", "video"\]\.indexOf\(goto\)/.test(app));
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
-  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-7/.test(sw));
+  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-8/.test(sw));
 }
 
 /* ใบส่งต่อแบบเอกสารทางการ: ทุกสัญญาณต้องมีเกณฑ์ เหตุผล และเอกสารอ้างอิง */
@@ -177,6 +177,21 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("การ์ดทีมดูแลไม่แสดงรหัสภาษาอังกฤษ", /REF_ST\[r\.status\]/.test(app) && /DEST_NM\[r\.destination\]/.test(app) && /function thAction/.test(app));
   const sw2 = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
   ok("sw แคช cs-evidence.js", /"\.\/cs-evidence\.js"/.test(sw2));
+}
+
+/* ทรงตัว 4 ท่า: ไม่จบเองเมื่อท่าใดไม่ครบ 10 วินาที และเก็บเวลาทุกท่า */
+{
+  const app = readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8");
+  ok("ท่าไม่ครบ 10 วิ มีปุ่มไปท่าถัดไป และปุ่มหยุดตาม CDC", /onclick="balNext\(true\)">บันทึก ' \+ sw\.val\.toFixed\(1\) \+ ' วินาที · ไปท่าที่/.test(app) && /หยุดการทรงตัว \(ตามแนวทาง CDC\)/.test(app));
+  ok("ไปท่าที่ยากกว่าหลังไม่ผ่าน ต้องยืนยันว่ามีคนประคอง", /v < 10 && cont && d\.balStages\.length < 3 &&\s*!confirm\("ท่าถัดไปยากกว่า/.test(app));
+  ok("ข้ามท่าเก็บเป็น null ไม่ใช่ 0 วินาที", /function balSkip/.test(app) && /d\.balStages\.push\(null\)/.test(app));
+  ok("ระดับที่ผ่านนับแบบ CDC (ผ่านต่อเนื่องจากท่าแรก)", /while \(n < st\.length && st\[n\] != null && st\[n\] >= 10\) n\+\+/.test(app));
+  ok("แสดงผลรายท่าในหน้าผลและใบส่งต่อ", (app.match(/balDetail\(r\.balStages\)/g) || []).length >= 2);
+  const C3 = require("../cs-cloud.js");
+  const pay = C3.payloadOf({ date: "2026-09-19", ftsst: 10, tier: 3, balStages: [10, 7.2, 3.1, null], balPassed: 1, balance: 3.1, flags: { reds: [], yellows: [] }, trend: [] }, { name: "x", age: 69 }, "y");
+  ok("ส่งขึ้นระบบกลางครบ 4 ท่า ท่าที่ข้ามเป็น tested:false", pay.detail.balance.stages.length === 4 && pay.detail.balance.stages[3].tested === false && pay.detail.balance.stages[3].passed === null && pay.detail.balance.stages[1].passed === false, pay.detail.balance.stages);
+  const f = S.flags({ age: 69, balPassed: 1, balance: 3.1 });
+  ok("ผ่านต่อเนื่อง 1 ท่า = สัญญาณทรงตัว B11", f.yellows.some((x) => x.id === "B11"));
 }
 
 console.log("  " + pass + " ผ่าน / " + fail + " ตก");

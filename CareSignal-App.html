@@ -651,13 +651,19 @@ function renderStopwatch(v, k, prog) {
   var running = !!sw.t, shown = running ? (Date.now() - sw.t0) / 1000 : (sw.val || 0);
   v.innerHTML =
     (k === "balance" ? '<div class="card" style="border:2px solid var(--brand)"><h3>' + (bi + 1) + '. ' + esc(bs.nm) + '</h3><p class="sub" style="margin:0">' + esc(bs.how) + '</p>' +
-      (bi ? '<p class="sub" style="margin:6px 0 0;color:var(--c4)">ผ่านแล้ว: ' + S.draft.balStages.map(function (x, i) { return BAL_STAGES[i].nm + " " + x.toFixed(1) + " วิ"; }).join(" · ") + '</p>' : '') + '</div>' : '') +
+      (bi ? '<p class="sub" style="margin:6px 0 0">ผลท่าก่อนหน้า: ' + balDetail(S.draft.balStages) + '</p>' : '') + '</div>' : '') +
     '<div class="card"><div class="big" id="clock">' + shown.toFixed(1) + '<small> วินาที</small></div>' +
     '<button class="sw ' + (running ? "stop" : "") + '" onclick="swToggle()">' + (running ? "■ หยุด" : (sw.val != null ? "↻ จับใหม่" : "▶ เริ่ม")) + '</button></div>' +
     (sw.val != null && !running ? (k !== "balance" ? '<button class="btn" onclick="swSave()">บันทึก ' + sw.val.toFixed(1) + ' วินาที</button>'
-      : sw.val >= 10 ? '<button class="btn" onclick="balNext()">ผ่าน 10 วินาที · ' + (bi < 3 ? 'ไปท่าที่ ' + (bi + 2) : 'จบการทรงตัว') + '</button>'
-      : '<button class="btn" onclick="balNext()">ยืนได้ ' + sw.val.toFixed(1) + ' วินาที · จบการทรงตัว</button>') : "") +
-    '<button class="btn ghost" onclick="swSkip()">ข้ามท่านี้ (ทำไม่ได้ / ไม่ปลอดภัย)</button>' +
+      : sw.val >= 10 ? '<button class="btn" onclick="balNext(true)">ผ่าน 10 วินาที · ' + (bi < 3 ? 'ไปท่าที่ ' + (bi + 2) : 'จบการทรงตัว') + '</button>'
+      : bi < 3 ? '<div class="warn"><b>ท่านี้ยืนได้ ' + sw.val.toFixed(1) + ' วินาที ไม่ครบ 10 วินาที</b><br>แนวทาง CDC ให้หยุดที่ท่านี้ เพราะท่าถัดไปยากกว่าและเสี่ยงล้มมากขึ้น ถ้าจะทำต่อ ต้องมีคนยืนประคองอยู่ข้างผู้สูงอายุตลอด</div>' +
+        '<button class="btn" onclick="balNext(true)">บันทึก ' + sw.val.toFixed(1) + ' วินาที · ไปท่าที่ ' + (bi + 2) + '</button>' +
+        '<button class="btn sec" onclick="balNext(false)">บันทึก ' + sw.val.toFixed(1) + ' วินาที · หยุดการทรงตัว (ตามแนวทาง CDC)</button>'
+      : '<button class="btn" onclick="balNext(false)">บันทึก ' + sw.val.toFixed(1) + ' วินาที · จบการทรงตัว</button>') : "") +
+    (k === "balance"
+      ? (bi < 3 ? '<button class="btn ghost" onclick="balSkip(true)">ข้ามท่านี้ ไปท่าที่ ' + (bi + 2) + '</button>' : '') +
+        '<button class="btn ghost" onclick="balSkip(false)">หยุดการทรงตัว (ทำต่อไม่ได้ / ไม่ปลอดภัย)</button>'
+      : '<button class="btn ghost" onclick="swSkip()">ข้ามท่านี้ (ทำไม่ได้ / ไม่ปลอดภัย)</button>') +
     '<div class="card"><h3>ทำอย่างไร</h3>' + fig(k) + '<div class="steps">' + vid.steps.map(function (s) { return '<div>' + esc(s) + '</div>'; }).join("") + '</div>' +
     '</div>' + (vid.id ? '<div class="card"><h3>วิดีโอสาธิต</h3>' + vidEmbed(vid) + '</div>' : "");
 }
@@ -683,12 +689,31 @@ function swSkip() {
   if (k === "balance" && S.draft.balStages.length) return balDone();   /* ผ่านบางท่าแล้ว เก็บเท่าที่ทำได้ */
   S.draft[k] = null; S.draft.skipped[k] = "skip"; S.sw = null; S.step++; render();
 }
-/* ท่าทรงตัว: ครบ 10 วินาที → ท่าถัดไป · ไม่ครบ → จบ (ไม่ทำท่าที่ยากกว่า เพื่อความปลอดภัย) */
-function balNext() {
+/* ท่าทรงตัว: บันทึกวินาทีทุกท่า
+   ครบ 10 วินาที → ท่าถัดไป · ไม่ครบ → ผู้วัดเลือกเองว่าจะทำต่อ (ต้องมีคนประคอง) หรือหยุดตาม CDC
+   CDC แนะนำให้หยุดเมื่อท่าใดไม่ครบ 10 วินาที แอปจึงถามยืนยันเรื่องคนประคองก่อนไปท่าที่ยากกว่า */
+function balNext(cont) {
   var v = S.sw.val, d = S.draft;
+  if (v < 10 && cont && d.balStages.length < 3 &&
+      !confirm("ท่าถัดไปยากกว่าและเสี่ยงล้มมากขึ้น\nยืนยันว่ามีคนยืนประคองอยู่ข้างผู้สูงอายุตลอดการทดสอบ")) return;
   d.balStages.push(v); S.sw = null;
-  if (v >= 10 && d.balStages.length < 4) { toast("ผ่าน · พักสักครู่แล้วทำท่าถัดไป"); render(); return; }
+  if (d.balStages.length >= 4 || !cont) return balDone();
+  toast(v >= 10 ? "ผ่าน · พักสักครู่แล้วทำท่าถัดไป" : "บันทึกแล้ว · ประคองให้ดีในท่าถัดไป");
+  render();
+}
+/* ข้ามท่า: บันทึกเป็น "ไม่ได้ทดสอบ" (null) ไม่ใช่ 0 วินาที เพราะความหมายต่างกัน */
+function balSkip(next) {
+  var d = S.draft;
+  if (next && !confirm("ข้ามท่านี้แล้วไปท่าที่ยากกว่า\nยืนยันว่ามีคนยืนประคองอยู่ข้างผู้สูงอายุตลอด")) return;
+  if (S.sw && S.sw.t) clearInterval(S.sw.t);
+  d.balStages.push(null); S.sw = null;
+  if (next && d.balStages.length < 4) { render(); return; }
   balDone();
+}
+/* ข้อความผลรายท่า เช่น "ชิด 10.0 ✓ · เหลื่อม 7.2 ✗ · ต่อเท้า ข้าม" */
+function balDetail(st) {
+  if (!st || !st.length) return "–";
+  return st.map(function (x, i) { return BAL_STAGES[i].nm + " " + (x == null ? "ข้าม" : x.toFixed(1) + " วิ " + (x >= 10 ? "✓" : "✗")); }).join(" · ");
 }
 function balText(a) {
   if (a.balPassed != null) return a.balPassed + "/4 ท่า";
@@ -816,8 +841,12 @@ async function medSync(m) {
 
 function balDone() {
   var d = S.draft, st = d.balStages;
-  d.balPassed = st.filter(function (x) { return x >= 10; }).length;
-  d.balance = st.length >= 3 ? st[2] : null;   /* วินาทีของท่ายืนต่อเท้า (ท่าที่ 3) ถ้าไปถึง */
+  /* ระดับที่ผ่านนับแบบ CDC: ผ่านต่อเนื่องจากท่าแรกกี่ท่า (ท่าที่ข้ามหรือไม่ครบ = จบการนับ)
+     เวลาทุกท่ายังเก็บไว้ครบใน balStages ให้ผู้เชี่ยวชาญดู */
+  var n = 0; while (n < st.length && st[n] != null && st[n] >= 10) n++;
+  if (!st.some(function (x) { return x != null; })) { d.balPassed = null; d.balance = null; d.skipped.balance = "skip"; S.sw = null; S.step++; render(); return; }
+  d.balPassed = n;
+  d.balance = st.length >= 3 && st[2] != null ? st[2] : null;   /* วินาทีของท่ายืนต่อเท้า (ท่าที่ 3) ถ้าได้ทำ */
   S.sw = null; S.step++; render();
 }
 
@@ -852,7 +881,7 @@ function renderConfirm(v, prog) {
   v.innerHTML = '<div class="card">' +
     row("ลุกนั่ง 5 ครั้ง", d.ftsst != null ? d.ftsst.toFixed(1) + " วิ" : "ข้าม") +
     row("ลุกเดิน 3 เมตร", d.tug != null ? d.tug.toFixed(1) + " วิ" : "ข้าม") +
-    row("ทรงตัว 4 ท่า", d.balPassed != null ? "ผ่าน " + d.balPassed + "/4 ท่า" : "ข้าม") +
+    row("ทรงตัว 4 ท่า", d.balPassed != null ? "ผ่าน " + d.balPassed + "/4 ท่า<br><small style=\"color:var(--ink2);font-weight:400\">" + balDetail(d.balStages) + "</small>" : "ข้าม") +
     row("ล้มใน 12 เดือน", d.fallsCount === 9 ? "จำไม่ได้" : d.fallsCount + " ครั้ง") +
     row("กลัวล้ม", d.worried ? "ใช่" : "ไม่") + row("กิจวัตร", ["ต้องช่วยเกือบทุกอย่าง", "ต้องช่วยบางอย่าง", "ทำเองได้"][d.adl]) + '</div>' +
     '<button class="btn" onclick="finish()">บันทึกและดูผล</button><button class="btn ghost" onclick="S.step=1;render()">ย้อนไปวัดใหม่</button>';
@@ -902,7 +931,7 @@ function measuredCard(r) {
   return '<div class="card"><h3>ค่าที่วัดได้วันนี้</h3>' +
     row("ลุกนั่ง 5 ครั้ง", r.ftsst != null ? r.ftsst.toFixed(1) + " วินาที" : "ข้าม") +
     row("ลุกเดิน 3 เมตร", r.tug != null ? r.tug.toFixed(1) + " วินาที" : "ข้าม") +
-    row("ทรงตัว 4 ท่า", balText(r)) + '</div>';
+    row("ทรงตัว 4 ท่า", balText(r)) + (r.balStages && r.balStages.length ? '<p class="sub" style="margin:4px 0 0;font-size:14px">' + balDetail(r.balStages) + '</p>' : '') + '</div>';
 }
 function cloudLine(r) {
   if (r.cloud) return '<div class="flag ' + (r.cloud.level === "stable" ? "good" : "") + '"><b>☁️ ส่งถึงระบบกลางแล้ว</b><small>' + (r.cloud.level === "stable" ? "ไม่เปิดเคส เพราะไม่พบสัญญาณเสี่ยง" : "เปิดเคสให้เจ้าหน้าที่แล้ว") + '</small></div>';
@@ -1013,7 +1042,7 @@ function docHTML(r) {
   h += '<h2>๒. ผลการทดสอบครั้งล่าสุดเทียบเกณฑ์ (' + longDate(r.date) + ')</h2><table><tr><th>การทดสอบ</th><th>ผลที่วัดได้</th><th>เกณฑ์</th><th>แปลผล</th></tr>' +
        '<tr><td>ลุก–นั่ง 5 ครั้ง (5×STS)</td><td>' + (r.ftsst != null ? r.ftsst.toFixed(1) + ' วินาที' : 'ไม่ได้ทดสอบ') + '</td><td>≤ ' + cut + ' วินาที ตามอายุ' + cite(["ftsst"]) + '</td><td>' + res(r.ftsst == null ? null : r.ftsst <= cut) + '</td></tr>' +
        '<tr><td>ลุกเดิน 3 เมตร (TUG)</td><td>' + (r.tug != null ? r.tug.toFixed(1) + ' วินาที' : 'ไม่ได้ทดสอบ') + '</td><td>&lt; 12 วินาที' + cite(["tug"]) + '</td><td>' + res(r.tug == null ? null : r.tug < 12) + '</td></tr>' +
-       '<tr><td>ทรงตัว 4 ท่า</td><td>' + balText(r) + '</td><td>ยืนต่อเท้าครบ 10 วินาที' + cite(["stage4"]) + '</td><td>' + res(r.balPassed != null ? r.balPassed >= 3 : (r.balance != null ? r.balance >= 10 : null)) + '</td></tr>' +
+       '<tr><td>ทรงตัว 4 ท่า</td><td>' + balText(r) + (r.balStages && r.balStages.length ? '<br><small>' + balDetail(r.balStages) + '</small>' : '') + '</td><td>ยืนต่อเท้าครบ 10 วินาที' + cite(["stage4"]) + '</td><td>' + res(r.balPassed != null ? r.balPassed >= 3 : (r.balance != null ? r.balance >= 10 : null)) + '</td></tr>' +
        '<tr><td>ประวัติหกล้ม 12 เดือน</td><td>' + fallsTxt + (r.injury >= 2 ? ' · บาดเจ็บจนต้องพบแพทย์' : '') + (r.getup >= 3 ? ' · ล้มแล้วลุกเองไม่ได้' : '') + '</td><td>ไม่เคยล้ม' + cite(["steadi"]) + '</td><td>' + res(r.fallsCount == null || r.fallsCount === 9 ? null : r.fallsCount === 0) + '</td></tr>' +
        '<tr><td>ยาที่ใช้ประจำ</td><td>' + (meds.length ? meds.length + ' รายการ (บันทึกจากรูปซองยา)' : (r.medsCount == null ? 'ไม่ได้ระบุ' : ['ไม่ใช้', '1–3 รายการ', '4–5 รายการ', '6–9 รายการ', '10 รายการขึ้นไป'][r.medsCount] || 'ไม่แน่ใจ')) + '</td><td>ไม่มียาเสี่ยงหกล้ม' + cite(["stoppfall"]) + '</td><td>' + (meds.length ? res(sumM.total < 2) : '<span>ดูข้อ ๕</span>') + '</td></tr></table>';
   /* ---------- ๓ แนวโน้ม ---------- */

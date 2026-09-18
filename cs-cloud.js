@@ -64,7 +64,7 @@
     var balPassed = rec.balPassed != null ? rec.balPassed
                   : rec.balance == null ? null : (rec.balance >= 10 ? 3 : 2);   /* ข้อมูลรุ่นแรก: รู้แค่ท่ายืนต่อเท้า */
     var STG = ["feet_together", "semi_tandem", "tandem", "one_leg"];
-    var stages = (rec.balStages || []).map(function (sec, i) { return { stage: STG[i], seconds: sec, passed: sec >= 10 }; });
+    var stages = (rec.balStages || []).map(function (sec, i) { return { stage: STG[i], seconds: sec, tested: sec != null, passed: sec == null ? null : sec >= 10 }; });
     return {
       at: rec.date, method: "manual", ftsst: rec.ftsst, tug: rec.tug,
       reps: rec.ftsst != null ? 5 : null, cv: null, gaps: null,
