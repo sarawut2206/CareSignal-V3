@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CareSignal · เดโม 2 นาที</title>
+<meta name="description" content="สาธิตเคสเดียวตั้งแต่ครอบครัววัดที่บ้าน จนถึงผู้เชี่ยวชาญตอบกลับ นัดติดตาม และบริษัทประกันเห็นผลระดับกลุ่ม — ข้อมูลสาธิต">
+<link rel="icon" href="./favicon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   เดโมสำหรับกรรมการ — เคสเดียว 9 ขั้น 4 หน้าจอ ภายใน 2 นาที
+   ข้อมูลในหน้านี้เป็นข้อมูลสาธิตทั้งหมด (ชื่อขึ้นต้นด้วย "สาธิต")
+   หน้าตาแต่ละจอจำลองจากระบบจริง: แอป V3 · คอนโซลผู้ประสานงาน
+   · กระดานวิชาชีพ · แดชบอร์ดบริษัทประกัน ปุ่มท้ายหน้าเปิดระบบจริงได้
+   ไม่พึ่งเน็ต (นอกจากฟอนต์ ซึ่งมีฟอนต์สำรอง) เพื่อใช้ในห้องนำเสนอได้แน่นอน
+   ============================================================ */
+:root{
+  --bg:#EEF2F5; --surf:#fff; --ink:#1E2A33; --ink2:#5E6B75; --ink3:#97A3AD; --line:#DDE5EB;
+  --brand:#0F9C8C; --brand2:#0B766A; --brandt:#E7F6F3; --navy:#16325C;
+  --c1:#DC2626; --c2:#D97706; --c3:#C79200; --c4:#0E9F6E;
+  --c1b:#FEE9E9; --c2b:#FDECD8; --c3b:#FEF6DE; --c4b:#E3F6EF;
+  --sans:"Prompt","Noto Sans Thai",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);display:flex;flex-direction:column;overflow:hidden}
+button{font-family:inherit}
+/* ---------- แถบบน ---------- */
+.top{display:flex;align-items:center;gap:14px;padding:10px 20px;background:#fff;border-bottom:1px solid var(--line);flex:none}
+.top img{width:36px;height:36px;border-radius:10px}
+.top h1{margin:0;font-size:18px;line-height:1.2}.top h1 small{display:block;font-size:12.5px;color:var(--ink2);font-weight:400}
+.demo-tag{margin-left:auto;background:#FFF4D6;color:#8A5A00;border:1px solid #F2D58A;border-radius:99px;font-size:12.5px;font-weight:600;padding:4px 12px;white-space:nowrap}
+/* ---------- แถบขั้นตอน ---------- */
+.steps{display:flex;gap:6px;padding:10px 20px 0;flex:none}
+.steps button{flex:1;min-width:0;border:0;background:#fff;border-radius:12px;padding:7px 8px;text-align:left;cursor:pointer;color:var(--ink2);box-shadow:0 1px 2px rgba(0,0,0,.04);position:relative;overflow:hidden}
+.steps button b{display:block;font-size:12px;color:var(--ink3)}
+.steps button span{display:block;font-size:12.5px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.steps button.on{background:var(--brand);color:#fff}.steps button.on b{color:#CFF3EC}
+.steps button.done{color:var(--ink)}.steps button.done b{color:var(--brand)}
+.steps button i{position:absolute;left:0;bottom:0;height:3px;background:#FCD34D;width:0}
+/* ---------- เวที 4 จอ ---------- */
+.stage{flex:1;min-height:0;display:grid;grid-template-columns:300px 1fr 1fr 1fr;gap:14px;padding:12px 20px}
+.scr{min-height:0;display:flex;flex-direction:column;transition:opacity .35s,transform .35s,box-shadow .35s;opacity:.42;transform:scale(.985)}
+.scr.on{opacity:1;transform:none}
+.scr .lbl{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink2);margin:0 0 6px 4px}
+.scr .lbl em{font-style:normal;width:24px;height:24px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:13px}
+.scr.on .lbl{color:var(--brand2)}.scr.on .lbl em{background:var(--brand);color:#fff}
+.win{flex:1;min-height:0;background:#fff;border-radius:18px;box-shadow:0 6px 22px rgba(30,42,51,.08);overflow:hidden;display:flex;flex-direction:column;border:2px solid transparent}
+.scr.on .win{border-color:var(--brand);box-shadow:0 10px 34px rgba(15,156,140,.22)}
+.wbar{flex:none;padding:9px 14px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--ink2);display:flex;gap:8px;align-items:center}
+.wbar b{color:var(--ink);font-size:13.5px}
+.wbody{flex:1;min-height:0;overflow:auto;padding:12px 14px;font-size:13.5px;line-height:1.55}
+/* โทรศัพท์ */
+.phone{border-radius:34px;border:8px solid #1E2A33;background:#F4F6F8}
+.phone .wbar{border:0;background:#F4F6F8;justify-content:space-between;padding:8px 16px 2px;font-size:11.5px}
+.phone .wbody{padding:6px 12px 12px}
+.ph-h{font-size:17px;font-weight:700;color:var(--brand2);margin:2px 0 8px}
+/* ชิ้นส่วนร่วม */
+.card{background:#fff;border-radius:14px;padding:10px 12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 12px rgba(30,42,51,.05)}
+.phone .card{border:1px solid #EAF0F3}
+.card h4{margin:0 0 4px;font-size:14px}
+.muted{color:var(--ink2);font-size:12.5px}
+.row{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px dashed var(--line)}
+.row:last-child{border-bottom:0}
+.row b{font-weight:600}
+.pill{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.p-new{background:#EAF0FE;color:#1D4ED8}.p-ok{background:var(--c4b);color:var(--c4)}.p-wait{background:#EEF1F4;color:var(--ink2)}
+.p-org{background:var(--c2b);color:var(--c2)}.p-red{background:var(--c1b);color:var(--c1)}.p-teal{background:var(--brandt);color:var(--brand2)}
+.hero{border-radius:14px;padding:10px 12px;color:#fff;margin-bottom:8px;background:linear-gradient(135deg,#17B3A1,#0B766A)}
+.hero b{display:block;font-size:17px}.hero span{font-size:12.5px;opacity:.92}
+.hero.pd{background:linear-gradient(135deg,#6B7F8E,#44545F)}.hero.t2{background:linear-gradient(135deg,#F08A24,#C2610C)}
+.btnx{display:block;text-align:center;border-radius:99px;background:var(--brand);color:#fff;font-weight:600;padding:8px;margin-top:6px;font-size:13.5px}
+.btnx.sec{background:#fff;color:var(--brand2);border:1.5px solid var(--line)}
+.flag{border-left:3px solid var(--c3);background:#FFFBEB;border-radius:0 10px 10px 0;padding:5px 9px;margin:5px 0;font-size:12.5px;line-height:1.45}
+.flag small{display:block;color:var(--ink2);font-size:11.5px}
+.flag.red{border-color:var(--c1);background:var(--c1b)}.flag.ok{border-color:var(--c4);background:var(--c4b)}
+.src{display:block;color:var(--ink3);font-size:11px}
+.new{animation:pop .6s ease}
+@keyframes pop{0%{background:#FFF3C4}100%{background:inherit}}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{text-align:left;padding:6px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;color:var(--ink2);font-weight:600;background:#F6F9FA}
+.win td:first-child{min-width:128px}
+.rolebar{display:flex;gap:8px;align-items:center;background:var(--brandt);border-radius:10px;padding:7px 10px;margin-bottom:8px;font-size:12px;color:var(--ink2)}
+.rolebar b{color:var(--ink);font-size:12.5px;display:block}
+.tabs2{display:flex;gap:6px;margin-bottom:8px}.tabs2 span{flex:1;text-align:center;font-size:12.5px;font-weight:600;padding:6px;border-radius:10px;background:#F1F4F6;color:var(--ink2)}
+.tabs2 span.on{background:var(--brand);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:8px}
+.kpi{background:#F6F9FA;border-radius:10px;padding:7px 9px}.kpi b{display:block;font-size:20px;line-height:1.1}.kpi span{font-size:11.5px;color:var(--ink2)}
+.bar{display:grid;grid-template-columns:92px 1fr 34px;gap:6px;align-items:center;font-size:12px;margin:4px 0}
+.bar i{display:block;height:8px;border-radius:0 4px 4px 0}
+.bar .tr{background:#EEF2F5;border-radius:4px;height:8px}
+.tl{position:relative;padding-left:16px}.tl:before{content:"";position:absolute;left:5px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.tl div{position:relative;padding:4px 0 6px}.tl div:before{content:"";position:absolute;left:-15px;top:9px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--brand)}
+.tl div.done:before{background:var(--brand)}
+.idle{height:100%;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--ink3);font-size:13px;padding:20px}
+/* ---------- บทพูด / ควบคุม ---------- */
+.foot{flex:none;display:flex;align-items:center;gap:14px;padding:10px 20px 14px}
+.say{flex:1;background:#fff;border-radius:14px;padding:10px 16px;font-size:16px;line-height:1.5;box-shadow:0 1px 2px rgba(0,0,0,.04);min-height:58px}
+.say b{color:var(--brand2)}
+.say small{display:block;color:var(--ink3);font-size:12px;margin-top:2px}
+.ctl{display:flex;gap:6px;align-items:center}
+.ctl button{border:0;border-radius:12px;background:#fff;color:var(--ink);font-size:15px;font-weight:600;padding:10px 14px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.ctl button.pri{background:var(--brand);color:#fff;min-width:96px}
+.clock{font-variant-numeric:tabular-nums;font-size:15px;font-weight:600;color:var(--ink2);min-width:92px;text-align:center}
+.links{display:flex;gap:6px;flex-wrap:wrap;font-size:12px}
+.links a{color:var(--brand2);text-decoration:none;background:#fff;border-radius:99px;padding:4px 10px;border:1px solid var(--line)}
+.links a:focus-visible,.ctl button:focus-visible,.steps button:focus-visible{outline:3px solid #FCD34D;outline-offset:2px}
+/* จอแคบ: แสดงเฉพาะจอที่กำลังเล่า */
+@media(max-width:1100px){
+  body{overflow:auto}
+  .stage{grid-template-columns:1fr;height:auto}
+  .scr{display:none;opacity:1;transform:none}.scr.on{display:flex;min-height:560px}
+  .scr.phone-col.on{max-width:340px;margin:0 auto;width:100%}
+  .steps{overflow-x:auto}.steps button{flex:0 0 120px}
+  .foot{flex-wrap:wrap}.say{flex-basis:100%}
+}
+@media(prefers-reduced-motion:reduce){.scr,.new{transition:none;animation:none}}
+</style>
+</head>
+<body>
+<div class="top">
+  <img src="./icon-192.png" alt="">
+  <h1>CareSignal · สาธิตเคสเดียวครบวงจร<small>ครอบครัววัดที่บ้าน → ทีมดูแล → ผู้เชี่ยวชาญ → ครอบครัวได้แผนดูแล → บริษัทประกันเห็นผลระดับกลุ่ม</small></h1>
+  <span class="demo-tag">ข้อมูลสาธิต · ไม่ใช่ผู้ใช้จริง</span>
+</div>
+<div class="steps" id="steps"></div>
+<div class="stage">
+  <section class="scr phone-col" id="s-fam"><div class="lbl"><em>1</em>ครอบครัว · แอป CareSignal V3</div>
+    <div class="win phone"><div class="wbar"><span>09:41</span><span>CareSignal V3</span></div><div class="wbody" id="b-fam"></div></div></section>
+  <section class="scr" id="s-cm"><div class="lbl"><em>2</em>ผู้ประสานงาน (Care Manager)</div>
+    <div class="win"><div class="wbar"><b>คอนโซลเจ้าหน้าที่</b>· กระดานผู้ประสานงาน</div><div class="wbody" id="b-cm"></div></div></section>
+  <section class="scr" id="s-exp"><div class="lbl"><em>3</em>ผู้เชี่ยวชาญ (เห็นเฉพาะเคสที่ส่งถึงวิชาชีพตน)</div>
+    <div class="win"><div class="wbar"><b>คอนโซลเจ้าหน้าที่</b>· กระดานวิชาชีพ</div><div class="wbody" id="b-exp"></div></div></section>
+  <section class="scr" id="s-ins"><div class="lbl"><em>4</em>บริษัทประกัน (เห็นเฉพาะค่ารวมระดับกลุ่ม)</div>
+    <div class="win"><div class="wbar"><b>Portfolio Dashboard</b>· ฐานข้อมูลการดูแลก่อนเกิดเคลม</div><div class="wbody" id="b-ins"></div></div></section>
+</div>
+<div class="foot">
+  <div class="say" id="say" aria-live="polite"></div>
+  <div>
+    <div class="ctl">
+      <button id="bPrev" aria-label="ขั้นก่อนหน้า">‹</button>
+      <button class="pri" id="bPlay">▶ เล่น</button>
+      <button id="bNext" aria-label="ขั้นถัดไป">›</button>
+      <span class="clock" id="clock">0:00 / 2:00</span>
+    </div>
+    <div class="links" style="margin-top:8px">
+      <a href="./CareSignal-App.html" target="_blank" rel="noopener">เปิดแอปจริง</a>
+      <a href="./CareSignal-Staff.html?demo=1" target="_blank" rel="noopener">คอนโซลจริง</a>
+      <a href="./CareSignal-Portfolio-Dashboard.html?demo=1" target="_blank" rel="noopener">แดชบอร์ดจริง</a>
+    </div>
+  </div>
+</div>
+<script>
+/* ------------------------------------------------------------
+   เคสสาธิต: สาธิต สมศรี อายุ 74 ปี · ลูกสาว "สาธิต นิด" เป็นผู้วัด
+   ตัวเลขเลือกให้ผ่านเกณฑ์จริงของระบบ (cs-score.js) จึงได้สัญญาณเดียวกับที่แอปคำนวณ
+     ลุกนั่ง 16.5 > 11.5 (อายุ 65–74) → B9 · ต่อเท้า 4.1 < 10 → B11 · ยา 4 รายการ → B12
+     diazepam (เสี่ยงสูง ×2) + amlodipine (ปานกลาง) = 3 ≥ 2 → B13 · ลุกเดิน 11.4 ผ่าน · ไม่เคยล้ม
+   ตรวจกับเอนจินจริงแล้ว: คะแนน 5/9 → ระดับ 2 (ส้ม) · levelOf = decline → SLA 48 ชม. (09_insurtech.sql)
+   สัญญาณ S3 → เภสัชกร · S4 → นักกายภาพ · ไม่มี S1/S2 จึงไม่ส่งแพทย์ · วัดซ้ำ 14 วัน
+   เทียบครั้งก่อน (ลุกนั่ง 14.8) ช้าลง 1.7 วิ ยังไม่ถึงเกณฑ์ 2.3 วิ จึงไม่มีสัญญาณแนวโน้ม
+   ------------------------------------------------------------ */
+var NAME = "สาธิต สมศรี", CARER = "สาธิต นิด (ลูกสาว)";
+var STEPS = [
+  { t: "ได้รับแจ้งให้ประเมิน", on: ["fam"], d: 10,
+    say: "<b>ลูกสาวเปิดแอป</b> แอปเตือนว่าถึงรอบวัดของคุณแม่แล้ว — ผู้สูงอายุไม่ต้องใช้แอปเอง" },
+  { t: "ลูกสาววัด 3 ท่า + ถ่ายรูปยา", on: ["fam"], d: 18,
+    say: "ลูกสาว<b>กดจับเวลา</b> ลุกนั่ง 5 ครั้ง · ลุกเดิน 3 เมตร · ทรงตัว 4 ท่า ตอบคำถามสั้น ๆ และ<b>ถ่ายรูปซองยา</b> — ไม่ใช้กล้องจับท่า ใช้เวลาราว 10 นาที" },
+  { t: "ระบบพบสัญญาณเสี่ยง", on: ["fam", "cm"], d: 14,
+    say: "ระบบเทียบกับ<b>เกณฑ์ที่อ้างอิงงานวิจัย</b> พบ 4 สัญญาณ ได้ระดับส้ม และ<b>เปิดเคสให้ทีมดูแลอัตโนมัติ</b> — ครอบครัวยังไม่เห็นสี จนกว่าผู้เชี่ยวชาญยืนยัน" },
+  { t: "Care Manager รับเคส", on: ["cm"], d: 14,
+    say: "ผู้ประสานงานเห็นเคสในคิว พร้อม<b>กำหนดเวลาต้องติดต่อภายใน 48 ชั่วโมง</b> ตามระดับความเสี่ยง แล้วโทรคุยกับลูกสาว" },
+  { t: "ส่งต่อตามสาเหตุ", on: ["cm", "exp"], d: 14,
+    say: "ส่งต่อ<b>เฉพาะวิชาชีพที่ตรงสาเหตุ</b> — ยา → เภสัชกร · ขาและการทรงตัว → นักกายภาพ · ไม่มีประวัติล้มหรือธงแดง จึงยังไม่ใช้เวลาแพทย์" },
+  { t: "ผู้เชี่ยวชาญตอบกลับ", on: ["exp"], d: 14,
+    say: "แต่ละวิชาชีพเห็นเฉพาะข้อมูลที่ต้องใช้ แล้ว<b>ตอบกลับด้วยแบบฟอร์มมาตรฐาน</b> — เภสัชกรไม่สั่งหยุดยา แต่เสนอให้แพทย์ผู้สั่งยาทบทวน" },
+  { t: "ครอบครัวได้แผนดูแล", on: ["fam"], d: 12,
+    say: "แอปของลูกสาว<b>แจ้งเตือนว่าผู้เชี่ยวชาญยืนยันแล้ว</b> พร้อมแผนดูแลที่มีแหล่งอ้างอิงทุกข้อ และใบส่งต่อสำหรับพกไปพบแพทย์" },
+  { t: "นัดติดตามซ้ำ", on: ["fam", "cm"], d: 10,
+    say: "ระบบ<b>นัดติดตามต่อเนื่อง</b> — โทร 7 วัน · วัดซ้ำ 14 วัน · ทบทวน 30 วัน · ประเมินซ้ำ 90 วัน งานไม่หล่นหายหลังส่งต่อ" },
+  { t: "บริษัทประกันเห็นผลกลุ่ม", on: ["ins"], d: 14,
+    say: "บริษัทประกันเห็น<b>เฉพาะค่ารวม</b> ใครเสี่ยงแค่ไหน การดูแลเกิดจริงไหม — <b>ไม่เห็นชื่อ ไม่เห็นยา และไม่ใช้ขึ้นเบี้ยหรือปฏิเสธเคลม</b>" }
+];
+
+/* ---------- เนื้อหาแต่ละจอ ตามขั้น (จอที่ไม่มีเนื้อหาขั้นนั้นจะค้างสถานะล่าสุดไว้) ---------- */
+function famScreen(i) {
+  if (i === 0) return '<div class="ph-h">สวัสดี สาธิต นิด</div>' +
+    '<div class="card"><b>' + NAME + '</b><div class="muted">อายุ 74 ปี · ผลครั้งก่อน เหลือง · 30 วันที่แล้ว</div></div>' +
+    '<div class="hero new"><span>⏱️ แจ้งเตือนในแอป</span><b>ถึงกำหนดวัดซ้ำแล้ว</b><span>ใช้เวลาประมาณ 10 นาที · ดูวิดีโอสาธิตก่อนได้</span><div class="btnx sec" style="background:#fff">เริ่มวัดวันนี้</div></div>' +
+    '<div class="card muted">▶️ วิดีโอสาธิต "สูงวัยไม่ล้ม" · Siriraj Health Policy</div>';
+  if (i === 1) return '<div class="ph-h">วัดวันนี้</div>' +
+    '<div class="card"><h4>ผลที่ลูกสาวจับเวลา</h4>' +
+      '<div class="row"><span>ลุกนั่ง 5 ครั้ง</span><b>16.5 วิ</b></div>' +
+      '<div class="row"><span>ลุกเดิน 3 เมตร</span><b>11.4 วิ</b></div>' +
+      '<div class="row"><span>ทรงตัว 4 ท่า</span><b>ผ่าน 2/4</b></div>' +
+      '<div class="muted" style="font-size:11.5px">ชิด 10.0 ✓ · เหลื่อม 10.0 ✓ · ต่อเท้า 4.1 ✗ · ขาเดียว หยุดตาม CDC</div></div>' +
+    '<div class="card"><h4>คำถามสั้น ๆ</h4><div class="row"><span>ล้มใน 12 เดือน</span><b>ไม่เคย</b></div><div class="row"><span>ทำกิจวัตรเองได้</span><b>ครบ</b></div></div>' +
+    '<div class="card new"><h4>📷 ยาจากรูปซองยา 4 รายการ</h4><div class="row"><span>Diazepam 2 mg ก่อนนอน</span><span class="pill p-red">เสี่ยงสูง</span></div><div class="row"><span>Amlodipine 5 mg</span><span class="pill p-org">ปานกลาง</span></div><div class="row"><span>Metformin · Simvastatin</span><span class="pill p-wait">ไม่อยู่ในกลุ่มเสี่ยง</span></div></div>';
+  if (i === 2 || i === 3 || i === 4 || i === 5) return '<div class="ph-h">ผลวันนี้</div>' +
+    '<div class="hero pd' + (i === 2 ? ' new' : '') + '"><b>⏳ รอผู้เชี่ยวชาญยืนยันผล</b><span>แอปจะแจ้งเตือนเมื่อผู้เชี่ยวชาญยืนยัน</span></div>' +
+    '<div class="card"><h4>ค่าที่วัดได้</h4><div class="row"><span>ลุกนั่ง 5 ครั้ง</span><b>16.5 วิ</b></div><div class="row"><span>ลุกเดิน 3 เมตร</span><b>11.4 วิ</b></div><div class="row"><span>ทรงตัว</span><b>2/4 ท่า</b></div></div>' +
+    '<div class="card"><h4>ระหว่างรอ</h4><div class="muted">ทีมดูแลจะติดต่อเพื่อส่งต่อผู้เชี่ยวชาญ<span class="src">ที่มา: World Falls Guidelines 2022</span>ฉุกเฉินโทร 1669<span class="src">ที่มา: สพฉ.</span></div></div>' +
+    (i >= 3 ? '<div class="card new"><h4>☁️ ทีมดูแล</h4><div class="row"><span>เคส 19 ก.ย.</span><span class="pill p-teal">' + (i === 3 ? 'ติดต่อครอบครัวแล้ว' : 'ส่งต่อผู้เชี่ยวชาญแล้ว') + '</span></div></div>' : '');
+  if (i === 6) return '<div class="ph-h">ผลวันนี้ <span style="float:right">🔔</span></div>' +
+    '<div class="card new" style="border:2px solid var(--c4)"><h4 style="color:var(--c4)">✅ ผู้เชี่ยวชาญยืนยันแล้ว</h4><div class="muted">เภสัชกร · นักกายภาพบำบัด · 20 ก.ย.</div></div>' +
+    '<div class="hero t2"><b>ส้ม · ถดถอย</b><span>ทำตามแผนดูแลจากผู้เชี่ยวชาญ</span></div>' +
+    '<div class="card"><h4>แผนดูแลของคุณแม่</h4>' +
+      '<div class="flag ok">โปรแกรมออกกำลังกาย Otago ที่บ้าน 3 วันต่อสัปดาห์<small>นักกายภาพบำบัด</small><span class="src">ที่มา: World Falls Guidelines 2022 · Cochrane 2019</span></div>' +
+      '<div class="flag ok">นำยาไปให้แพทย์ผู้สั่งยาทบทวน ห้ามหยุดยาเอง<small>เภสัชกร</small><span class="src">ที่มา: CDC STEADI-Rx · STOPPFall 2021</span></div>' +
+      '<div class="flag ok">ลุกจากเตียงช้า ๆ นั่งพักก่อนยืน<small>เภสัชกร</small></div></div>' +
+    '<div class="btnx">🩺 ใบส่งต่อสำหรับแพทย์ (PDF)</div>';
+  return '<div class="ph-h">หน้าแรก</div>' +
+    '<div class="hero t2"><span>ผลล่าสุด 19 ก.ย. · ยืนยันโดยผู้เชี่ยวชาญ ✅</span><b>ส้ม · ถดถอย</b><span>วัดครั้งต่อไปในอีก 14 วัน</span></div>' +
+    '<div class="card new"><h4>นัดติดตาม</h4><div class="tl">' +
+      '<div>26 ก.ย. · เจ้าหน้าที่โทรติดตาม (7 วัน)</div><div>3 ต.ค. · วัดซ้ำในแอป (14 วัน)</div>' +
+      '<div>19 ต.ค. · ทบทวนผลการดูแล (30 วัน)</div><div>18 ธ.ค. · ประเมินซ้ำเต็มชุด (90 วัน)</div></div></div>';
+}
+function cmScreen(i) {
+  var bar = '<div class="rolebar">🗂️<div><b>คุณกำลังเข้าระบบในฐานะ ผู้ประสานงาน</b>เห็นเคสทั้งพอร์ตเพื่อจัดคิวและส่งต่อ</div></div>';
+  var caseRow = function (st, cls) { return '<tr class="' + (i === 2 ? 'new' : '') + '"><td><b>DEMO-24</b><br>' + NAME + ' · 74 ปี</td><td><span class="pill p-org">ส้ม · ถดถอย</span></td><td><span class="pill ' + cls + '">' + st + '</span></td><td>เหลือ 48 ชม.</td></tr>'; };
+  var queue = function (st, cls) { return '<table><tr><th>ผู้เอาประกัน</th><th>ระดับ</th><th>สถานะ</th><th>กำหนดติดต่อ</th></tr>' + caseRow(st, cls) +
+    '<tr><td>DEMO-10<br>สาธิต ประสิทธิ์</td><td><span class="pill p-red">แดง</span></td><td><span class="pill p-wait">ติดต่อแล้ว</span></td><td>—</td></tr>' +
+    '<tr><td>DEMO-04<br>สาธิต สมหญิง</td><td><span class="pill p-org">ส้ม</span></td><td><span class="pill p-wait">นัดหมายแล้ว</span></td><td>—</td></tr></table>'; };
+  var sig = '<div class="card"><h4>สัญญาณที่ระบบพบ 4 ข้อ (เปิดเคสอัตโนมัติ)</h4>' +
+    '<div class="flag">ลุกนั่ง 5 ครั้ง 16.5 วิ เกินเกณฑ์อายุ 11.5 วิ → นักกายภาพ<span class="src">ค่าตัดตามช่วงอายุ</span></div>' +
+    '<div class="flag">ยืนต่อเท้าได้ 4.1 วิ ไม่ครบ 10 วิ → นักกายภาพ<span class="src">CDC 4-Stage Balance Test</span></div>' +
+    '<div class="flag">ใช้ยาประจำ 4 รายการ → เภสัชกร<span class="src">World Falls Guidelines 2022</span></div>' +
+    '<div class="flag">ยาเสี่ยงหกล้ม คะแนน 3 (diazepam + amlodipine) → เภสัชกร<span class="src">STOPPFall 2021</span></div>' +
+    '<div class="flag ok">ลุกเดิน 3 เมตร 11.4 วิ ผ่านเกณฑ์ · ไม่มีประวัติล้ม<span class="src">CDC STEADI</span></div></div>';
+  if (i === 2) return bar + '<div class="card"><h4>คิวเคส · เรียงตามความเร่งด่วน</h4>' + queue("เคสใหม่", "p-new") + '</div>' + sig;
+  if (i === 3) return bar + '<div class="card"><h4>DEMO-24 · ' + NAME + '</h4>' +
+    '<div class="row"><span>เปิดเคส</span><b>19 ก.ย. 10:02 (อัตโนมัติ)</b></div>' +
+    '<div class="row"><span>ต้องติดต่อภายใน</span><b style="color:var(--c2)">48 ชม. · 21 ก.ย. 10:02</b></div>' +
+    '<div class="row"><span>ผู้รับผิดชอบ</span><b>ผู้ประสานงาน (รับเคสแล้ว)</b></div></div>' +
+    '<div class="card new"><h4>📞 บันทึกการติดต่อ</h4><div class="muted">19 ก.ย. 11:15 · โทรคุยกับลูกสาว ยืนยันค่าที่วัด คุณแม่ยังเดินได้ ไม่มีอาการฉุกเฉิน</div><span class="pill p-teal" style="margin-top:6px">สถานะ: ติดต่อครอบครัวแล้ว</span></div>' + sig;
+  if (i === 4 || i === 5 || i === 6) return bar + '<div class="card' + (i === 4 ? ' new' : '') + '"><h4>ส่งต่อตามสาเหตุ</h4><table><tr><th>สาเหตุ</th><th>ส่งถึง</th><th>สถานะ</th></tr>' +
+    '<tr><td>ยา 4 รายการ · ยาเสี่ยงหกล้ม (diazepam)</td><td>💊 เภสัชกร</td><td><span class="pill ' + (i >= 5 ? 'p-ok">ตอบกลับแล้ว' : 'p-new">ส่งแล้ว') + '</span></td></tr>' +
+    '<tr><td>กำลังขา · การทรงตัว</td><td>🦵 นักกายภาพบำบัด</td><td><span class="pill ' + (i >= 5 ? 'p-ok">ตอบกลับแล้ว' : 'p-new">ส่งแล้ว') + '</span></td></tr>' +
+    '<tr><td>ประวัติล้ม / ธงแดง</td><td>🩺 แพทย์</td><td><span class="pill p-wait">ไม่ส่ง · ไม่เคยล้ม ไม่มีธงแดง</span></td></tr>' +
+    '<tr><td>ประสานและติดตาม</td><td>🗂️ ผู้ประสานงาน</td><td><span class="pill p-teal">ดูแลเอง</span></td></tr></table>' +
+    (i >= 5 ? '<div class="muted" style="margin-top:6px">เภสัชกรเสนอให้แพทย์ผู้สั่งยาทบทวน — ผู้ประสานงานนัดพบแพทย์ประจำ</div>' : '') + '</div>';
+  return bar + '<div class="card"><h4>DEMO-24 · แผนดูแลและการติดตาม</h4><div class="tl">' +
+    '<div class="done">19 ก.ย. · เปิดเคส → ติดต่อครอบครัว → ส่งต่อ 2 วิชาชีพ</div><div class="done">20 ก.ย. · ผู้เชี่ยวชาญตอบกลับครบ → รวมเป็นแผนดูแล</div>' +
+    '<div>26 ก.ย. · โทรติดตาม 7 วัน</div><div>19 ต.ค. · ทบทวน 30 วัน</div><div>18 ธ.ค. · ประเมินซ้ำ 90 วัน</div></div></div>' +
+    '<div class="muted">ถ้าเลยกำหนดโดยไม่มีการติดต่อ งานจะขึ้นแดงในคิวของผู้ประสานงาน</div>';
+}
+function expScreen(i) {
+  if (i < 4) return '<div class="idle">ผู้เชี่ยวชาญยังไม่เห็นเคสนี้<br>จนกว่าผู้ประสานงานจะส่งต่อมายังวิชาชีพของตน</div>';
+  var ph = '<div class="rolebar">💊<div><b>กระดานทบทวนยา · เภสัชกร</b>เห็นเฉพาะเคสที่ส่งมายังเภสัชกร</div></div>' +
+    '<div class="card' + (i === 4 ? ' new' : '') + '"><h4>DEMO-24 · ' + NAME + ' · 74 ปี</h4>' +
+    '<table><tr><th>ยา (จากรูปซองยา)</th><th>กลุ่ม</th><th>กลไก</th></tr>' +
+    '<tr><td>Diazepam 2 mg ก่อนนอน</td><td>ยานอนหลับ · เสี่ยงสูง</td><td>ง่วงซึม เสียการทรงตัว</td></tr>' +
+    '<tr><td>Amlodipine 5 mg</td><td>ลดความดัน · ปานกลาง</td><td>ความดันตกเมื่อลุก</td></tr></table>' +
+    '<span class="src">อ้างอิง STOPPFall 2021 · AGS Beers 2023</span></div>';
+  var pt = '<div class="rolebar">🦵<div><b>กระดานประเมินการเคลื่อนไหว · นักกายภาพบำบัด</b>เห็นเฉพาะข้อมูลการเคลื่อนไหว</div></div>' +
+    '<div class="card' + (i === 4 ? ' new' : '') + '"><div class="row"><span>ลุกนั่ง 5 ครั้ง</span><b>16.5 วิ (เกณฑ์ 11.5)</b></div><div class="row"><span>ลุกเดิน 3 เมตร</span><b>11.4 วิ (เกณฑ์ 12) ผ่าน</b></div>' +
+    '<div class="row"><span>ทรงตัว</span><b>ชิด ✓ เหลื่อม ✓ ต่อเท้า 4.1 ✗</b></div><div class="row"><span>เทียบครั้งก่อน</span><b>ลุกนั่งช้าลง 1.7 วิ (ยังไม่ถึงเกณฑ์ 2.3 วิ)</b></div></div>';
+  if (i === 4) return '<div class="tabs2"><span class="on">💊 เภสัชกร · ใหม่ 1</span><span class="on" style="background:var(--brand2)">🦵 นักกายภาพ · ใหม่ 1</span></div>' + ph + pt;
+  return '<div class="tabs2"><span class="on">💊 เภสัชกรตอบแล้ว</span><span class="on" style="background:var(--brand2)">🦵 นักกายภาพตอบแล้ว</span></div>' +
+    '<div class="card new"><h4>💊 เภสัชกร · ผลการพิจารณา: <span class="pill p-ok">ยืนยัน</span></h4>' +
+      '<div class="muted"><b>ข้อค้นพบ</b> ใช้ยา 4 รายการ มี diazepam ต่อเนื่องร่วมกับยาลดความดัน เสี่ยงง่วงและหน้ามืดเมื่อลุกยืน</div>' +
+      '<div class="muted"><b>ข้อเสนอ</b> เสนอให้แพทย์ผู้สั่งยาทบทวน diazepam · แนะนำลุกช้า ๆ · ไม่หยุดยาเอง</div></div>' +
+    '<div class="card new"><h4>🦵 นักกายภาพบำบัด · ผลการพิจารณา: <span class="pill p-ok">ยืนยัน</span></h4>' +
+      '<div class="muted"><b>ข้อค้นพบ</b> กำลังขาลดลง ยืนต่อเท้าไม่ได้ การเดินยังอยู่ในเกณฑ์</div>' +
+      '<div class="muted"><b>แผน</b> โปรแกรม Otago ที่บ้าน 3 วันต่อสัปดาห์ · นัดประเมินซ้ำ 30 วัน</div></div>' +
+    '<div class="muted">ตอบด้วยปุ่มมาตรฐาน 6 แบบ · ระบบบล็อกข้อความสั่งหยุดยาที่ฐานข้อมูล</div>';
+}
+function insScreen(i) {
+  if (i < 8) return '<div class="idle">บริษัทประกันไม่เห็นเคสรายบุคคล<br>เห็นเฉพาะค่ารวมระดับกลุ่มเมื่อสรุปพอร์ต</div>';
+  var bar = function (nm, n, pct, c) { return '<div class="bar"><span>' + nm + '</span><span class="tr"><i style="width:' + pct + '%;background:' + c + '"></i></span><b>' + n + '</b></div>'; };
+  return '<div class="kpis new"><div class="kpi"><b>39</b><span>เข้าร่วมโปรแกรม</span></div><div class="kpi"><b>39</b><span>ประเมินแล้ว</span></div>' +
+    '<div class="kpi"><b>13</b><span>เคสที่เปิดอยู่</span></div><div class="kpi"><b>2</b><span>เกินกำหนดติดต่อ</span></div></div>' +
+    '<div class="card"><h4>ระดับความเสี่ยงในพอร์ต</h4>' + bar("แดง", 3, 8, "var(--c1)") + bar("ส้ม", 4, 10, "var(--c2)") + bar("เหลือง", 6, 15, "var(--c3)") + bar("เขียว", 26, 67, "var(--c4)") + '</div>' +
+    '<div class="card"><h4>วงจรการดูแล</h4>' + bar("พบสัญญาณ", 13, 100, "var(--brand)") + bar("ติดต่อแล้ว", 11, 85, "var(--brand)") + bar("ส่งต่อแล้ว", 6, 46, "var(--brand)") + bar("ผู้เชี่ยวชาญตอบ", 4, 31, "var(--brand)") + '</div>' +
+    '<div class="flag ok">เคสของ ' + NAME + ' นับรวมเป็น 1 ในกลุ่มส้ม — <b>บริษัทไม่เห็นชื่อ ผลรายคน หรือรายการยา</b> · ปิดตัวเลขเมื่อกลุ่มเล็กกว่า 10 คน</div>' +
+    '<div class="muted">ข้อมูลนี้ไม่ใช้ขึ้นเบี้ย ไม่ใช้ปฏิเสธเคลม · ตัวเลขในหน้านี้เป็นข้อมูลสาธิต</div>';
+}
+
+/* ---------- ตัวเล่น ---------- */
+var cur = 0, playing = false, t0 = 0, elapsedBefore = 0, timer = null;
+var TOTAL = STEPS.reduce(function (a, s) { return a + s.d; }, 0);
+var startOf = function (i) { return STEPS.slice(0, i).reduce(function (a, s) { return a + s.d; }, 0); };
+function $(id) { return document.getElementById(id); }
+function fmt(s) { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
+function draw() {
+  $("steps").innerHTML = STEPS.map(function (s, i) {
+    return '<button class="' + (i === cur ? "on" : i < cur ? "done" : "") + '" data-i="' + i + '"><b>' + (i + 1) + '</b><span>' + s.t + '</span>' + (i === cur ? '<i id="prog"></i>' : '') + '</button>';
+  }).join("");
+  $("steps").querySelectorAll("button").forEach(function (b) { b.onclick = function () { go(+b.dataset.i); }; });
+  var s = STEPS[cur];
+  ["fam", "cm", "exp", "ins"].forEach(function (k) { $("s-" + k).classList.toggle("on", s.on.indexOf(k) >= 0); });
+  $("b-fam").innerHTML = famScreen(cur); $("b-cm").innerHTML = cur >= 2 ? cmScreen(cur) : '<div class="idle">ยังไม่มีเคส<br>ระบบจะเปิดเคสให้เองเมื่อพบสัญญาณเสี่ยง</div>';
+  $("b-exp").innerHTML = expScreen(cur); $("b-ins").innerHTML = insScreen(cur);
+  $("say").innerHTML = '<span style="color:var(--ink3);font-size:13px">ขั้นที่ ' + (cur + 1) + ' จาก 9 · ' + s.t + '</span><br>' + s.say;
+  tick();
+}
+function tick() {
+  var e = playing ? elapsedBefore + (Date.now() - t0) / 1000 : elapsedBefore;
+  var st = startOf(cur), s = STEPS[cur];
+  if (playing && e >= st + s.d) {
+    if (cur < STEPS.length - 1) { cur++; draw(); return; }
+    playing = false; elapsedBefore = TOTAL; setPlay();
+  }
+  $("clock").textContent = fmt(Math.min(e, TOTAL)) + " / " + fmt(TOTAL);
+  var p = $("prog"); if (p) p.style.width = Math.min(100, Math.max(0, (e - st) / s.d * 100)) + "%";
+}
+function setPlay() { $("bPlay").textContent = playing ? "❚❚ หยุด" : (elapsedBefore >= TOTAL ? "↻ เริ่มใหม่" : "▶ เล่น"); }
+function play() {
+  if (playing) { elapsedBefore += (Date.now() - t0) / 1000; playing = false; }
+  else { if (elapsedBefore >= TOTAL) { cur = 0; elapsedBefore = 0; draw(); } t0 = Date.now(); playing = true; }
+  setPlay();
+}
+function go(i) {
+  cur = Math.max(0, Math.min(STEPS.length - 1, i));
+  elapsedBefore = startOf(cur); if (playing) t0 = Date.now();
+  draw(); setPlay();
+}
+$("bPlay").onclick = play; $("bPrev").onclick = function () { go(cur - 1); }; $("bNext").onclick = function () { go(cur + 1); };
+document.addEventListener("keydown", function (e) {
+  if (e.code === "Space") { e.preventDefault(); play(); }
+  else if (e.key === "ArrowRight" || e.key === "PageDown") go(cur + 1);   /* รีโมตพรีเซนต์ส่งปุ่ม PageDown/PageUp */
+  else if (e.key === "ArrowLeft" || e.key === "PageUp") go(cur - 1);
+  else if (e.key === "r" || e.key === "R") { playing = false; go(0); }
+  else if (e.key === "f" || e.key === "F") { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(function () {}); }
+});
+document.querySelectorAll("button").forEach(function (b) { b.addEventListener("mouseup", function () { b.blur(); }); });
+setInterval(function () { if (playing) tick(); }, 200);
+draw();
+if (/[?&]auto=1/.test(location.search)) play();   /* ?auto=1 เล่นเองทันที ใช้ตอนอัดวิดีโอหน้าจอ */
+</script>
+</body>
+</html>
