@@ -1204,7 +1204,7 @@ function renderCloud(v) {
       '<div class="hist"><span>ผลวัดที่ส่งขึ้นแล้ว</span><b>' + D.assessments.filter(function (a) { return a.cloud || a.fromCloud; }).length + '</b></div>' +
       '<div class="hist"><span>รอส่ง</span><b>' + pend + '</b></div>' +
       (pend ? '<button class="btn sec" onclick="cloudRetry().then(function(){render()})">ส่งที่ค้างอยู่</button>' : '') + '</div>' +
-      '<div class="card"><h3>ข้อมูลที่ส่งขึ้นระบบกลาง</h3><p class="sub" style="margin:0">ชื่อที่ให้เรียก ปีเกิด ชื่อและเบอร์ลูกหลาน ผลจับเวลา คำตอบ 5 ข้อ และรหัสในระบบ · ไม่มีภาพ ไม่มีเลขบัตร · ระบบไม่ใช้ผลปรับเบี้ยหรือพิจารณาเคลม</p></div>' +
+      '<div class="card"><h3>ข้อมูลที่ส่งขึ้นระบบกลาง</h3><p class="sub" style="margin:0">ชื่อที่ให้เรียก ปีเกิด ชื่อและเบอร์ลูกหลาน ผลจับเวลา คำตอบ 5 ข้อ รายการยา และรหัสในระบบ · รูปซองยาส่งให้เภสัชกรที่ได้รับการส่งต่อเท่านั้น · ไม่มีภาพผู้สูงอายุ ไม่มีเลขบัตรประชาชน · ระบบไม่ใช้ผลปรับเบี้ยหรือพิจารณาเคลม</p></div>' +
       '<button class="btn ghost" onclick="CSCloud.signOut().then(function(){toast(\'ออกจากบัญชีแล้ว ข้อมูลในเครื่องยังอยู่\');go(\'home\')})">ออกจากบัญชีระบบกลาง</button>';
     return;
   }
