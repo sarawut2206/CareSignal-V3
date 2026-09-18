@@ -164,10 +164,16 @@
     if (!connected()) return [];
     var rows = await B.listAssessments(200);
     return rows.map(function (r) {
-      var d = r.detail || {};
+      var d = r.detail || {}, fd = r.falls_detail || {}, md = r.meds_detail || {};
       return { cloudId: r.id, date: r.assessed_at, ftsst: r.ftsst_seconds, tug: r.tug_seconds,
                balance: d.balance ? d.balance.seconds : null, score: r.score, max: r.score_max, tier: r.tier,
-               parts: r.parts || {}, method: r.method, by: d.carer_name || null, fromCloud: true };
+               parts: r.parts || {}, method: r.method, by: d.carer_name || null, fromCloud: true,
+               balPassed: d.balance && d.balance.passed != null ? d.balance.passed : null,
+               balStages: d.balance && d.balance.stages ? d.balance.stages.map(function (x) { return x.seconds; }) : null,
+               fallsCount: fd.count != null ? fd.count : null, injury: fd.injury || null, getup: fd.getup || null,
+               worried: d.steadi ? !!d.steadi.worried : null, medsCount: md.count != null ? md.count : null,
+               fridHigh: md.frid_high != null ? md.frid_high : null, fridTotal: md.frid_total != null ? md.frid_total : null,
+               adl: d.adl != null ? d.adl : null, note: d.note || null };
     });
   }
 

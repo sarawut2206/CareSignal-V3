@@ -9,7 +9,7 @@
 <link rel="icon" href="./icon-192.png">
 <meta name="theme-color" content="#F4F6F8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600&family=Sarabun:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#F2F6FB; --surf:#FFF; --surf2:#EAF0FE; --ink:#16233B; --ink2:#5B6B84; --ink3:#93A1B7;
@@ -167,10 +167,56 @@ textarea{min-height:70px}
 .me-row{display:flex;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid var(--line2);cursor:pointer;background:none;border-left:0;border-right:0;border-top:0;width:100%;font:inherit;color:var(--ink);text-align:left}
 .me-row .ti{width:38px;height:38px;border-radius:12px;background:var(--brandt);color:var(--brand);display:flex;align-items:center;justify-content:center;flex:none}
 .me-row .ti svg{width:22px;height:22px}.me-row span{flex:1;font-size:15.5px}.me-row small{display:block;color:var(--ink2);font-size:12.5px}.me-row::after{content:"›";color:var(--ink3);font-size:22px}
+/* ================= ตัวอักษรอ่านง่าย (ขนาดฐาน) ================= */
+body{font-size:18px}
+.sub{font-size:15.5px}.card h3{font-size:19px}
+.tiles{grid-template-columns:repeat(auto-fill,minmax(76px,1fr))}
+.tile span{font-size:14px}.tile .ti{width:48px;height:48px}.tile .ti svg{width:28px;height:28px}
+.tabs button{font-size:13.5px}
+.bn .it{display:grid;grid-template-columns:auto 1fr;align-items:start;gap:4px 12px}.bn .it b{font-size:16.5px}.bn .it small{font-size:13.5px}.bn .it button{grid-column:1/-1;justify-self:end;margin-left:0;font-size:14.5px;padding:9px 16px}
+.who b{font-size:19px}.who small{font-size:15px}.who .chip{font-size:13.5px}
+.hero .k{font-size:14px}.hero b{font-size:24px}.hero span{font-size:15.5px}
+.sec-h h2{font-size:20px}.sec-h span{font-size:14px}
+.hist{font-size:16px}.pill{font-size:13.5px}
+.me-row span{font-size:16.5px}.me-row small{font-size:14px}
+.flag{font-size:16px}.flag small{font-size:14px}.src{font-size:13px}
+.seg{display:flex;gap:6px;margin-top:8px}.seg button{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:14px;font:inherit;padding:10px 4px;cursor:pointer;color:var(--ink)}
+.seg button.on{border-color:var(--brand);background:var(--brandt);color:var(--brand2);font-weight:600}
+/* ================= เอกสารทางการ (ใบส่งต่อ) ================= */
+.fdoc{font-family:"Sarabun","Noto Sans Thai",sans-serif;color:#111;line-height:1.55;font-size:14.5px}
+.fdoc .lh{display:flex;align-items:center;gap:10px;border-bottom:2px solid #0B766A;padding-bottom:8px;margin-bottom:10px}
+.fdoc .lh img{width:50px;height:50px;border-radius:12px}
+.fdoc .lh b{display:block;font-size:19px;color:#0B766A;line-height:1.2}
+.fdoc .lh small{display:block;font-size:12.5px;color:#444}
+.fdoc .lh .no{margin-left:auto;text-align:right;font-size:12.5px;color:#333;white-space:nowrap}
+.fdoc h1{font-size:20px;text-align:center;margin:6px 0 10px}
+.fdoc .hd p{margin:2px 0}.fdoc .hd b{display:inline-block;min-width:52px}
+.fdoc h2{font-size:16px;margin:14px 0 4px;color:#0B766A}
+.fdoc p{margin:4px 0}
+.fdoc .ind{text-indent:2.5em}
+.fdoc table{border-collapse:collapse;width:100%;margin:6px 0;font-size:13px}
+.fdoc th,.fdoc td{border:1px solid #9AA5AE;padding:4px 6px;text-align:left;vertical-align:top}
+.fdoc th{background:#E7F2F0}
+.fdoc .ok{color:#0E7A4F;font-weight:600}.fdoc .bad{color:#B42318;font-weight:600}
+.fdoc .ai{border:1.5px solid #0B766A;border-radius:6px;padding:8px 10px;margin:8px 0;background:#F4FBF9;page-break-inside:avoid}
+.fdoc .ai b.t{display:block;color:#0B766A;margin-bottom:2px}
+.fdoc ol.refs{font-size:12.5px;padding-left:22px;margin:4px 0}.fdoc ol.refs li{margin-bottom:3px}
+.fdoc sup{font-size:10px;color:#0B766A}
+.fdoc .sig{margin:18px 0 0 45%;text-align:center}.fdoc .sig p{margin:2px 0}
+.fdoc .reply{border:1.5px dashed #555;padding:8px 10px;margin-top:14px;page-break-inside:avoid}
+.fdoc .ln{border-bottom:1px dotted #555;height:22px}
+.fdoc .box{display:inline-block;width:12px;height:12px;border:1.2px solid #333;margin-right:5px;vertical-align:-1px}
+.fdoc .foot{font-size:11.5px;color:#555;margin-top:10px;border-top:1px solid #ccc;padding-top:4px}
+.doc{padding:14px}
 #print{display:none}
 @media print{
+  @page{size:A4;margin:15mm 20mm 20mm 30mm}
+  html,body{background:#fff!important}
+  #print .fdoc{font-size:12.5pt}#print .fdoc table{font-size:10.5pt}#print .fdoc h1{font-size:17pt}
+  #print .fdoc h2{font-size:13.5pt}#print .fdoc ol.refs,#print .fdoc .foot{font-size:10pt}
+  #print .fdoc tr{page-break-inside:avoid}
   body{display:block;background:#fff}.phone,.toast{display:none!important}
-  #print{display:block;font-family:var(--sans);color:#000;padding:18mm;font-size:13pt;line-height:1.5}
+  #print{display:block;color:#000;padding:0}
   #print h1,#print h2{font-size:18pt;margin:0 0 4pt}#print table{border-collapse:collapse;width:100%;margin:8pt 0}#print td,#print th{border:1px solid #999;padding:5pt 7pt;text-align:left;font-size:12pt}
 }
 </style>
@@ -186,6 +232,7 @@ textarea{min-height:70px}
 <script src="./cs-score.js"></script>
 <script src="./cs-hospitals.js"></script>
 <script src="./cs-meds.js"></script>
+<script src="./cs-evidence.js"></script>
 <script>window.CS_AUTH_SCOPE = "v3member";   /* V2 กับ V3 อยู่โดเมนเดียวกัน แยกช่องเก็บ session ไม่ให้บัญชีสองแอปปนกัน */</script>
 <script src="./cs-backend.js"></script>
 <script src="./cs-cloud.js"></script>
@@ -271,6 +318,30 @@ function $(id) { return document.getElementById(id); }
 function toast(m) { var t = $("toast"); t.textContent = m; t.classList.add("on"); clearTimeout(t._x); t._x = setTimeout(function () { t.classList.remove("on"); }, 2800); }
 function elder() { return D.elders.filter(function (e) { return e.id === S.elder; })[0] || D.elders[0] || null; }
 function assessmentsOf(id) { return D.assessments.filter(function (a) { return a.elderId === id; }).sort(function (a, b) { return a.date < b.date ? -1 : 1; }); }
+
+/* ============================================================
+   ขนาดตัวอักษรและการพอดีจอ
+   ผู้ใช้เลือกได้ 3 ระดับ (ค่าเริ่มต้น "ใหญ่") ตามแนวทางแอปภาครัฐที่ผู้สูงวัยใช้
+   และแก้กรณีมือถือเปิดแบบ "เว็บไซต์เวอร์ชันเดสก์ท็อป" ซึ่งเบราว์เซอร์จัดหน้า
+   กว้าง ~980px แล้วย่อลงจอ ตัวอักษรจึงเล็กมาก — ขยายกลับให้เท่าความกว้างจอจริง
+   ============================================================ */
+var TXT = [{ k: 1, nm: "ปกติ" }, { k: 1.15, nm: "ใหญ่" }, { k: 1.3, nm: "ใหญ่มาก" }];
+function txtLevel() { try { var v = localStorage.getItem("cs3:txt"); return v === null ? 1 : Math.max(0, Math.min(2, +v)); } catch (e) { return 1; } }
+function setTxt(i) { try { localStorage.setItem("cs3:txt", String(i)); } catch (e) {} fitPhone(); render(); }
+function fitPhone() {
+  var ph = document.querySelector(".phone"); if (!ph) return;
+  var coarse = false; try { coarse = matchMedia("(pointer:coarse)").matches; } catch (e) {}
+  var sw = screen.width || innerWidth;
+  var fix = (coarse && innerWidth >= 640 && sw < 600) ? innerWidth / sw : 1;
+  var z = TXT[txtLevel()].k * fix;
+  var full = fix > 1 || innerWidth <= 480 || innerHeight <= 740 || embedded() ||
+             (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+  var W = full ? innerWidth : 420, H = full ? innerHeight : Math.min(880, innerHeight);
+  ph.style.zoom = z; ph.style.width = (W / z) + "px"; ph.style.height = (H / z) + "px"; ph.style.maxHeight = "none";
+  ph.style.borderRadius = full ? "0" : ""; ph.style.boxShadow = full ? "none" : "";
+  document.body.style.display = full ? "block" : ""; document.body.style.background = full ? "var(--bg)" : "";
+}
+window.addEventListener("resize", fitPhone);
 
 /* ไอคอนเส้นชุดเดียวทั้งแอป — วาดเอง ไม่โหลดจากภายนอก */
 var IC = {
@@ -395,7 +466,7 @@ function iSheet(title, body) {
   o.className = "isheet";
   o.innerHTML = '<div class="cd" role="dialog" aria-modal="true"><h3>' + title + '</h3>' + body +
     '<button class="btn" style="margin-top:14px">เข้าใจแล้ว</button></div>';
-  document.body.appendChild(o);
+  document.querySelector(".phone").appendChild(o);
   o.querySelector("button.btn").addEventListener("click", function () { o.remove(); });
   o.addEventListener("click", function (e) { if (e.target === o) o.remove(); });
 }
@@ -427,7 +498,7 @@ function a2hsBar() {
   var b = document.createElement("div");
   b.className = "a2hs";
   b.innerHTML = '<span>📲 ติดตั้งลงหน้าจอ</span><button class="go">ติดตั้ง</button><button class="x" aria-label="ปิด">✕</button>';
-  document.body.appendChild(b);
+  document.querySelector(".phone").appendChild(b);
   b.querySelector(".go").addEventListener("click", installApp);
   b.querySelector(".x").addEventListener("click", function () {
     b.remove(); try { localStorage.setItem(A2HS.key, "no"); } catch (e) {}
@@ -515,6 +586,7 @@ function renderMe(v) {
   function row(k, t, sub, fn) { return '<button class="me-row" onclick="' + fn + '"><span class="ti">' + ic(k) + '</span><span>' + t + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span></button>'; }
   v.innerHTML =
     '<div class="who"><div class="av">' + esc((c.name || "?").trim().charAt(0)) + '</div><div><b>' + esc(c.name) + '</b><small>' + esc(c.phone || "ยังไม่ใส่เบอร์") + '</small></div></div>' +
+    '<div class="card"><h3>ขนาดตัวอักษร</h3><div class="seg">' + TXT.map(function (t, i) { return '<button class="' + (i === txtLevel() ? "on" : "") + '" style="font-size:' + (15 * t.k) + 'px" onclick="setTxt(' + i + ')">' + t.nm + '</button>'; }).join("") + '</div></div>' +
     '<div class="card" style="padding:4px 16px">' +
       row("edit", "แก้ไขข้อมูลผู้ดูแลและผู้สูงอายุ", e.name + " · " + e.age + " ปี", "go('reg')") +
       row("cloud", "บัญชีระบบกลาง", m === "cloud" ? "เชื่อมแล้ว" : "ยังไม่เชื่อม — เชื่อมเพื่อให้ผู้เชี่ยวชาญยืนยันผล", "go('cloud')") +
@@ -898,25 +970,108 @@ function share() {
 }
 /* ใบสรุปสำหรับแพทย์ — แสดงในแอปก่อน (ยื่นมือถือให้แพทย์ดูได้เลย) แล้วค่อยพิมพ์
    เมื่อแอปฝังอยู่ในกรอบของหน้ารวม เปิดแท็บใหม่ก่อนพิมพ์ เพื่อให้พิมพ์เฉพาะเอกสาร */
+/* สัญญาณของผลหนึ่งครั้ง — ผลที่ดึงจากระบบกลางไม่มีสัญญาณติดมา ต้องคำนวณใหม่จากค่าที่วัดได้ */
+function recFlags(a, e) {
+  if (!a.fromCloud && a.flags) return a.flags;
+  return CSScore.flags({ age: (e || elder()).age, ftsst: a.ftsst, tug: a.tug, balance: a.balance, balPassed: a.balPassed,
+    fallsCount: a.fallsCount, injury: a.injury, getup: a.getup, worried: a.worried, medsCount: a.medsCount, adl: a.adl,
+    fridHigh: a.fridHigh, fridTotal: a.fridTotal });
+}
 function docHTML(r) {
-  var e = elder(), list = assessmentsOf(e.id), meds = medsOf(e.id);
-  var lvl = function (a) { return pending(a) ? "รอผู้เชี่ยวชาญยืนยัน" : CSScore.TIER[a.tier].nm + (a.confirmed ? " (ยืนยันแล้ว)" : ""); };
-  return '<h2>ใบสรุปผลคัดกรองความเสี่ยงหกล้มที่บ้าน · CareSignal</h2>' +
-    '<p>ผู้สูงอายุ: <b>' + esc(e.name) + '</b> อายุ ' + e.age + ' ปี' + (e.aid ? ' · ใช้' + (e.aid === "cane" ? "ไม้เท้า" : "วอล์กเกอร์") : "") + (e.conditions ? ' · โรคประจำตัว: ' + esc(e.conditions) : "") +
-    '<br>วัดโดยลูกหลาน: ' + esc(r.by || D.caregiver.name) + (D.caregiver.phone ? ' โทร ' + esc(D.caregiver.phone) : "") + ' · จับเวลาด้วยมือ ไม่ใช้กล้อง</p>' +
-    '<table><tr><th>วันที่</th><th>ลุกนั่ง 5 ครั้ง (วิ)</th><th>ลุกเดิน 3 ม. (วิ)</th><th>ทรงตัว</th><th>ล้ม/12 ด.</th><th>ระดับ</th></tr>' +
-    list.slice(-6).map(function (a) { return '<tr><td>' + thDate(a.date) + '</td><td>' + (a.ftsst != null ? a.ftsst.toFixed(1) : "–") + '</td><td>' + (a.tug != null ? a.tug.toFixed(1) : "–") + '</td><td>' + balText(a) + '</td><td>' + (a.fallsCount == null ? "–" : a.fallsCount === 9 ? "จำไม่ได้" : a.fallsCount) + '</td><td>' + lvl(a) + '</td></tr>'; }).join("") + '</table>' +
-    '<p><b>สัญญาณที่ระบบพบครั้งล่าสุด (' + thDate(r.date) + ')' + (pending(r) ? ' — รอผู้เชี่ยวชาญยืนยัน' : '') + '</b></p><ul>' +
-    ((r.flags.reds || []).concat(r.trend || [], r.flags.yellows || []).map(function (x) { return '<li>' + esc(x.text) + ' — ' + esc(x.why) + '</li>'; }).join("") || '<li>ไม่พบสัญญาณเสี่ยง</li>') + '</ul>' +
-    (meds.length ? '<p><b>ยาที่ใช้ประจำ (ครอบครัวบันทึก ' + meds.length + ' รายการ)</b></p><ul>' + meds.map(function (m) { return '<li>' + esc(m.inn || m.name || "ไม่ทราบชื่อ (มีรูปซองยาในระบบ)") + (m.dose ? ' ' + esc(m.dose) : '') + (m.frid && m.frid !== "unknown" && m.lv ? ' — กลุ่มเสี่ยงหกล้ม: ' + esc(CSMeds.FRID[m.frid] ? CSMeds.FRID[m.frid].nm : m.frid) : '') + '</li>'; }).join("") + '</ul>' : '') +
-    (r.confirmed ? '<p><b>ผลยืนยันจาก' + esc(DEST_NM[r.confirmed.by] || "ผู้เชี่ยวชาญ") + ':</b> ' + esc(r.confirmed.finding || "") + (r.confirmed.recommend ? ' · คำแนะนำ: ' + esc(r.confirmed.recommend) : '') + '</p>' : '') +
-    (r.note ? '<p>สิ่งที่ครอบครัวสังเกต: ' + esc(r.note) + '</p>' : "") +
-    '<p style="font-size:12px;color:#555">เกณฑ์: ลุกนั่ง 5 ครั้ง 10.0/11.5/12.1 วินาทีตามช่วงอายุ (Poncumhak 2014) · การเปลี่ยนแปลงที่มีความหมาย ≥ 2.3 วินาที (Meretta 2006) · ลุกเดิน ≥ 12 วินาที และทรงตัว 4 ท่า (CDC STEADI) · เอกสารนี้เป็นการคัดกรองเบื้องต้นโดยครอบครัว ไม่ใช่การวินิจฉัย · จัดทำ ' + new Date().toLocaleString("th-TH") + '</p>';
+  var e = elder(), list = assessmentsOf(e.id), meds = medsOf(e.id), EV = CSEvidence;
+  var TD = "๐๑๒๓๔๕๖๗๘๙", th = function (x) { return String(x).replace(/[0-9]/g, function (d) { return TD[d]; }); };
+  var MON = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
+  var longDate = function (iso) { var d = new Date(iso); return th(d.getDate()) + " " + MON[d.getMonth()] + " " + th(d.getFullYear() + 543); };
+  var now = new Date(), docNo = "CS-" + now.getFullYear() + String(now.getMonth() + 1).padStart(2, "0") + String(now.getDate()).padStart(2, "0") + "-" + String(r.id || "").slice(0, 4).toUpperCase();
+  /* เลขอ้างอิงเรียงตามลำดับที่ถูกอ้างครั้งแรกในเอกสาร */
+  var used = [], cite = function (keys) { return '<sup>[' + keys.map(function (k) { var i = used.indexOf(k); if (i < 0) { used.push(k); i = used.length - 1; } return i + 1; }).join(",") + ']</sup>'; };
+  var fl = recFlags(r, e), trend = r.trend || [];
+  var cut = CSScore.ftsstCut(e.age), lvl = function (a) { return pending(a) ? "รอผู้เชี่ยวชาญยืนยัน" : CSScore.TIER[a.tier].nm + (a.confirmed ? " (ยืนยันแล้ว)" : ""); };
+  var sumM = CSMeds.summarize(meds.map(function (m) { return { inn: m.inn, frid: m.frid, lv: m.lv }; }));
+  var dest = { doctor: "แพทย์", pharmacist: "เภสัชกร", physio: "นักกายภาพบำบัด", nurse: "พยาบาล" };
+  function res(ok) { return ok == null ? '<span>ไม่ได้ทดสอบ</span>' : ok ? '<span class="ok">ผ่านเกณฑ์</span>' : '<span class="bad">เกินเกณฑ์ / ไม่ผ่าน</span>'; }
+  var fallsTxt = r.fallsCount == null ? "ไม่ได้ระบุ" : r.fallsCount === 9 ? "จำไม่ได้" : r.fallsCount + " ครั้ง";
+  var h = '';
+  /* ---------- หัวเอกสาร ---------- */
+  h += '<div class="lh"><img src="./icon-192.png" alt="CareSignal"><div><b>CareSignal</b><small>ระบบเฝ้าระวังความเสี่ยงหกล้มในผู้สูงอายุที่บ้าน · ครอบครัวเป็นผู้วัด</small></div>' +
+       '<div class="no">เลขที่ ' + docNo + '<br>วันที่ ' + longDate(now) + '</div></div>';
+  h += '<h1>ใบส่งต่อข้อมูลผลคัดกรองความเสี่ยงหกล้ม</h1>';
+  h += '<div class="hd"><p><b>เรื่อง</b> ส่งข้อมูลผลคัดกรองความเสี่ยงหกล้มของ ' + esc(e.name) + ' เพื่อประกอบการพิจารณา</p>' +
+       '<p><b>เรียน</b> แพทย์ เภสัชกร พยาบาล หรือนักกายภาพบำบัด ผู้รับการส่งต่อ</p></div>';
+  h += '<p class="ind">ด้วยครอบครัวของ ' + esc(e.name) + ' ได้คัดกรองความเสี่ยงหกล้มที่บ้านด้วยแอป CareSignal ครั้งล่าสุดเมื่อวันที่ ' + longDate(r.date) +
+       ' โดยจับเวลาด้วยมือตามแบบทดสอบมาตรฐานของ CDC STEADI' + cite(["steadi"]) + ' ระบบได้วิเคราะห์ผลตามเกณฑ์ที่อ้างอิงงานวิจัย ดังรายละเอียดต่อไปนี้ ' +
+       (pending(r) ? '<b>ผลครั้งนี้อยู่ระหว่างรอผู้เชี่ยวชาญยืนยัน</b>' : '') + '</p>';
+  /* ---------- ๑ ข้อมูลผู้สูงอายุ ---------- */
+  h += '<h2>๑. ข้อมูลผู้สูงอายุ</h2><table>' +
+       '<tr><th style="width:32%">ชื่อที่ใช้เรียก</th><td>' + esc(e.name) + '</td></tr>' +
+       '<tr><th>อายุ</th><td>' + e.age + ' ปี (ค่าตัดลุก–นั่ง 5 ครั้งสำหรับช่วงอายุนี้ ' + cut + ' วินาที)</td></tr>' +
+       '<tr><th>อุปกรณ์ช่วยเดิน</th><td>' + (e.aid ? (e.aid === "cane" ? "ไม้เท้า" : "วอล์กเกอร์") : "ไม่ใช้") + '</td></tr>' +
+       '<tr><th>โรคประจำตัว (ครอบครัวแจ้ง)</th><td>' + (e.conditions ? esc(e.conditions) : "ไม่ได้ระบุ") + '</td></tr>' +
+       '<tr><th>ผู้วัดและผู้ติดต่อ</th><td>' + esc(r.by || D.caregiver.name) + (D.caregiver.phone ? ' โทร ' + esc(D.caregiver.phone) : '') + '</td></tr>' +
+       '<tr><th>วิธีวัด</th><td>ครอบครัวจับเวลาด้วยปุ่มในแอป ไม่ใช้กล้อง · มีคนอยู่ข้างผู้สูงอายุระหว่างทดสอบ</td></tr></table>';
+  /* ---------- ๒ ผลการทดสอบเทียบเกณฑ์ ---------- */
+  h += '<h2>๒. ผลการทดสอบครั้งล่าสุดเทียบเกณฑ์ (' + longDate(r.date) + ')</h2><table><tr><th>การทดสอบ</th><th>ผลที่วัดได้</th><th>เกณฑ์</th><th>แปลผล</th></tr>' +
+       '<tr><td>ลุก–นั่ง 5 ครั้ง (5×STS)</td><td>' + (r.ftsst != null ? r.ftsst.toFixed(1) + ' วินาที' : 'ไม่ได้ทดสอบ') + '</td><td>≤ ' + cut + ' วินาที ตามอายุ' + cite(["ftsst"]) + '</td><td>' + res(r.ftsst == null ? null : r.ftsst <= cut) + '</td></tr>' +
+       '<tr><td>ลุกเดิน 3 เมตร (TUG)</td><td>' + (r.tug != null ? r.tug.toFixed(1) + ' วินาที' : 'ไม่ได้ทดสอบ') + '</td><td>&lt; 12 วินาที' + cite(["tug"]) + '</td><td>' + res(r.tug == null ? null : r.tug < 12) + '</td></tr>' +
+       '<tr><td>ทรงตัว 4 ท่า</td><td>' + balText(r) + '</td><td>ยืนต่อเท้าครบ 10 วินาที' + cite(["stage4"]) + '</td><td>' + res(r.balPassed != null ? r.balPassed >= 3 : (r.balance != null ? r.balance >= 10 : null)) + '</td></tr>' +
+       '<tr><td>ประวัติหกล้ม 12 เดือน</td><td>' + fallsTxt + (r.injury >= 2 ? ' · บาดเจ็บจนต้องพบแพทย์' : '') + (r.getup >= 3 ? ' · ล้มแล้วลุกเองไม่ได้' : '') + '</td><td>ไม่เคยล้ม' + cite(["steadi"]) + '</td><td>' + res(r.fallsCount == null || r.fallsCount === 9 ? null : r.fallsCount === 0) + '</td></tr>' +
+       '<tr><td>ยาที่ใช้ประจำ</td><td>' + (meds.length ? meds.length + ' รายการ (บันทึกจากรูปซองยา)' : (r.medsCount == null ? 'ไม่ได้ระบุ' : ['ไม่ใช้', '1–3 รายการ', '4–5 รายการ', '6–9 รายการ', '10 รายการขึ้นไป'][r.medsCount] || 'ไม่แน่ใจ')) + '</td><td>ไม่มียาเสี่ยงหกล้ม' + cite(["stoppfall"]) + '</td><td>' + (meds.length ? res(sumM.total < 2) : '<span>ดูข้อ ๕</span>') + '</td></tr></table>';
+  /* ---------- ๓ แนวโน้ม ---------- */
+  h += '<h2>๓. ผลทุกครั้งที่วัด (ล่าสุด ' + th(Math.min(6, list.length)) + ' ครั้ง)</h2><table><tr><th>วันที่</th><th>ลุก–นั่ง 5 ครั้ง (วินาที)</th><th>ลุกเดิน 3 ม. (วินาที)</th><th>ทรงตัว</th><th>ระดับ</th></tr>' +
+       list.slice(-6).map(function (a) { return '<tr><td>' + thDate(a.date) + '</td><td>' + (a.ftsst != null ? a.ftsst.toFixed(1) : "–") + '</td><td>' + (a.tug != null ? a.tug.toFixed(1) : "–") + '</td><td>' + balText(a) + '</td><td>' + lvl(a) + '</td></tr>'; }).join("") + '</table>' +
+       '<p style="font-size:12.5px">การเปลี่ยนแปลงของลุก–นั่ง 5 ครั้งที่มีความหมายทางคลินิกคือ ≥ 2.3 วินาที' + cite(["mcid"]) + ' ระบบเทียบกับผลครั้งก่อนของบุคคลเดียวกัน ไม่เทียบกับค่าเฉลี่ยของผู้อื่น</p>';
+  /* ---------- ๔ สัญญาณที่ระบบพบ พร้อมเหตุผลและหลักฐาน ---------- */
+  var all = (fl.reds || []).map(function (x) { return [x, "สำคัญ"]; }).concat(trend.map(function (x) { return [x, x.good ? "ดีขึ้น" : "แนวโน้ม"]; }), (fl.yellows || []).map(function (x) { return [x, "เฝ้าระวัง"]; }));
+  h += '<h2>๔. สัญญาณที่ระบบพบ พร้อมเหตุผลและหลักฐานอ้างอิง</h2>' + (all.length
+    ? '<table><tr><th style="width:24%">สิ่งที่พบ</th><th style="width:13%;white-space:nowrap">ระดับ</th><th style="width:28%">เกณฑ์ที่ใช้</th><th>เหตุผลทางคลินิก</th></tr>' +
+      all.map(function (p) { var x = p[0], ev = EV.FLAG[x.id] || { rule: "—", why: x.why, refs: ["steadi"] };
+        return '<tr><td>' + esc(x.text) + '</td><td>' + p[1] + '</td><td>' + esc(ev.rule) + '</td><td>' + esc(ev.why) + cite(ev.refs) + '</td></tr>'; }).join("") + '</table>'
+    : '<p>ไม่พบสัญญาณเสี่ยงตามเกณฑ์จากการวัดครั้งนี้</p>');
+  /* ---------- ๕ ยา ---------- */
+  h += '<h2>๕. รายการยาและการวิเคราะห์ยาที่อาจเพิ่มความเสี่ยงหกล้ม (สำหรับเภสัชกรและแพทย์)</h2>';
+  if (meds.length) {
+    h += '<table><tr><th style="width:20%">ยา (ชื่อสามัญ)</th><th style="width:18%">กลุ่ม</th><th style="width:22%">กลไกที่เกี่ยวกับการล้ม</th><th>ข้อพิจารณาสำหรับผู้เชี่ยวชาญ</th></tr>' +
+      meds.map(function (m) {
+        var fr = m.frid && m.frid !== "unknown" ? m.frid : null, ev = fr ? EV.FRID[fr] : null;
+        var grp = fr === "none" ? "ไม่อยู่ในกลุ่มเสี่ยงหกล้ม" : fr ? (CSMeds.FRID[fr] ? CSMeds.FRID[fr].nm : fr) + (m.lv === 2 ? " · เสี่ยงสูง" : m.lv === 1 ? " · เสี่ยงปานกลาง" : "") : "ระบบไม่รู้จัก — ตรวจจากรูปซองยา";
+        return '<tr><td>' + esc(m.inn || m.name || "ไม่ทราบชื่อ") + (m.dose ? '<br><small>' + esc(m.dose) + (m.freq ? ' · ' + esc(m.freq) : '') + '</small>' : '') +
+          (m.source === "photo_ocr" ? '<br><small>อ่านจากรูปซองยา' + (m.conf != null ? ' (ความมั่นใจ ' + Math.round(m.conf * 100) + '%)' : '') + '</small>' : '') + '</td><td>' + esc(grp) + '</td>' +
+          '<td>' + (ev ? esc(ev.mech) : '—') + '</td><td>' + (ev ? esc(ev.consider) + cite(ev.refs) : fr === "none" ? 'ทบทวนรายการยาตามรอบปกติ' : 'ขอให้เภสัชกรตรวจชื่อยาจากรูปซองยาและจัดกลุ่ม') + '</td></tr>';
+      }).join("") + '</table>' +
+      '<p>คะแนนยาเสี่ยงหกล้ม = ยาเสี่ยงสูง ' + sumM.high + ' × 2 + เสี่ยงปานกลาง ' + sumM.mod + ' = <b>' + sumM.total + '</b>' + (sumM.unknown ? ' · ยาที่ระบบไม่รู้จัก ' + sumM.unknown + ' รายการ' : '') +
+      ' (ระบบขึ้นสัญญาณเมื่อ ≥ 2)' + cite(["stoppfall", "seppala"]) + '</p>' +
+      '<p style="font-size:12.5px"><b>ข้อจำกัด:</b> ครอบครัวเป็นผู้บันทึก ชื่อยาที่อ่านจากรูปอาจคลาดเคลื่อน ขอให้ตรวจกับซองยาจริง · ระบบไม่เสนอให้หยุดหรือปรับยา การปรับยาเป็นดุลยพินิจของผู้สั่งใช้ยา' + cite(["steadirx"]) + '</p>';
+  } else h += '<p>ครอบครัวยังไม่ได้บันทึกรายการยา' + (r.medsCount != null && r.medsCount >= 2 && r.medsCount !== 9 ? ' (แจ้งว่าใช้ยาประจำตั้งแต่ ๔ รายการ ควรนำยาทุกรายการมาให้เภสัชกรทบทวน)' : '') + '</p>';
+  /* ---------- ๖ ผลยืนยัน ---------- */
+  if (r.confirmed) h += '<h2>๖. ผลยืนยันจากผู้เชี่ยวชาญ</h2><table><tr><th style="width:32%">ผู้ยืนยัน</th><td>' + esc(dest[r.confirmed.by] || DEST_NM[r.confirmed.by] || "ผู้เชี่ยวชาญ") + (r.confirmed.at ? ' · ' + longDate(r.confirmed.at) : '') + '</td></tr>' +
+    '<tr><th>ผลการพิจารณา</th><td>' + esc(VERDICT_NM[r.confirmed.verdict] || r.confirmed.verdict || "") + '</td></tr>' +
+    (r.confirmed.finding ? '<tr><th>ข้อค้นพบ</th><td>' + esc(r.confirmed.finding) + '</td></tr>' : '') +
+    (r.confirmed.recommend ? '<tr><th>คำแนะนำ</th><td>' + esc(r.confirmed.recommend) + '</td></tr>' : '') + '</table>';
+  var sec = r.confirmed ? ["๗", "๘"] : ["๖", "๗"];
+  /* ---------- หมายเหตุการวิเคราะห์โดยระบบ ---------- */
+  h += '<h2>' + sec[0] + '. หมายเหตุ: การวิเคราะห์โดยระบบ</h2><div class="ai"><b class="t">ระบบวิเคราะห์อย่างไร</b>' +
+       '<p>CareSignal ใช้ <b>ระบบกฎที่อธิบายได้ (rule-based)</b> ไม่ใช่โมเดลเรียนรู้ของเครื่อง ทุกสัญญาณในข้อ ๔ และ ๕ มาจากเกณฑ์ที่ระบุไว้พร้อมเอกสารอ้างอิงท้ายเอกสาร ผู้รับการส่งต่อตรวจย้อนได้ทุกข้อว่าขึ้นสัญญาณเพราะเกณฑ์ใด</p>' +
+       '<p>ระดับสี 4 ระดับคำนวณจากคะแนนรวมของกำลังขา ประวัติหกล้ม จำนวนยา และกิจวัตรประจำวัน' + cite(["program"]) + ' ผลระดับส้มหรือแดงจะไม่แจ้งครอบครัวจนกว่าผู้เชี่ยวชาญยืนยัน</p>' +
+       '<p><b>ข้อจำกัด:</b> ครอบครัวจับเวลาด้วยมือจึงอาจคลาดเคลื่อนได้เล็กน้อย · ไม่ได้วัดความดันท่านอน–ยืน การมองเห็น หรือการรู้คิด ซึ่งแนวทางสากลแนะนำให้ประเมินเพิ่มในกลุ่มเสี่ยง' + cite(["wfg"]) +
+       ' · <b>เอกสารนี้เป็นการคัดกรองเบื้องต้น ไม่ใช่การวินิจฉัยหรือคำสั่งการรักษา</b></p></div>';
+  if (r.note) h += '<p><b>สิ่งที่ครอบครัวสังเกต:</b> ' + esc(r.note) + '</p>';
+  h += '<p class="ind">จึงเรียนมาเพื่อโปรดพิจารณา</p>';
+  h += '<div class="sig"><p>ลงชื่อ ' + '.'.repeat(38) + '</p><p>( ' + esc(r.by || D.caregiver.name) + ' )</p><p>ผู้ดูแลและผู้บันทึกผล</p></div>';
+  /* ---------- ส่วนตอบกลับของผู้รับการส่งต่อ ---------- */
+  h += '<div class="reply"><b>ส่วนที่ ๒ สำหรับผู้รับการส่งต่อ (โปรดกรอกและส่งคืนครอบครัว)</b>' +
+       '<p><span class="box"></span>ยืนยันความเสี่ยง &nbsp; <span class="box"></span>ไม่ยืนยันความเสี่ยงระดับนี้ &nbsp; <span class="box"></span>ขอข้อมูลเพิ่ม</p>' +
+       '<p><span class="box"></span>ให้คำแนะนำแล้ว </p><p><span class="box"></span>ส่งต่อวิชาชีพอื่น ...................................... &nbsp; <span class="box"></span>นัดติดตาม วันที่ ........................</p>' +
+       '<p>ข้อค้นพบและคำแนะนำ</p><div class="ln"></div><div class="ln"></div><div class="ln"></div>' +
+       '<div class="sig" style="margin-top:10px"><p>ลงชื่อ ' + '.'.repeat(38) + '</p><p>( ' + '.'.repeat(38) + ' )</p><p>ตำแหน่ง/วิชาชีพ ' + '.'.repeat(24) + '</p><p>วันที่ ' + '.'.repeat(30) + '</p></div></div>';
+  /* ---------- เอกสารอ้างอิง ---------- */
+  h += '<h2>' + sec[1] + '. เอกสารอ้างอิง</h2><ol class="refs">' + used.map(function (k) { return '<li>' + esc(EV.REFS[k]) + '</li>'; }).join("") + '</ol>';
+  h += '<div class="foot">จัดทำโดยแอป CareSignal V3 เมื่อ ' + now.toLocaleString("th-TH") + ' · เลขที่ ' + docNo + ' · ข้อมูลสุขภาพส่วนบุคคล ใช้เพื่อการดูแลผู้สูงอายุรายนี้เท่านั้น</div>';
+  return '<div class="fdoc">' + h + '</div>';
 }
 function renderDoc(v) {
   var e = elder(), r = S.last || assessmentsOf(e.id).slice(-1)[0];
   if (!r) { toast("ยังไม่มีผลวัด"); return go("home"); }
-  head("ใบสรุป", "สำหรับพกไปพบแพทย์", "ยื่นหน้าจอนี้ให้แพทย์ดูได้เลย หรือพิมพ์ / บันทึกเป็น PDF", "history");
+  head("ใบส่งต่อ", "สำหรับแพทย์และเภสัชกร", "ยื่นหน้าจอนี้ให้ดูได้เลย หรือพิมพ์ / บันทึกเป็น PDF ขนาด A4", "history");
   v.innerHTML = '<div class="doc">' + docHTML(r) + '</div>' +
     '<button class="btn" onclick="docPrint()">🖨️ พิมพ์ / บันทึกเป็น PDF</button>' +
     '<button class="btn ghost" onclick="go(\'history\')">กลับ</button>';
@@ -929,7 +1084,12 @@ function docPrint() {
     return;
   }
   $("print").innerHTML = docHTML(r);
-  setTimeout(function () { window.print(); }, 50);
+  /* รอโลโก้และฟอนต์โหลดก่อนพิมพ์ ไม่งั้น PDF จะไม่มีโลโก้ */
+  var img = $("print").querySelector("img"), t0 = Date.now();
+  (function wait() {
+    var ready = (!img || img.complete) && (!document.fonts || document.fonts.status === "loaded");
+    if (ready || Date.now() - t0 > 2500) window.print(); else setTimeout(wait, 100);
+  })();
 }
 function printSummary() { go("doc"); }
 
@@ -989,6 +1149,10 @@ function hospList() {
 
 /* ---------- ระบบกลาง (Supabase เดียวกับ V2) ---------- */
 var CLOUD_NM = { local: "ไม่มีอินเทอร์เน็ต · เก็บในเครื่อง", "signed-out": "ยังไม่เชื่อมบัญชี", cloud: "เชื่อมระบบกลางแล้ว" };
+var REF_ST = { pending: "รอผู้เชี่ยวชาญรับเรื่อง", approved: "อนุมัติส่งต่อแล้ว", acknowledged: "ผู้เชี่ยวชาญรับเรื่องแล้ว", booked: "นัดหมายแล้ว",
+  review_returned: "ผู้เชี่ยวชาญตอบกลับแล้ว", completed: "เสร็จสิ้น", outcome_recorded: "บันทึกผลแล้ว", declined: "ยกเลิก" };
+/* ข้อความงานถัดไปจากฐานข้อมูลมีรหัสคำตอบภาษาอังกฤษต่อท้าย เช่น (confirm) — แปลเป็นไทย */
+function thAction(t) { return String(t || "").replace(/\((confirm|not_confirm|need_more_info|advised|refer_other|follow_up)\)/g, function (_, k) { return "(" + VERDICT_NM[k] + ")"; }); }
 function cloudCard() {
   var m = CSCloud.mode();
   if (m !== "cloud") return '<div class="card" style="margin-top:14px;border:1.5px dashed var(--line)"><h3>☁️ ระบบกลาง: ' + CLOUD_NM[m] + '</h3><p class="sub" style="margin:0 0 8px">เชื่อมแล้ว ผลวัดจะถึงเจ้าหน้าที่ดูแล และมีคนโทรกลับเมื่อผลแย่ลง</p><button class="btn sec" style="margin:0" onclick="go(\'cloud\')">เชื่อมบัญชีให้ ' + esc(elder().name) + '</button></div>';
@@ -996,9 +1160,9 @@ function cloudCard() {
   var LV = { stable: "เขียว", watch: "เหลือง · เฝ้าสังเกต", decline: "ส้ม · ถดถอย", urgent: "แดง · เร่งด่วน" };
   var ST = { new: "เคสใหม่ รอเจ้าหน้าที่รับ", reviewing: "เจ้าหน้าที่รับเคสแล้ว", contacted: "ติดต่อครอบครัวแล้ว", referred: "ส่งต่อผู้เชี่ยวชาญแล้ว", intervention: "อยู่ระหว่างการดูแล", follow_up_due: "ถึงกำหนดติดตาม", stable: "ปิดเคส ดีขึ้น", closed: "ปิดเคส" };
   return '<div class="card" style="margin-top:14px"><h3>☁️ การดูแลจากทีมกลาง</h3>' +
-    (c ? '<div class="hist"><span>เคสล่าสุด ' + thDate(c.opened_at) + '<br><small style="color:var(--ink2)">' + (LV[c.level] || c.level) + (c.next_action ? ' · ' + esc(c.next_action) : '') + '</small></span><span class="pill" style="background:var(--surf2);color:var(--brand2)">' + (ST[c.status] || c.status) + '</span></div>'
+    (c ? '<div class="hist"><span>เคสล่าสุด ' + thDate(c.opened_at) + '<br><small style="color:var(--ink2)">' + (LV[c.level] || c.level) + (c.next_action ? ' · ' + esc(thAction(c.next_action)) : '') + '</small></span><span class="pill" style="background:var(--surf2);color:var(--brand2)">' + (ST[c.status] || c.status) + '</span></div>'
        : '<p class="sub" style="margin:0">ยังไม่มีเคสเปิด — ผลวัดที่เป็นสีเหลืองขึ้นไปจะเปิดเคสให้เจ้าหน้าที่อัตโนมัติ</p>') +
-    st.referrals.slice(0, 3).map(function (r) { return '<div class="hist"><span>ส่งต่อ ' + esc(r.destination || r.action || "") + '</span><small>' + esc(r.status) + '</small></div>'; }).join("") +
+    st.referrals.slice(0, 4).map(function (r) { return '<div class="hist"><span>ส่งต่อ' + esc(DEST_NM[r.destination] || r.destination || "ผู้เชี่ยวชาญ") + '<br><small style="color:var(--ink2)">' + thDate(r.created_at) + '</small></span><span class="pill" style="background:' + (r.status === "review_returned" || r.status === "completed" || r.status === "outcome_recorded" ? "var(--c4b);color:var(--c4)" : "var(--surf2);color:var(--brand2)") + '">' + esc(REF_ST[r.status] || r.status) + '</span></div>'; }).join("") +
     '<button class="btn ghost" style="margin-top:6px" onclick="go(\'cloud\')">บัญชีระบบกลาง</button></div>';
 }
 function renderCloud(v) {
@@ -1082,12 +1246,15 @@ async function cloudRefresh() {
       if (D.assessments.some(function (a) { return a.cloud && a.cloud.id === r.cloudId; })) return;
       if (have[r.cloudId]) return;
       /* ผลที่วัดจากเครื่องอื่น (เช่น มือถือของญาติอีกคน) — ดึงมาแสดงในแนวโน้ม */
-      D.assessments.push(Object.assign({ id: uid(), elderId: e.id, flags: { reds: [], yellows: [] }, trend: [], fallsCount: null, skipped: {} }, r));
+      var rec = Object.assign({ id: uid(), elderId: e.id, trend: [], fallsCount: null, skipped: {} }, r);
+      rec.flags = recFlags(rec, e);
+      D.assessments.push(rec);
     });
     save(); if (S.screen === "home" || S.screen === "history") render();
   } catch (e) { console.warn("cloud refresh", e); }
 }
 
+fitPhone();
 (function () {
   var q = new URLSearchParams(location.search), pid = q.get("print"), goto = q.get("go");
   if (pid && D.elders.length) {

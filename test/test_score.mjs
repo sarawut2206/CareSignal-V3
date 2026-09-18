@@ -151,7 +151,32 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("ปิดแถบชวนติดตั้งแล้วจำไว้", /localStorage\.setItem\(A2HS\.key, "no"\)/.test(app));
   ok("ทางลัด ?go= เปิดหน้าที่ต้องการได้", /\["fall", "test", "history", "meds", "video"\]\.indexOf\(goto\)/.test(app));
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
-  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-6/.test(sw));
+  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-7/.test(sw));
+}
+
+/* ใบส่งต่อแบบเอกสารทางการ: ทุกสัญญาณต้องมีเกณฑ์ เหตุผล และเอกสารอ้างอิง */
+{
+  const E = require("../cs-evidence.js");
+  const src = readFileSync(new URL("../cs-score.js", import.meta.url), "utf8");
+  const ids = [...new Set([...src.matchAll(/id: "([BR][0-9+]+)"/g)].map((m) => m[1]))];
+  ok("ทุกสัญญาณใน cs-score มีหลักฐานใน cs-evidence", ids.every((k) => E.FLAG[k] && E.FLAG[k].rule && E.FLAG[k].why && E.FLAG[k].refs.length), ids.filter((k) => !E.FLAG[k]));
+  const M = require("../cs-meds.js");
+  const groups = Object.keys(M.FRID).filter((k) => k !== "none");
+  ok("ยาเสี่ยงหกล้มทุกกลุ่มมีกลไก ข้อพิจารณา และอ้างอิง", groups.every((k) => E.FRID[k] && E.FRID[k].mech && E.FRID[k].consider && E.FRID[k].refs.length), groups.filter((k) => !E.FRID[k]));
+  const keys = Object.values(E.FLAG).concat(Object.values(E.FRID)).flatMap((x) => x.refs);
+  ok("ทุกเลขอ้างอิงชี้ไปที่เอกสารที่มีอยู่จริงในรายการ", keys.every((k) => E.REFS[k]));
+  ok("ข้อพิจารณาเรื่องยาไม่สั่งหยุดหรือปรับยาเอง", !Object.values(E.FRID).some((x) => /หยุดยา|ให้หยุด|เลิกยา/.test(x.consider)));
+  const app = readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8");
+  ok("ใบส่งต่อมีโลโก้ เลขที่เอกสาร เรื่อง เรียน และส่วนตอบกลับ", /icon-192\.png" alt="CareSignal"/.test(app) && /docNo/.test(app) && /<b>เรื่อง<\/b>/.test(app) && /<b>เรียน<\/b>/.test(app) && /ส่วนที่ ๒ สำหรับผู้รับการส่งต่อ/.test(app));
+  ok("ใบส่งต่อบอกว่าเป็นระบบกฎที่อธิบายได้ และไม่ใช่การวินิจฉัย", /ระบบกฎที่อธิบายได้ \(rule-based\)/.test(app) && /ไม่ใช่การวินิจฉัยหรือคำสั่งการรักษา/.test(app));
+  ok("พิมพ์ขนาด A4 ขอบตามแบบหนังสือราชการ", /@page\{size:A4;margin:15mm 20mm 20mm 30mm\}/.test(app));
+  ok("ผลจากระบบกลางคำนวณสัญญาณใหม่ ไม่ขึ้นว่าไม่พบสัญญาณผิด ๆ", /function recFlags/.test(app) && /rec\.flags = recFlags\(rec, e\)/.test(app));
+  const C2 = readFileSync(new URL("../cs-cloud.js", import.meta.url), "utf8");
+  ok("ดึงประวัติล้ม ยา ทรงตัว จากระบบกลางมาครบ", /fallsCount: fd\.count/.test(C2) && /balPassed: d\.balance/.test(C2) && /medsCount: md\.count/.test(C2));
+  ok("ตัวอักษรปรับได้ 3 ระดับ และแก้มือถือที่เปิดแบบเดสก์ท็อป", /var TXT = \[/.test(app) && /function fitPhone/.test(app) && /innerWidth \/ sw/.test(app));
+  ok("การ์ดทีมดูแลไม่แสดงรหัสภาษาอังกฤษ", /REF_ST\[r\.status\]/.test(app) && /DEST_NM\[r\.destination\]/.test(app) && /function thAction/.test(app));
+  const sw2 = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
+  ok("sw แคช cs-evidence.js", /"\.\/cs-evidence\.js"/.test(sw2));
 }
 
 console.log("  " + pass + " ผ่าน / " + fail + " ตก");
