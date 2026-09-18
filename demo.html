@@ -109,6 +109,64 @@ th{font-size:11px;color:var(--ink2);font-weight:600;background:#F6F9FA}
 .links a{color:var(--brand2);text-decoration:none;background:#fff;border-radius:99px;padding:4px 10px;border:1px solid var(--line)}
 .links a:focus-visible,.ctl button:focus-visible,.steps button:focus-visible{outline:3px solid #FCD34D;outline-offset:2px}
 /* จอแคบ: แสดงเฉพาะจอที่กำลังเล่า */
+
+/* ================= หน้าตาชุดใหม่ ================= */
+body{background:linear-gradient(180deg,#EAF3FF 0%,#F6FAFF 38%,#FFFFFF 100%)}
+.hero-h{flex:none;display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;padding:14px 28px 4px}
+.hero-h .pill0{display:inline-block;background:#DCEBFF;color:#1D4ED8;font-weight:600;font-size:13.5px;border-radius:99px;padding:5px 14px}
+.hero-h h1{margin:6px 0 6px;font-size:clamp(24px,2.6vw,40px);line-height:1.12;color:#0F2A5C;font-weight:700;letter-spacing:-.01em}
+.hero-h h1 span{display:block;background:linear-gradient(90deg,#1D4ED8,#0F9C8C);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero-h .case{display:inline-flex;gap:10px;flex-wrap:wrap;background:#E7F0FF;color:#16325C;border-radius:99px;padding:6px 16px;font-size:14.5px;font-weight:500}
+.hero-h .case b{color:#0F2A5C}
+.hero-art{display:flex;align-items:center;gap:14px}
+.hero-art .tag2{font-size:14px;color:#5E6B75;text-align:right;line-height:1.5}
+.hero-art .tag2 i{display:block;font-style:normal;color:#1D4ED8;font-weight:600;font-size:15px}
+.demo-tag{position:absolute;top:10px;right:18px}
+.stage{padding:8px 28px 4px;gap:30px}
+.scr{position:relative;opacity:.5}
+.scr:not(:last-child)::after{content:"";position:absolute;right:-26px;top:52%;width:22px;height:22px;
+  background:no-repeat center/22px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231D4ED8' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h15M13 6l6 6-6 6'/%3E%3C/svg%3E")}
+.scr .lbl{font-size:16.5px;color:#0F2A5C;margin:0 0 8px 2px;gap:10px}
+.scr .lbl em{width:34px;height:34px;font-size:16px;font-weight:700;background:#1D4ED8;color:#fff;box-shadow:0 4px 12px rgba(29,78,216,.25)}
+.scr.on .lbl{color:#0F2A5C}.scr.on .lbl em{background:linear-gradient(135deg,#1D4ED8,#0F9C8C)}
+.win{border:10px solid #1E2A33;border-radius:26px;box-shadow:0 16px 40px rgba(15,42,92,.18)}
+.scr.on .win{border-color:#1E2A33;box-shadow:0 0 0 3px #7FB0FF,0 18px 46px rgba(29,78,216,.28)}
+.phone{border-radius:40px;border-width:9px}
+.wbar{background:#F6F9FC}
+.chipdemo{display:inline-block;margin:0 auto 8px;background:#E7F0FF;color:#1D4ED8;border-radius:99px;font-size:11px;padding:2px 10px}
+.ctr{text-align:center}
+/* เส้นเวลาด้านล่าง */
+.steps{order:3;position:relative;padding:4px 40px 0;gap:0}
+.steps::before{content:"";position:absolute;left:52px;right:52px;top:15px;height:2px;background:linear-gradient(90deg,#9EC3FF,#7FD6C8)}
+.steps button{background:transparent;box-shadow:none;text-align:center;padding:0 2px;color:#5E6B75;overflow:visible}
+.steps button b{width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid #9EC3FF;margin:8px auto 4px;font-size:0;position:relative;z-index:1}
+.steps button span{font-size:12px;white-space:normal;line-height:1.25;overflow:visible}
+.steps button small{display:block;font-size:11px;color:#97A3AD}
+.steps button.done b{background:#9EC3FF}
+.steps button.on{background:transparent;color:#1D4ED8;font-weight:600}.steps button.on b{background:#1D4ED8;border-color:#BFD6FF;width:18px;height:18px;margin-top:6px}
+.steps button i{display:none}
+.foot{padding:8px 28px 12px}
+.say{background:#fff;border:1px solid #E1EAF5}
+.ctl button.pri{background:linear-gradient(135deg,#1D4ED8,#0F9C8C)}
+/* ภาพประกอบ */
+.av{display:inline-block;vertical-align:middle}
+.famart{border-radius:16px;overflow:hidden;background:linear-gradient(160deg,#FFE9D6,#E7F0FF);display:flex;align-items:flex-end;justify-content:center;gap:0;padding:10px 0 0;margin-bottom:8px;position:relative}
+.famart .ph{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) rotate(-8deg);width:22px;height:36px;border-radius:5px;background:#1E2A33;border:2px solid #fff}
+.tests{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0}
+.tests div{background:#EEF4FF;border-radius:12px;padding:8px 2px 6px;text-align:center;font-size:12px;color:#1D4ED8;font-weight:600}
+.tests svg{width:26px;height:26px;display:block;margin:0 auto 2px}
+.okline{display:flex;gap:8px;align-items:center;background:#E3F6EF;color:#0E7A4F;border-radius:12px;padding:7px 10px;font-size:12.5px;font-weight:600;margin-bottom:6px}
+.person{display:flex;gap:10px;align-items:center}
+.person b{display:block;font-size:14.5px}
+.alert{display:flex;gap:10px;align-items:center;background:#FEF0E6;border:1px solid #F9C9A4;color:#B45309;border-radius:12px;padding:8px 10px;margin:8px 0;font-weight:600;font-size:13.5px}
+.alert .dot{width:26px;height:26px;border-radius:50%;background:#EA7A1B;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none}
+.acts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+.acts div{border:1px solid #E1EAF5;border-radius:10px;padding:6px 2px;text-align:center;font-size:11.5px;background:#fff}
+.acts div.on{border-color:#0E9F6E;background:#E3F6EF;color:#0E7A4F;font-weight:600}
+.acts i{display:block;font-style:normal;font-size:16px}
+.donut{display:flex;gap:10px;align-items:center}
+@media(max-width:1100px){.hero-h{grid-template-columns:1fr}.hero-art{display:none}.scr::after{display:none}.steps::before{display:none}}
+
 @media(max-width:1100px){
   body{overflow:auto}
   .stage{grid-template-columns:1fr;height:auto}
@@ -121,22 +179,26 @@ th{font-size:11px;color:var(--ink2);font-weight:600;background:#F6F9FA}
 </style>
 </head>
 <body>
-<div class="top">
-  <img src="./icon-192.png" alt="">
-  <h1>CareSignal · สาธิตเคสเดียวครบวงจร<small>ครอบครัววัดที่บ้าน → ทีมดูแล → ผู้เชี่ยวชาญ → ครอบครัวได้แผนดูแล → บริษัทประกันเห็นผลระดับกลุ่ม</small></h1>
+<header class="hero-h">
+  <div>
+    <span class="pill0">Prototype Demo · หนึ่งเคส 2 นาที</span>
+    <h1>จากผลประเมินที่บ้าน<span>สู่การตอบกลับของผู้เชี่ยวชาญ</span></h1>
+    <div class="case"><b>คุณแม่ อายุ 74 ปี</b>· ลุกนั่งช้ากว่าเกณฑ์ · ยืนต่อเท้าไม่ครบ 10 วินาที · ใช้ยา 4 รายการ</div>
+  </div>
+  <div class="hero-art"><div class="tag2"><i>ดูแลต่อเนื่อง เพื่อวันพรุ่งนี้ที่ดีกว่า</i>ลูกหลานวัดให้ · ทีมดูแลติดตาม<br>ผู้เชี่ยวชาญยืนยัน · บริษัทประกันเห็นผลกลุ่ม</div><span id="heroAv"></span></div>
   <span class="demo-tag">ข้อมูลสาธิต · ไม่ใช่ผู้ใช้จริง</span>
-</div>
-<div class="steps" id="steps"></div>
+</header>
 <div class="stage">
-  <section class="scr phone-col" id="s-fam"><div class="lbl"><em>1</em>ครอบครัว · แอป CareSignal V3</div>
+  <section class="scr phone-col" id="s-fam"><div class="lbl"><em>1</em>ครอบครัวและผู้เอาประกัน</div>
     <div class="win phone"><div class="wbar"><span>09:41</span><span>CareSignal V3</span></div><div class="wbody" id="b-fam"></div></div></section>
-  <section class="scr" id="s-cm"><div class="lbl"><em>2</em>ผู้ประสานงาน (Care Manager)</div>
+  <section class="scr" id="s-cm"><div class="lbl"><em>2</em>Care Manager</div>
     <div class="win"><div class="wbar"><b>คอนโซลเจ้าหน้าที่</b>· กระดานผู้ประสานงาน</div><div class="wbody" id="b-cm"></div></div></section>
-  <section class="scr" id="s-exp"><div class="lbl"><em>3</em>ผู้เชี่ยวชาญ (เห็นเฉพาะเคสที่ส่งถึงวิชาชีพตน)</div>
+  <section class="scr" id="s-exp"><div class="lbl"><em>3</em>ผู้เชี่ยวชาญ</div>
     <div class="win"><div class="wbar"><b>คอนโซลเจ้าหน้าที่</b>· กระดานวิชาชีพ</div><div class="wbody" id="b-exp"></div></div></section>
-  <section class="scr" id="s-ins"><div class="lbl"><em>4</em>บริษัทประกัน (เห็นเฉพาะค่ารวมระดับกลุ่ม)</div>
+  <section class="scr" id="s-ins"><div class="lbl"><em>4</em>Dashboard บริษัทประกัน</div>
     <div class="win"><div class="wbar"><b>Portfolio Dashboard</b>· ฐานข้อมูลการดูแลก่อนเกิดเคลม</div><div class="wbody" id="b-ins"></div></div></section>
 </div>
+<div class="steps" id="steps"></div>
 <div class="foot">
   <div class="say" id="say" aria-live="polite"></div>
   <div>
@@ -185,12 +247,50 @@ var STEPS = [
     say: "บริษัทประกันเห็น<b>เฉพาะค่ารวม</b> ใครเสี่ยงแค่ไหน การดูแลเกิดจริงไหม — <b>ไม่เห็นชื่อ ไม่เห็นยา และไม่ใช้ขึ้นเบี้ยหรือปฏิเสธเคลม</b>" }
 ];
 
+
+/* ภาพวาดบุคคลแบบแบน — ไม่ใช้รูปถ่ายคนจริง */
+var AVP = {
+  elderF: { bg: "#FFE4D2", skin: "#F2C9A5", hair: "#D8D8D8", shirt: "#7BB6D9", bun: 1 },
+  elderM: { bg: "#E5EEF9", skin: "#E6B58C", hair: "#CFCFCF", shirt: "#C9B28A", glasses: 1 },
+  youngF: { bg: "#FDE5EC", skin: "#F5CFAE", hair: "#2B2320", shirt: "#F29BB0", long: 1 },
+  pharm:  { bg: "#E3F6EF", skin: "#F0C7A2", hair: "#3A2A20", shirt: "#FFFFFF", coat: 1, long: 1 },
+  physio: { bg: "#E6F0FF", skin: "#EAC09A", hair: "#1F1F1F", shirt: "#4C8DDB", short: 1 },
+  cm:     { bg: "#EDEBFF", skin: "#F1C8A4", hair: "#2A1E1A", shirt: "#6D5BD0", long: 1 }
+};
+function AV(k, size, noBg) {
+  var p = AVP[k], z = size || 56;
+  var hair = p.long ? '<path d="M17 30c0-11 7-18 15-18s15 7 15 18v14h-5V31c0-6-4-10-10-10s-10 4-10 10v13h-5z" fill="' + p.hair + '"/>'
+          : p.bun ? '<circle cx="32" cy="12" r="6" fill="' + p.hair + '"/><path d="M19 29c0-9 6-15 13-15s13 6 13 15c-4-5-8-7-13-7s-9 2-13 7z" fill="' + p.hair + '"/>'
+          : '<path d="M19 28c0-9 6-14 13-14s13 5 13 14c-3-4-8-6-13-6s-10 2-13 6z" fill="' + p.hair + '"/>';
+  return '<svg class="av" width="' + z + '" height="' + z + '" viewBox="0 0 64 64" aria-hidden="true">' +
+    (noBg ? '' : '<circle cx="32" cy="32" r="32" fill="' + p.bg + '"/>') +
+    '<path d="M10 64c2-12 11-18 22-18s20 6 22 18z" fill="' + p.shirt + '"' + (p.coat ? ' stroke="#DDE5EB"' : '') + '/>' +
+    (p.coat ? '<path d="M28 47l4 8 4-8" stroke="#4C8DDB" stroke-width="2" fill="none"/>' : '') +
+    '<rect x="28" y="38" width="8" height="9" rx="3" fill="' + p.skin + '"/>' +
+    (p.long ? '<path d="M17 30c0 8 2 14 6 17h18c4-3 6-9 6-17z" fill="' + p.hair + '"/>' : '') +
+    '<circle cx="32" cy="29" r="12" fill="' + p.skin + '"/>' + hair +
+    '<circle cx="27.5" cy="30" r="1.4" fill="#2B2B2B"/><circle cx="36.5" cy="30" r="1.4" fill="#2B2B2B"/>' +
+    '<path d="M28.5 35c2 1.8 5 1.8 7 0" stroke="#B5694A" stroke-width="1.5" fill="none" stroke-linecap="round"/>' +
+    (p.glasses ? '<circle cx="27.5" cy="30" r="3.3" fill="none" stroke="#5E6B75" stroke-width="1.2"/><circle cx="36.5" cy="30" r="3.3" fill="none" stroke="#5E6B75" stroke-width="1.2"/><path d="M30.8 30h2.4" stroke="#5E6B75" stroke-width="1.2"/>' : '') +
+    '</svg>';
+}
+var ICT = {
+  sit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="10" cy="4.5" r="2"/><path d="M10 7v6h5l2 6M10 13l-3 6M5 11h3M16 11v8"/></svg>',
+  walk: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="13" cy="4.5" r="2"/><path d="M13 7l-2 6 3 3 1 5M11 13l-3 7M12 9l4 3M11 9l-3 3"/></svg>',
+  bal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="4.5" r="2"/><path d="M12 7v7M12 14l-1 7M12 14l1 7M5 10h14"/></svg>'
+};
+
 /* ---------- เนื้อหาแต่ละจอ ตามขั้น (จอที่ไม่มีเนื้อหาขั้นนั้นจะค้างสถานะล่าสุดไว้) ---------- */
 function famScreen(i) {
-  if (i === 0) return '<div class="ph-h">สวัสดี สาธิต นิด</div>' +
-    '<div class="card"><b>' + NAME + '</b><div class="muted">อายุ 74 ปี · ผลครั้งก่อน เหลือง · 30 วันที่แล้ว</div></div>' +
+  if (i === 0) return '<div class="ctr"><span class="chipdemo">ข้อมูลสาธิต</span></div>' +
     '<div class="hero new"><span>⏱️ แจ้งเตือนในแอป</span><b>ถึงกำหนดวัดซ้ำแล้ว</b><span>ใช้เวลาประมาณ 10 นาที · ดูวิดีโอสาธิตก่อนได้</span><div class="btnx sec" style="background:#fff">เริ่มวัดวันนี้</div></div>' +
-    '<div class="card muted">▶️ วิดีโอสาธิต "สูงวัยไม่ล้ม" · Siriraj Health Policy</div>';
+    '<div class="famart">' + AV("youngF", 92, 1) + AV("elderF", 92, 1) + '<span class="ph"></span></div>' +
+    '<div class="ph-h" style="margin:0 0 4px">ถึงเวลาประเมินคุณแม่</div><div class="muted">ผลครั้งก่อน เหลือง · 30 วันที่แล้ว · เลือกแบบทดสอบ</div>' +
+    '<div class="tests"><div>' + ICT.sit + 'ลุกนั่ง</div><div>' + ICT.walk + 'ลุกเดิน</div><div>' + ICT.bal + 'ทรงตัว</div></div>' +
+    '<div class="okline">✓ ตรวจอาการอันตราย 4 ข้อก่อนเริ่ม</div>' +
+    '<div class="card" style="display:flex;gap:10px;align-items:center"><span style="font-size:22px">📱</span><div><b style="font-size:13.5px">ไม่ต้องตั้งกล้อง</b><div class="muted">ลูกหลานกดจับเวลาบนมือถือ</div></div></div>' +
+    '<div>' +
+    '<div class="card muted">▶️ วิดีโอสาธิต "สูงวัยไม่ล้ม" · Siriraj Health Policy</div></div>';
   if (i === 1) return '<div class="ph-h">วัดวันนี้</div>' +
     '<div class="card"><h4>ผลที่ลูกสาวจับเวลา</h4>' +
       '<div class="row"><span>ลุกนั่ง 5 ครั้ง</span><b>16.5 วิ</b></div>' +
@@ -230,8 +330,11 @@ function cmScreen(i) {
     '<div class="flag">ใช้ยาประจำ 4 รายการ → เภสัชกร<span class="src">World Falls Guidelines 2022</span></div>' +
     '<div class="flag">ยาเสี่ยงหกล้ม คะแนน 3 (diazepam + amlodipine) → เภสัชกร<span class="src">STOPPFall 2021</span></div>' +
     '<div class="flag ok">ลุกเดิน 3 เมตร 11.4 วิ ผ่านเกณฑ์ · ไม่มีประวัติล้ม<span class="src">CDC STEADI</span></div></div>';
-  if (i === 2) return bar + '<div class="card"><h4>คิวเคส · เรียงตามความเร่งด่วน</h4>' + queue("เคสใหม่", "p-new") + '</div>' + sig;
-  if (i === 3) return bar + '<div class="card"><h4>DEMO-24 · ' + NAME + '</h4>' +
+  if (i === 2) return bar + '<div class="card new"><div style="display:flex;justify-content:space-between;align-items:center"><h4 style="margin:0">เปิดเคสใหม่</h4><span class="muted">#DEMO-24</span></div>' +
+    '<div class="person" style="margin-top:6px">' + AV("elderF", 52) + '<div><b>หญิง อายุ 74 ปี</b><span class="muted">ลุกนั่งช้ากว่าเกณฑ์ · ทรงตัวผ่าน 2/4 · ยาเสี่ยงหกล้ม</span></div></div>' +
+    '<div class="alert"><span class="dot">!</span><div>สัญญาณระดับส้ม · ติดต่อภายใน 48 ชั่วโมง</div></div></div>' +
+    '<div class="card"><h4>คิวเคส · เรียงตามความเร่งด่วน</h4>' + queue("เคสใหม่", "p-new") + '</div>' + sig;
+  if (i === 3) return bar + '<div class="card"><div class="person">' + AV("elderF", 44) + '<h4 style="margin:0">DEMO-24 · ' + NAME + '</h4></div>' +
     '<div class="row"><span>เปิดเคส</span><b>19 ก.ย. 10:02 (อัตโนมัติ)</b></div>' +
     '<div class="row"><span>ต้องติดต่อภายใน</span><b style="color:var(--c2)">48 ชม. · 21 ก.ย. 10:02</b></div>' +
     '<div class="row"><span>ผู้รับผิดชอบ</span><b>ผู้ประสานงาน (รับเคสแล้ว)</b></div></div>' +
@@ -249,24 +352,25 @@ function cmScreen(i) {
 }
 function expScreen(i) {
   if (i < 4) return '<div class="idle">ผู้เชี่ยวชาญยังไม่เห็นเคสนี้<br>จนกว่าผู้ประสานงานจะส่งต่อมายังวิชาชีพของตน</div>';
-  var ph = '<div class="rolebar">💊<div><b>กระดานทบทวนยา · เภสัชกร</b>เห็นเฉพาะเคสที่ส่งมายังเภสัชกร</div></div>' +
+  var ph = '<div class="rolebar">' + AV("pharm", 34) + '<div><b>กระดานทบทวนยา · เภสัชกร</b>เห็นเฉพาะเคสที่ส่งมายังเภสัชกร</div></div>' +
     '<div class="card' + (i === 4 ? ' new' : '') + '"><h4>DEMO-24 · ' + NAME + ' · 74 ปี</h4>' +
     '<table><tr><th>ยา (จากรูปซองยา)</th><th>กลุ่ม</th><th>กลไก</th></tr>' +
     '<tr><td>Diazepam 2 mg ก่อนนอน</td><td>ยานอนหลับ · เสี่ยงสูง</td><td>ง่วงซึม เสียการทรงตัว</td></tr>' +
     '<tr><td>Amlodipine 5 mg</td><td>ลดความดัน · ปานกลาง</td><td>ความดันตกเมื่อลุก</td></tr></table>' +
     '<span class="src">อ้างอิง STOPPFall 2021 · AGS Beers 2023</span></div>';
-  var pt = '<div class="rolebar">🦵<div><b>กระดานประเมินการเคลื่อนไหว · นักกายภาพบำบัด</b>เห็นเฉพาะข้อมูลการเคลื่อนไหว</div></div>' +
+  var pt = '<div class="rolebar">' + AV("physio", 34) + '<div><b>กระดานประเมินการเคลื่อนไหว · นักกายภาพบำบัด</b>เห็นเฉพาะข้อมูลการเคลื่อนไหว</div></div>' +
     '<div class="card' + (i === 4 ? ' new' : '') + '"><div class="row"><span>ลุกนั่ง 5 ครั้ง</span><b>16.5 วิ (เกณฑ์ 11.5)</b></div><div class="row"><span>ลุกเดิน 3 เมตร</span><b>11.4 วิ (เกณฑ์ 12) ผ่าน</b></div>' +
     '<div class="row"><span>ทรงตัว</span><b>ชิด ✓ เหลื่อม ✓ ต่อเท้า 4.1 ✗</b></div><div class="row"><span>เทียบครั้งก่อน</span><b>ลุกนั่งช้าลง 1.7 วิ (ยังไม่ถึงเกณฑ์ 2.3 วิ)</b></div></div>';
   if (i === 4) return '<div class="tabs2"><span class="on">💊 เภสัชกร · ใหม่ 1</span><span class="on" style="background:var(--brand2)">🦵 นักกายภาพ · ใหม่ 1</span></div>' + ph + pt;
   return '<div class="tabs2"><span class="on">💊 เภสัชกรตอบแล้ว</span><span class="on" style="background:var(--brand2)">🦵 นักกายภาพตอบแล้ว</span></div>' +
-    '<div class="card new"><h4>💊 เภสัชกร · ผลการพิจารณา: <span class="pill p-ok">ยืนยัน</span></h4>' +
+    '<div class="card new"><div class="person">' + AV("pharm", 40) + '<h4 style="margin:0">เภสัชกร · <span class="pill p-ok">ยืนยัน</span></h4></div>' +
       '<div class="muted"><b>ข้อค้นพบ</b> ใช้ยา 4 รายการ มี diazepam ต่อเนื่องร่วมกับยาลดความดัน เสี่ยงง่วงและหน้ามืดเมื่อลุกยืน</div>' +
       '<div class="muted"><b>ข้อเสนอ</b> เสนอให้แพทย์ผู้สั่งยาทบทวน diazepam · แนะนำลุกช้า ๆ · ไม่หยุดยาเอง</div></div>' +
-    '<div class="card new"><h4>🦵 นักกายภาพบำบัด · ผลการพิจารณา: <span class="pill p-ok">ยืนยัน</span></h4>' +
+    '<div class="card new"><div class="person">' + AV("physio", 40) + '<h4 style="margin:0">นักกายภาพบำบัด · <span class="pill p-ok">ยืนยัน</span></h4></div>' +
       '<div class="muted"><b>ข้อค้นพบ</b> กำลังขาลดลง ยืนต่อเท้าไม่ได้ การเดินยังอยู่ในเกณฑ์</div>' +
       '<div class="muted"><b>แผน</b> โปรแกรม Otago ที่บ้าน 3 วันต่อสัปดาห์ · นัดประเมินซ้ำ 30 วัน</div></div>' +
-    '<div class="muted">ตอบด้วยปุ่มมาตรฐาน 6 แบบ · ระบบบล็อกข้อความสั่งหยุดยาที่ฐานข้อมูล</div>';
+    '<div class="acts"><div class="on"><i>✅</i>ยืนยัน</div><div><i>✖️</i>ไม่ยืนยัน</div><div><i>📄</i>ขอข้อมูลเพิ่ม</div><div><i>💬</i>ให้คำแนะนำ</div><div><i>👥</i>ส่งวิชาชีพอื่น</div><div class="on"><i>📅</i>นัดติดตาม</div></div>' +
+    '<div class="muted" style="margin-top:6px">ปุ่มตอบกลับมาตรฐาน 6 แบบ · ระบบบล็อกข้อความสั่งหยุดยาที่ฐานข้อมูล</div>';
 }
 function insScreen(i) {
   if (i < 8) return '<div class="idle">บริษัทประกันไม่เห็นเคสรายบุคคล<br>เห็นเฉพาะค่ารวมระดับกลุ่มเมื่อสรุปพอร์ต</div>';
@@ -287,7 +391,7 @@ function $(id) { return document.getElementById(id); }
 function fmt(s) { s = Math.max(0, Math.round(s)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); }
 function draw() {
   $("steps").innerHTML = STEPS.map(function (s, i) {
-    return '<button class="' + (i === cur ? "on" : i < cur ? "done" : "") + '" data-i="' + i + '"><b>' + (i + 1) + '</b><span>' + s.t + '</span>' + (i === cur ? '<i id="prog"></i>' : '') + '</button>';
+    return '<button class="' + (i === cur ? "on" : i < cur ? "done" : "") + '" data-i="' + i + '"><b>' + (i + 1) + '</b><span>' + s.t + '</span><small>' + fmt(startOf(i)) + '–' + fmt(startOf(i) + s.d) + ' วินาที</small>' + (i === cur ? '<i id="prog"></i>' : '') + '</button>';
   }).join("");
   $("steps").querySelectorAll("button").forEach(function (b) { b.onclick = function () { go(+b.dataset.i); }; });
   var s = STEPS[cur];
@@ -328,6 +432,7 @@ document.addEventListener("keydown", function (e) {
 });
 document.querySelectorAll("button").forEach(function (b) { b.addEventListener("mouseup", function () { b.blur(); }); });
 setInterval(function () { if (playing) tick(); }, 200);
+document.getElementById("heroAv").innerHTML = AV("elderM", 120);
 draw();
 if (/[?&]auto=1/.test(location.search)) play();   /* ?auto=1 เล่นเองทันที ใช้ตอนอัดวิดีโอหน้าจอ */
 </script>
