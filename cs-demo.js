@@ -466,6 +466,33 @@
     redeemStaffInvite: function () { return Promise.resolve({ ok: false, msg: "โหมดสาธิต: ไม่มีรหัสจริงให้แลก" }); },
     startWorkSession: function (org) { if (!org) return Promise.reject(new Error("ต้องระบุหน่วยบริการ")); S.sessions.unshift({ org_name: String(org), started_at: iso(Date.now()) }); audit("session.start", ME.id, "เข้าระบบจากหน่วยบริการ: " + org); return Promise.resolve({ org_name: org }); },
     myOrg: function () { return Promise.resolve(ME.role === "insurer" ? null : ((S.sessions[0] && S.sessions[0].org_name) || ORG)); },
+    /* ใบอนุญาต: บัญชีสาธิตทุกบทบาทผ่านการตรวจแล้ว ยกเว้นคำขอตัวอย่าง 2 รายการให้ผู้ดูแลระบบลองตรวจ */
+    myCredential: function () {
+      if (["pharmacist", "physio", "doctor", "nurse"].indexOf(ME.role) < 0) return Promise.resolve({ disabled: false, row: null });
+      var c = (S.creds || []).filter(function (x) { return x.user_id === ME.id; })[0];
+      return Promise.resolve({ disabled: false, row: c || { user_id: ME.id, status: "verified", full_name: ME.display_name, license_no: "DEMO-0001", council: "สาธิต", org_name: ORG, org_type: "hospital" } });
+    },
+    submitCredential: function (c) {
+      S.creds = S.creds || [];
+      var row = Object.assign({ id: "cred-" + ME.id, user_id: ME.id, profession: ME.role, council: "สาธิต", status: "pending", submitted_at: iso(Date.now()), photo_path: null }, c);
+      S.creds = S.creds.filter(function (x) { return x.user_id !== ME.id; }).concat([row]);
+      audit("credential.submitted", ME.id, "ยื่นข้อมูลใบอนุญาต (สาธิต)"); return Promise.resolve(row);
+    },
+    credentialPhotoUrl: function () { return Promise.resolve(null); },
+    listCredentials: function () {
+      if (!S.creds) S.creds = [
+        { id: "cred-d1", user_id: uuid(15, 1), profession: "doctor", council: "แพทยสภา", full_name: "สาธิต แพทย์ใหม่", license_no: "ว.DEMO1", license_expiry: null, org_province: "กรุงเทพมหานคร", org_type: "hospital", org_name: "โรงพยาบาลสาธิต · จ.กรุงเทพมหานคร", org_hcode: null, photo_path: null, consent_version: "cred-v1", consent_at: ago(5), status: "pending", submitted_at: ago(5), profiles: { display_name: "สาธิต แพทย์ใหม่", username: "demo.doctor2", role: "doctor" } },
+        { id: "cred-p1", user_id: uuid(15, 2), profession: "pharmacist", council: "สภาเภสัชกรรม", full_name: "สาธิต เภสัชกรร้านยา", license_no: "ภ.DEMO2", license_expiry: ahead(24 * 400).slice(0, 10), org_province: "นนทบุรี", org_type: "pharmacy", org_name: "ร้านยาสาธิต", org_hcode: null, photo_path: null, consent_version: "cred-v1", consent_at: ago(30), status: "pending", submitted_at: ago(30), profiles: { display_name: "สาธิต เภสัชกรร้านยา", username: "demo.pharm2", role: "pharmacist" } }];
+      return Promise.resolve(S.creds.slice());
+    },
+    reviewCredential: function (uid, status, method, note) {
+      var c = (S.creds || []).filter(function (x) { return x.user_id === uid; })[0];
+      if (!c) return Promise.reject(new Error("ไม่พบข้อมูล"));
+      if (status !== "verified" && String(note || "").trim().length < 5) return Promise.reject(new Error("กรุณาระบุเหตุผลให้ผู้ยื่นทราบ"));
+      if (status === "verified" && !method) return Promise.reject(new Error("กรุณาระบุวิธีที่ใช้ตรวจสอบ"));
+      c.status = status; c.verify_method = method; c.review_note = note; c.reviewed_at = iso(Date.now());
+      audit("credential." + status, uid, "ตรวจใบอนุญาต (สาธิต) → " + status); return Promise.resolve(true);
+    },
     myOrgHistory: function () { var seen = {}, out = []; S.sessions.concat([{ org_name: ORG }]).forEach(function (s) { if (!seen[s.org_name]) { seen[s.org_name] = 1; out.push(s.org_name); } }); return Promise.resolve(out); },
 
     cmWorklist: function () {

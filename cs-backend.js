@@ -757,6 +757,53 @@ var CSBackend = (function () {
     await audit("med.retire", null, "ระบุว่าเลิกใช้ยา " + id);
     return true;
   }
+  /* ---------- ใบอนุญาตประกอบวิชาชีพ (migration 24) ----------
+     ถ้ายังไม่ได้รัน migration ตารางจะไม่มี คืน { disabled: true } ให้หน้าจอรู้ว่าระบบยังไม่เปิด
+     ประตูจริงอยู่ที่ฐานข้อมูล (cs_credential_ok) หน้าจอเป็นแค่ทางเดิน */
+  async function myCredential() {
+    if (!isCloud()) return { disabled: true };
+    var u = await currentUser(); if (!u) return { disabled: true };
+    var r = await sb.from("staff_credentials").select("*").eq("user_id", u.id).maybeSingle();
+    if (r.error) { if (/staff_credentials|does not exist|42P01|schema cache/i.test((r.error.message || "") + (r.error.code || ""))) return { disabled: true }; throw r.error; }
+    return { disabled: false, row: r.data || null };
+  }
+  async function submitCredential(c, blob) {
+    if (!isCloud()) throw new Error("offline");
+    var u = await currentUser(); if (!u) throw new Error("no session");
+    var path = c.photo_path || null;
+    if (blob) {
+      path = u.id + "/license-" + Date.now() + ".jpg";
+      var up = await sb.storage.from("staff-licenses").upload(path, blob, { contentType: "image/jpeg", upsert: false });
+      if (up.error) throw up.error;
+    }
+    if (!path) throw new Error("ต้องแนบรูปใบอนุญาต");
+    var f = { full_name: c.full_name, license_no: c.license_no, license_expiry: c.license_expiry || null,
+              org_province: c.org_province || null, org_type: c.org_type, org_name: c.org_name, org_hcode: c.org_hcode || null,
+              photo_path: path, consent_version: c.consent_version, consent_at: new Date().toISOString(), attest_true: true };
+    var ex = await sb.from("staff_credentials").select("id").eq("user_id", u.id).maybeSingle();
+    var r = ex.data ? await sb.from("staff_credentials").update(f).eq("user_id", u.id).select().single()
+                    : await sb.from("staff_credentials").insert(Object.assign({ user_id: u.id, profession: "doctor", council: "-" }, f)).select().single();
+    if (r.error) throw r.error;
+    return r.data;
+  }
+  async function credentialPhotoUrl(path) {
+    if (!isCloud() || !path) return null;
+    var r = await sb.storage.from("staff-licenses").createSignedUrl(path, 600);   /* 10 นาที */
+    return r.data ? r.data.signedUrl : null;
+  }
+  async function listCredentials() {
+    if (!isCloud()) return [];
+    var r = await sb.from("staff_credentials").select("*, profiles!staff_credentials_user_id_fkey(display_name, username, role)")
+      .order("submitted_at", { ascending: false }).limit(300);
+    if (r.error) { console.warn(r.error); return []; }
+    return r.data || [];
+  }
+  async function reviewCredential(uid, status, method, note) {
+    if (!isCloud()) throw new Error("offline");
+    var r = await sb.rpc("admin_review_credential", { p_user: uid, p_status: status, p_method: method || null, p_note: note || null });
+    if (r.error) throw r.error;
+    return true;
+  }
   async function uploadMedPhoto(file) {
     if (!isCloud()) throw new Error("offline");
     var u = await currentUser(); if (!u) throw new Error("no session");
@@ -1369,6 +1416,8 @@ var CSBackend = (function () {
     insurerMonthly: insurerMonthly,
     listMeds: listMeds, saveMed: saveMed, retireMed: retireMed,
     uploadMedPhoto: uploadMedPhoto, medPhotoUrl: medPhotoUrl, myMedReview: myMedReview,
+    myCredential: myCredential, submitCredential: submitCredential, credentialPhotoUrl: credentialPhotoUrl,
+    listCredentials: listCredentials, reviewCredential: reviewCredential,
     lookupDrug: lookupDrug, queueUnknownDrug: queueUnknownDrug,
     unknownDrugQueue: unknownDrugQueue, resolveUnknownDrug: resolveUnknownDrug,
     medReviewQueue: medReviewQueue, medsOf: medsOf, pharmacistFix: pharmacistFix,

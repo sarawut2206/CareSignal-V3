@@ -209,6 +209,11 @@ h3{font-size:14.5px;margin:0 0 10px;color:var(--ink);font-weight:700}
 .pickcard .en{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--brand)}
 .pickcard .goo{margin-top:auto;padding-top:8px;font-size:13.5px;font-weight:600;color:var(--brand)}
 ul.bl{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink2);line-height:1.75}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed var(--line2);font-size:13.5px;line-height:1.55;cursor:pointer}
+.chk input{width:18px;height:18px;flex:none;margin-top:2px}
+.btn{border:0;border-radius:8px;background:var(--brand);color:#fff;font-family:inherit;font-size:14px;font-weight:700;padding:9px 16px;cursor:pointer}
+.btn:disabled{opacity:.4;cursor:not-allowed}.btn.lite{background:var(--surf2);color:var(--ink);border:1px solid var(--line)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:760px){.grid2{grid-template-columns:1fr}}
 .warnbox{background:var(--c1t);border:1px solid #FCA5A5;border-radius:var(--r);padding:12px 15px;font-size:13.5px;color:#991B1B;margin-bottom:12px}
 .warnbox b{color:#7F1D1D}
 .toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(86px + env(safe-area-inset-bottom));
@@ -477,6 +482,8 @@ td.num{font-family:var(--mono);white-space:nowrap}
     <button data-go="audit"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg><span>บันทึกตรวจสอบ</span><span class="cnt" data-cnt="audit" hidden></span></button>
     <div class="sgrp">ระบบ</div>
     <button data-go="users"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c1-3 3.2-4.6 6.5-4.6S14.5 17 15.5 20"/><circle cx="17.5" cy="9" r="2.4"/><path d="M16 20c.4-1.9 1.4-3 2.8-3.5"/></svg><span>จัดการผู้ใช้</span></button>
+    <button data-go="creds"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2.3"/><path d="M5.5 16.5c.7-1.6 2-2.4 3.5-2.4s2.8.8 3.5 2.4M14.5 10h4M14.5 13.5h3"/></svg><span>ตรวจสอบใบอนุญาต</span></button>
+    <button data-go="cred"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="11" r="2.3"/><path d="M5.5 16.5c.7-1.6 2-2.4 3.5-2.4s2.8.8 3.5 2.4M14.5 10h4M14.5 13.5h3"/></svg><span>ใบอนุญาตของฉัน</span></button>
     <div class="sgrp">บัญชี</div>
     <button data-go="data"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7.5" ry="3"/><path d="M4.5 6v12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3V6"/><path d="M4.5 12c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3"/></svg><span>จัดการข้อมูล</span></button>
     <button data-go="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.4-3.4 4-5 7-5s5.6 1.6 7 5"/></svg><span>บัญชีของฉัน</span><span class="cnt" data-cnt="me" hidden></span></button>
@@ -614,6 +621,8 @@ async function enterConsole(role, em, nm, land){
       catch(e){ toast("บันทึกหน่วยบริการไม่สำเร็จ") }
     }
   }
+  /* วิชาชีพต้องผ่านการตรวจใบอนุญาตก่อน — ยังไม่ผ่าน = ไปหน้ายื่น/รอตรวจ */
+  if(!(await credGate())) return;
   /* ผู้ประสานงานและผู้ดูแลระบบเริ่มที่บอร์ดวันนี้ วิชาชีพเริ่มที่งานของตน
      บริษัทประกันเริ่มที่ภาพรวมระดับกลุ่ม เพราะไม่มีสิทธิ์ดูรายบุคคล */
   go(land||(role==="insurer"?"port":(role==="care_manager"||role==="admin"?"ward":"mine")));
@@ -2876,9 +2885,245 @@ async function auditV(){
   V.innerHTML=html; bindDash(null);
 }
 
-var FN={login:loginV,ward:wardScreenV,mine:mineV,queue:queueV,refer:referV,meds:medsV,port:portV,
+var FN={cred:credV,creds:credsV,login:loginV,ward:wardScreenV,mine:mineV,queue:queueV,refer:referV,meds:medsV,port:portV,
         reports:reportsV,audit:auditV,users:usersV,data:dataV,me:meV};
 var SIDE=document.getElementById("side");
+
+/* ============================================================
+   ยืนยันใบอนุญาตประกอบวิชาชีพ (migration 24)
+   ------------------------------------------------------------
+   ลำดับ: รหัสจากผู้ดูแลระบบ → ตั้งรหัสผ่านเอง → เลือกหน่วยบริการ → ยื่นใบอนุญาต
+          → รอผู้ดูแลระบบตรวจ → เห็นเคส
+   ประตูจริงอยู่ที่ฐานข้อมูล: ก่อนอนุมัติ cs_is_clinician() เป็นเท็จ ทุกคิวจึงว่างเอง
+   หน้าจอนี้แค่บอกผู้ใช้ว่าตัวเองอยู่ขั้นไหน และทำอะไรต่อ
+   ============================================================ */
+var CRED_V = "cred-v1-2569";
+var COUNCIL = {
+  doctor:     { nm: "แพทยสภา", lic: "ใบอนุญาตประกอบวิชาชีพเวชกรรม", ex: "เช่น ว.12345", url: "https://www.tmc.or.th" },
+  pharmacist: { nm: "สภาเภสัชกรรม", lic: "ใบอนุญาตประกอบวิชาชีพเภสัชกรรม", ex: "เช่น ภ.12345", url: "https://www.pharmacycouncil.org" },
+  physio:     { nm: "สภากายภาพบำบัด", lic: "ใบอนุญาตประกอบวิชาชีพกายภาพบำบัด", ex: "เช่น ก.12345", url: "https://pt.or.th" },
+  nurse:      { nm: "สภาการพยาบาล", lic: "ใบอนุญาตประกอบวิชาชีพการพยาบาลและการผดุงครรภ์", ex: "เลขที่ตามใบอนุญาต", url: "https://www.tnmc.or.th" }
+};
+var ORG_TYPE = { hospital: "โรงพยาบาล (รัฐ/เอกชน)", phc: "รพ.สต. / ศูนย์สุขภาพชุมชน / ศูนย์บริการสาธารณสุข",
+  clinic: "คลินิก", pharmacy: "ร้านยา", health_office: "สำนักงานสาธารณสุขจังหวัด/อำเภอ", other: "หน่วยงานอื่น" };
+var CRED_ST = { pending: ["รอตรวจสอบ", "var(--c3)"], verified: ["ผ่านการตรวจสอบ", "var(--c4)"], needs_info: ["ขอข้อมูลเพิ่ม", "var(--c2)"],
+  rejected: ["ไม่ผ่านการตรวจสอบ", "var(--c1)"], revoked: ["ถูกเพิกถอน", "var(--c1)"] };
+function credExpired(c) { return c && c.license_expiry && new Date(c.license_expiry + "T23:59:59") < new Date(); }
+function credOk(c) { return c && c.status === "verified" && !credExpired(c); }
+
+/* เรียกหลังเลือกหน่วยบริการ · คืน true ถ้าเข้าทำงานต่อได้ */
+async function credGate() {
+  if (!isClinician() || typeof CSBackend.myCredential !== "function") return true;
+  var r; try { r = await CSBackend.myCredential(); } catch (e) { r = { disabled: false, row: null, err: e }; }
+  if (r.disabled) return true;                 /* ยังไม่ได้รัน migration 24 — ระบบเดิมทำงานต่อ */
+  ST.cred = r.row;
+  if (credOk(r.row)) return true;
+  credV(); return false;
+}
+function credNav(on) {
+  /* ระหว่างรอตรวจ เหลือเมนูเดียวคือหน้าสถานะใบอนุญาตกับบัญชีของฉัน */
+  [TABS, SIDE].forEach(function (nav) { nav.querySelectorAll("[data-go]").forEach(function (b) {
+    if (on) b.hidden = ["cred", "me"].indexOf(b.dataset.go) < 0;
+  }); });
+}
+function credV() {
+  var c = ST.cred, st = c ? (credExpired(c) && c.status === "verified" ? "expired" : c.status) : "none";
+  credNav(st !== "verified");
+  if (st === "none" || st === "needs_info" || st === "rejected" || st === "expired" || ST.credEdit) return credFormV();
+  var CO = COUNCIL[ST.role] || {};
+  head("ยืนยันใบอนุญาตประกอบวิชาชีพ", st === "pending" ? "ส่งข้อมูลแล้ว — รอผู้ดูแลระบบตรวจสอบ" : "สถานะใบอนุญาตของท่าน");
+  var S2 = CRED_ST[c.status] || ["—", "var(--ink2)"];
+  V.innerHTML = '<div class="card"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
+      '<h3 style="margin:0">' + esc(c.full_name || "") + '</h3><span class="tag" style="background:#F2F5F9;color:' + S2[1] + '">' + S2[0] + '</span></div>' +
+      '<div class="rowline"><span class="k">สภาวิชาชีพ</span><span class="v">' + esc(c.council || CO.nm || "") + '</span></div>' +
+      '<div class="rowline"><span class="k">เลขที่ใบอนุญาต</span><span class="v">' + esc(c.license_no) + '</span></div>' +
+      '<div class="rowline"><span class="k">หมดอายุ</span><span class="v">' + (c.license_expiry ? esc(c.license_expiry) : "ไม่ระบุ") + '</span></div>' +
+      '<div class="rowline"><span class="k">สถานที่ปฏิบัติงาน</span><span class="v">' + esc(c.org_name) + (c.org_hcode ? ' · รหัส ' + esc(c.org_hcode) : '') + '</span></div>' +
+      '<div class="rowline"><span class="k">ส่งเมื่อ</span><span class="v">' + esc(thDate(c.submitted_at)) + '</span></div>' +
+      (c.status === "revoked" && c.review_note ? '<div class="warnbox" style="margin-top:10px"><b>เหตุผล:</b> ' + esc(c.review_note) + '</div>' : '') + '</div>' +
+    (st === "pending" ? '<div class="notice"><b>ขั้นต่อไป</b> — ผู้ดูแลระบบจะตรวจเลขที่ใบอนุญาตกับฐานข้อมูลของ' + esc(c.council || CO.nm || "สภาวิชาชีพ") +
+      ' และอาจติดต่อหน่วยงานต้นสังกัดเพื่อยืนยัน เมื่อผ่านการตรวจแล้วท่านจะเห็นเคสที่ส่งต่อมายังวิชาชีพของท่านทันที<br>' +
+      '<span class="tiny">ระหว่างนี้ระบบไม่แสดงข้อมูลผู้ป่วยใด ๆ — บังคับที่ฐานข้อมูล ไม่ใช่แค่ซ่อนหน้าจอ</span></div>' +
+      '<button class="ghostb" id="crEdit">แก้ไขข้อมูลที่ส่ง (จะกลับไปรอตรวจใหม่)</button>' : '') +
+    (st === "revoked" ? '<div class="notice">บัญชีนี้ถูกเพิกถอนสิทธิ์ผู้เชี่ยวชาญ ติดต่อผู้ดูแลระบบของ CareSignal</div>' : '') +
+    '<button class="ghostb" id="crRe">ตรวจสถานะอีกครั้ง</button>';
+  var ed = document.getElementById("crEdit"); if (ed) ed.onclick = function () { ST.credEdit = true; credFormV(); };
+  document.getElementById("crRe").onclick = async function () { if (await credGate()) { credNav(false); navForRole(); go("mine"); } };
+}
+function credFormV() {
+  var c = ST.cred || {}, CO = COUNCIL[ST.role] || COUNCIL.doctor, provs = typeof CSHosp !== "undefined" ? CSHosp.provinces() : [];
+  var orgNow = String(ST.org || ""), provNow = c.org_province || ((orgNow.match(/จ\.(.+)$/) || [])[1] || "");
+  head("ยืนยันใบอนุญาตประกอบวิชาชีพ", "ขั้นตอนสุดท้ายก่อนเห็นเคส — ทำครั้งเดียว ใช้เวลาประมาณ 3 นาที");
+  V.innerHTML =
+    (c.status === "needs_info" || c.status === "rejected" ? '<div class="warnbox"><b>' + (c.status === "rejected" ? "ไม่ผ่านการตรวจสอบ" : "ผู้ดูแลระบบขอข้อมูลเพิ่ม") + '</b><br>' + esc(c.review_note || "") + '</div>' : '') +
+    (credExpired(c) ? '<div class="warnbox"><b>ใบอนุญาตหมดอายุแล้ว</b> — กรอกวันหมดอายุใหม่และแนบรูปใบอนุญาตฉบับต่ออายุ</div>' : '') +
+    '<div class="card"><h3>๑. ข้อมูลใบอนุญาต</h3>' +
+      '<div class="rowline"><span class="k">วิชาชีพ</span><span class="v">' + esc(ROLE_NM[ST.role] || ST.role) + ' · ' + esc(CO.nm) + '</span></div>' +
+      '<p class="tiny" style="margin:4px 0 10px">วิชาชีพกำหนดจากรหัสที่ผู้ดูแลระบบออกให้ แก้ที่หน้านี้ไม่ได้</p>' +
+      '<div class="field"><label>ชื่อ–นามสกุล ตามที่ปรากฏในใบอนุญาต</label><input id="crName" value="' + esc(c.full_name || ST.name || "") + '" autocomplete="name"></div>' +
+      '<div class="field"><label>เลขที่' + esc(CO.lic) + '</label><input id="crNo" value="' + esc(c.license_no || "") + '" placeholder="' + esc(CO.ex) + '" autocomplete="off" maxlength="30"></div>' +
+      '<div class="field"><label>วันหมดอายุของใบอนุญาต (ถ้าใบอนุญาตระบุไว้)</label><input id="crExp" type="date" value="' + esc(c.license_expiry || "") + '"></div></div>' +
+    '<div class="card"><h3>๒. สถานที่ปฏิบัติงานปัจจุบัน</h3>' +
+      '<div class="field"><label>จังหวัด</label><select id="crProv"><option value="">— เลือกจังหวัด —</option>' +
+        provs.map(function (p) { return '<option' + (p === provNow ? ' selected' : '') + '>' + esc(p) + '</option>'; }).join("") + '</select></div>' +
+      '<div class="field"><label>ประเภทหน่วยงาน</label><select id="crType">' +
+        Object.keys(ORG_TYPE).map(function (k) { return '<option value="' + k + '"' + ((c.org_type || "hospital") === k ? ' selected' : '') + '>' + ORG_TYPE[k] + '</option>'; }).join("") + '</select></div>' +
+      '<div class="field" id="crHospF"><label>โรงพยาบาล</label><select id="crHosp"><option value="">— เลือกจังหวัดก่อน —</option></select></div>' +
+      '<div class="field" id="crOrgF"><label>ชื่อหน่วยงาน</label><input id="crOrg" value="' + esc(c.org_name || "") + '" placeholder="เช่น รพ.สต.บ้านใหม่ · คลินิกกายภาพบำบัดสุขใจ · ร้านยาชุมชน"></div>' +
+      '<div class="field"><label>รหัสหน่วยบริการ 5 หลัก (ถ้ามี · H Code ของกระทรวงสาธารณสุข)</label><input id="crHc" value="' + esc(c.org_hcode || "") + '" inputmode="numeric" maxlength="5" placeholder="เช่น 10662"></div>' +
+      '<p class="tiny" style="margin:0">รายชื่อโรงพยาบาลรัฐและเอกชน ' + (typeof CSHosp !== "undefined" ? CSHosp.count() : 0) + ' แห่งครบ 77 จังหวัด · รพ.สต. คลินิก และร้านยายังไม่มีทะเบียนในระบบ ให้พิมพ์ชื่อและรหัสหน่วยบริการ</p></div>' +
+    '<div class="card"><h3>๓. รูปใบอนุญาตประกอบวิชาชีพ</h3>' +
+      '<ul class="tiny" style="margin:0 0 8px;padding-left:18px;line-height:1.8">' +
+        '<li>ถ่ายตรง เห็น <b>ชื่อ เลขที่ใบอนุญาต และวันหมดอายุ</b> ชัดทุกตัวอักษร</li>' +
+        '<li>ทั้งใบอยู่ในภาพ ไม่ตัดขอบ ไม่มีแสงสะท้อนหรือเงาบังตัวอักษร</li>' +
+        '<li><b>ห้ามแก้ไข ตกแต่ง หรือต่อภาพ</b> · ใช้ใบอนุญาตของท่านเองเท่านั้น</li>' +
+        '<li>ระบบประทับข้อความ "ใช้ยืนยันกับ CareSignal เท่านั้น" ลงบนภาพให้อัตโนมัติ เพื่อกันการนำไปใช้ที่อื่น</li></ul>' +
+      '<input type="file" id="crFile" accept="image/jpeg,image/png,image/webp" capture="environment">' +
+      '<div id="crPrev" style="margin-top:8px">' + (c.photo_path ? '<p class="tiny">มีรูปที่ส่งไว้แล้ว — ถ้าไม่เลือกรูปใหม่ ระบบใช้รูปเดิม</p>' : '') + '</div></div>' +
+    '<div class="card"><h3>๔. ความยินยอมและการรับรอง</h3>' +
+      '<label class="chk"><input type="checkbox" class="crC"> ข้าพเจ้ายินยอมให้ CareSignal เก็บ ใช้ และตรวจสอบชื่อ เลขที่ใบอนุญาต รูปใบอนุญาต และสถานที่ปฏิบัติงาน เพื่อยืนยันสิทธิ์ผู้เชี่ยวชาญและบันทึกการเข้าถึงข้อมูลผู้ป่วย ตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. ๒๕๖๒ · เห็นได้เฉพาะผู้ดูแลระบบที่ตรวจสอบ</label>' +
+      '<label class="chk"><input type="checkbox" class="crC"> ข้าพเจ้ายินยอมให้ผู้ดูแลระบบตรวจสอบกับฐานข้อมูลของ' + esc(CO.nm) + ' และติดต่อหน่วยงานต้นสังกัดเพื่อยืนยันตัวตน</label>' +
+      '<label class="chk"><input type="checkbox" class="crC"> ข้าพเจ้ารับรองว่าข้อมูลและภาพเป็นของข้าพเจ้า ถูกต้อง และเป็นปัจจุบัน จะแจ้ง CareSignal ทันทีเมื่อใบอนุญาตถูกพัก เพิกถอน หรือเปลี่ยนสถานที่ปฏิบัติงาน</label>' +
+      '<label class="chk"><input type="checkbox" class="crC"> ข้าพเจ้าได้อ่านและรับทราบคำเตือนด้านล่าง</label>' +
+      '<div class="warnbox" style="margin-top:10px"><b>คำเตือน — การให้ข้อมูลเท็จ</b><br>' +
+        'การกรอกข้อมูลเท็จ การใช้ใบอนุญาตของผู้อื่น หรือการแก้ไขภาพเอกสาร อาจเข้าข่ายความผิดฐานปลอมเอกสารและใช้เอกสารปลอมตามประมวลกฎหมายอาญา (มาตรา ๒๖๔ และ ๒๖๘) ' +
+        'การนำเข้าข้อมูลอันเป็นเท็จสู่ระบบคอมพิวเตอร์ตาม พ.ร.บ.ว่าด้วยการกระทำความผิดเกี่ยวกับคอมพิวเตอร์ (มาตรา ๑๔) ' +
+        'และการแสดงตนเป็นผู้ประกอบวิชาชีพโดยไม่มีใบอนุญาตตามกฎหมายวิชาชีพที่เกี่ยวข้อง<br>' +
+        'หากตรวจพบ CareSignal จะ<b>ระงับบัญชีทันที เก็บหลักฐานและบันทึกการใช้งานทั้งหมด และแจ้งสภาวิชาชีพหรือเจ้าหน้าที่ตามกฎหมาย</b></div>' +
+      '<p class="tiny" style="margin:8px 0 0">ข้อความนี้เป็นการแจ้งเตือนทั่วไป ไม่ใช่คำปรึกษาทางกฎหมาย · ฉบับความยินยอม ' + CRED_V + '</p></div>' +
+    '<button class="cta" id="crGo">ส่งให้ผู้ดูแลระบบตรวจสอบ</button>' +
+    (ST.credEdit ? '<button class="ghostb" id="crCancel">ยกเลิกการแก้ไข</button>' : '');
+
+  var prov = document.getElementById("crProv"), type = document.getElementById("crType"), hosp = document.getElementById("crHosp");
+  var hospF = document.getElementById("crHospF"), orgF = document.getElementById("crOrgF"), orgIn = document.getElementById("crOrg"), hc = document.getElementById("crHc");
+  function fillHosp() {
+    var list = prov.value && typeof CSHosp !== "undefined" ? CSHosp.of(prov.value) : [];
+    hosp.innerHTML = '<option value="">' + (prov.value ? '— เลือกโรงพยาบาล —' : '— เลือกจังหวัดก่อน —') + '</option>' +
+      list.map(function (h, i) { var lb = CSHosp.label(h[0], prov.value); return '<option value="' + i + '"' + (lb === c.org_name || lb === orgNow ? ' selected' : '') + '>' + esc(h[0]) + ' · ' + esc(CSHosp.isPrivate(h) ? "เอกชน" : CSHosp.kindName(h)) + '</option>'; }).join("") +
+      (list.length ? '<option value="other">ไม่อยู่ในรายการ — พิมพ์เอง</option>' : '');
+  }
+  function sync() {
+    var isH = type.value === "hospital", other = hosp.value === "other";
+    hospF.hidden = !isH; orgF.hidden = isH && !other;
+    if (isH && hosp.value !== "" && !other) { var h = CSHosp.of(prov.value)[+hosp.value]; if (h) { hc.value = h[2]; } }
+  }
+  prov.onchange = function () { fillHosp(); sync(); }; type.onchange = sync; hosp.onchange = sync;
+  fillHosp(); sync();
+
+  /* ---------- รูปใบอนุญาต: ตรวจความละเอียด ย่อ และประทับข้อความ ---------- */
+  var blob = null;
+  document.getElementById("crFile").onchange = function (e) {
+    var f = e.target.files && e.target.files[0], box = document.getElementById("crPrev"); blob = null;
+    if (!f) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { box.innerHTML = '<div class="warnbox">รองรับเฉพาะไฟล์ภาพ JPG PNG หรือ WEBP</div>'; return; }
+    if (f.size > 15 * 1024 * 1024) { box.innerHTML = '<div class="warnbox">ไฟล์ใหญ่เกิน 15 MB</div>'; return; }
+    box.innerHTML = '<p class="tiny">กำลังตรวจความละเอียดและประทับข้อความลงภาพ…</p>';
+    var img = new Image(), url = URL.createObjectURL(f);
+    img.onload = function () {
+      var W = img.naturalWidth, H = img.naturalHeight, L = Math.max(W, H), Sm = Math.min(W, H);
+      if (L < 1000 || Sm < 600) { URL.revokeObjectURL(url); box.innerHTML = '<div class="warnbox">ภาพเล็กเกินไป (' + W + '×' + H + ' พิกเซล) — ต้องอย่างน้อย 1000×600 จึงจะอ่านเลขที่ได้ชัด กรุณาถ่ายใหม่ใกล้ขึ้น</div>'; return; }
+      var k = Math.min(1, 2000 / L), cv = document.createElement("canvas");
+      cv.width = Math.round(W * k); cv.height = Math.round(H * k);
+      var g = cv.getContext("2d"); g.drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url);
+      var d = new Date(), stamp = "ใช้ยืนยันกับ CareSignal เท่านั้น · " + d.toLocaleDateString("th-TH");
+      g.save(); g.translate(cv.width / 2, cv.height / 2); g.rotate(-Math.atan2(cv.height, cv.width) * 0.6);
+      g.font = "600 " + Math.round(cv.width / 24) + "px Prompt, sans-serif"; g.textAlign = "center";
+      g.fillStyle = "rgba(200,30,30,.28)"; g.fillText(stamp, 0, 0); g.fillText(stamp, 0, cv.height / 4); g.fillText(stamp, 0, -cv.height / 4);
+      g.restore();
+      cv.toBlob(function (b) {
+        blob = b;
+        box.innerHTML = '<img src="' + URL.createObjectURL(b) + '" alt="ตัวอย่างรูปใบอนุญาต" style="max-width:100%;border-radius:8px;border:1px solid var(--line)">' +
+          '<p class="tiny">ตรวจดูว่าอ่านเลขที่และชื่อได้ชัดก่อนส่ง · ขนาดเดิม ' + W + '×' + H + '</p>';
+      }, "image/jpeg", 0.9);
+    };
+    img.onerror = function () { box.innerHTML = '<div class="warnbox">เปิดไฟล์ภาพไม่ได้</div>'; };
+    img.src = url;
+  };
+  var cc = document.getElementById("crCancel"); if (cc) cc.onclick = function () { ST.credEdit = false; credV(); };
+  var go1 = document.getElementById("crGo");
+  go1.onclick = async function () {
+    var name = document.getElementById("crName").value.trim(), no = document.getElementById("crNo").value.trim();
+    var exp = document.getElementById("crExp").value, isH = type.value === "hospital";
+    var org = isH && hosp.value !== "" && hosp.value !== "other" ? CSHosp.label(CSHosp.of(prov.value)[+hosp.value][0], prov.value) : orgIn.value.trim();
+    var bad = [];
+    if (name.length < 4) bad.push("ชื่อ–นามสกุลตามใบอนุญาต");
+    if (!/^[0-9A-Za-zก-๙./ -]{3,30}$/.test(no)) bad.push("เลขที่ใบอนุญาต (ตัวอักษร ตัวเลข จุด ขีด 3–30 ตัว)");
+    if (exp && new Date(exp + "T23:59:59") < new Date()) bad.push("วันหมดอายุ — ใบอนุญาตหมดอายุแล้ว");
+    if (!prov.value) bad.push("จังหวัด");
+    if (org.length < 3) bad.push("สถานที่ปฏิบัติงาน");
+    if (hc.value && !/^\d{5}$/.test(hc.value)) bad.push("รหัสหน่วยบริการต้องเป็นตัวเลข 5 หลัก");
+    if (!blob && !c.photo_path) bad.push(document.getElementById("crFile").files.length ? "รอให้รูปเตรียมเสร็จก่อน" : "รูปใบอนุญาต");
+    if ([].some.call(document.querySelectorAll(".crC"), function (x) { return !x.checked; })) bad.push("ความยินยอมและการรับรองครบทั้ง 4 ข้อ");
+    if (bad.length) { toast("ยังขาด: " + bad.join(" · ")); return; }
+    go1.disabled = true; go1.textContent = "กำลังส่ง…";
+    try {
+      ST.cred = await CSBackend.submitCredential({ full_name: name, license_no: no, license_expiry: exp || null, org_province: prov.value,
+        org_type: type.value, org_name: org, org_hcode: hc.value || null, consent_version: CRED_V, photo_path: c.photo_path || null }, blob);
+      ST.credEdit = false; toast("ส่งข้อมูลแล้ว · รอผู้ดูแลระบบตรวจสอบ"); credV();
+    } catch (e) { toast("ส่งไม่สำเร็จ: " + (e.message || e)); go1.disabled = false; go1.textContent = "ส่งให้ผู้ดูแลระบบตรวจสอบ"; }
+  };
+}
+
+/* ---------- ผู้ดูแลระบบ: ตรวจสอบใบอนุญาต ---------- */
+var CRV = { f: "pending" };
+async function credsV() {
+  head("ตรวจสอบใบอนุญาตผู้เชี่ยวชาญ", "ตรวจกับฐานข้อมูลของสภาวิชาชีพก่อนอนุมัติ — ทุกการตัดสินถูกบันทึกลง audit log");
+  if (ST.role !== "admin") { V.innerHTML = '<div class="warnbox">หน้านี้เฉพาะผู้ดูแลระบบ</div>'; return; }
+  V.innerHTML = '<div class="empty">กำลังโหลด…</div>';
+  var rows = []; try { rows = await CSBackend.listCredentials(); } catch (e) {}
+  var n = {}; rows.forEach(function (r) { n[r.status] = (n[r.status] || 0) + 1; });
+  var list = rows.filter(function (r) { return r.status === CRV.f; });
+  V.innerHTML = kpiRow(Object.keys(CRED_ST).map(function (k) { return { id: k, n: n[k] || 0, label: CRED_ST[k][0], tone: k === "pending" ? "c3" : k === "verified" ? "c4" : k === "needs_info" ? "c2" : "c1" }; }), CRV.f) +
+    (list.length ? list.map(function (r) {
+      var CO = COUNCIL[r.profession] || {}, pr = r.profiles || {};
+      return '<div class="card" data-uid="' + esc(r.user_id) + '"><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' +
+        '<h3 style="margin:0">' + esc(r.full_name) + '</h3><span class="tag" style="background:#F2F5F9">' + esc(ROLE_NM[r.profession] || r.profession) + '</span>' +
+        '<span class="tiny" style="margin-left:auto">ส่งเมื่อ ' + esc(thDate(r.submitted_at)) + ' · บัญชี ' + esc(pr.username || pr.display_name || "") + '</span></div>' +
+        '<div class="grid2 wide" style="margin-top:8px"><div>' +
+          '<div class="rowline"><span class="k">สภาวิชาชีพ</span><span class="v">' + esc(r.council) + '</span></div>' +
+          '<div class="rowline"><span class="k">เลขที่ใบอนุญาต</span><span class="v"><b>' + esc(r.license_no) + '</b></span></div>' +
+          '<div class="rowline"><span class="k">หมดอายุ</span><span class="v">' + (r.license_expiry ? esc(r.license_expiry) + (credExpired(r) ? ' <b style="color:var(--c1)">หมดอายุแล้ว</b>' : '') : 'ไม่ระบุ') + '</span></div>' +
+          '<div class="rowline"><span class="k">สถานที่ปฏิบัติงาน</span><span class="v">' + esc(r.org_name) + ' · ' + esc(ORG_TYPE[r.org_type] || r.org_type) + (r.org_hcode ? ' · รหัส ' + esc(r.org_hcode) : '') + '</span></div>' +
+          '<div class="rowline"><span class="k">ความยินยอม</span><span class="v">' + esc(r.consent_version) + ' · ' + esc(thDate(r.consent_at)) + '</span></div>' +
+          (r.review_note ? '<div class="rowline"><span class="k">บันทึกการตรวจ</span><span class="v">' + esc(r.review_note) + '</span></div>' : '') +
+          '<p class="tiny" style="margin:8px 0 0">ค้นเลขที่ในเว็บไซต์ <a href="' + CO.url + '" target="_blank" rel="noopener">' + esc(r.council) + '</a> (เมนูตรวจสอบรายชื่อผู้ประกอบวิชาชีพ)' +
+          (r.org_hcode ? ' · ตรวจรหัสหน่วยบริการกับทะเบียนสถานพยาบาลของกระทรวงสาธารณสุข' : '') + '</p></div>' +
+          '<div><div class="crPhoto tiny" data-path="' + esc(r.photo_path || "") + '">' + (r.photo_path ? 'กำลังโหลดรูป…' : 'ไม่มีรูป (ข้อมูลสาธิต)') + '</div></div></div>' +
+        (r.status === "pending" || r.status === "needs_info" || r.status === "verified" ?
+          '<div style="border-top:1px solid var(--line2);margin-top:10px;padding-top:10px">' +
+          (r.status !== "verified" ? '<div class="tiny" style="margin-bottom:4px"><b>ตรวจครบทุกข้อก่อนอนุมัติ</b></div>' +
+            ['ชื่อในใบอนุญาตตรงกับชื่อที่กรอก', 'เลขที่ใบอนุญาตพบในฐานข้อมูลของสภาวิชาชีพ และสถานะปกติ', 'ภาพชัด อ่านได้ครบ ไม่มีร่องรอยการแก้ไข', 'ใบอนุญาตยังไม่หมดอายุ', 'สถานที่ปฏิบัติงานมีอยู่จริง'].map(function (t) { return '<label class="chk" style="padding:4px 0"><input type="checkbox" class="ck"> ' + t + '</label>'; }).join("") +
+            '<div class="field"><label>วิธีที่ใช้ตรวจสอบ</label><select class="mth"><option value="">— เลือก —</option><option>ค้นในเว็บไซต์สภาวิชาชีพ</option><option>โทรยืนยันกับหน่วยงานต้นสังกัด</option><option>ตรวจเอกสารตัวจริง</option></select></div>' : '') +
+          '<div class="field"><label>บันทึกถึงผู้ยื่น (จำเป็นเมื่อไม่อนุมัติ)</label><input class="nt" placeholder="เช่น ภาพไม่ชัด ขอถ่ายใหม่ให้เห็นเลขที่"></div>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
+            (r.status !== "verified" ? '<button class="btn" data-a="verified" disabled>อนุมัติ</button><button class="btn lite" data-a="needs_info">ขอข้อมูลเพิ่ม</button><button class="btn lite" data-a="rejected">ไม่อนุมัติ</button>'
+                                     : '<button class="btn lite" data-a="revoked" style="color:var(--c1)">เพิกถอนสิทธิ์</button>') +
+          '</div></div>' : '') + '</div>';
+    }).join("") : '<div class="card"><div class="empty">ไม่มีรายการในสถานะ "' + CRED_ST[CRV.f][0] + '"</div></div>') +
+    '<div class="notice">ระบบยังไม่เชื่อมกับฐานข้อมูลของสภาวิชาชีพ การตรวจสอบจึงเป็นงานของผู้ดูแลระบบ · ผู้ยื่นแก้ข้อมูลเมื่อใด สถานะจะกลับเป็น "รอตรวจสอบ" และมองไม่เห็นเคสจนกว่าจะอนุมัติใหม่</div>';
+  V.querySelectorAll(".kpirow [data-f]").forEach(function (b) { b.onclick = function () { CRV.f = b.dataset.f; credsV(); }; });
+  V.querySelectorAll(".crPhoto").forEach(async function (el) {
+    if (!el.dataset.path) return;
+    var u = null; try { u = await CSBackend.credentialPhotoUrl(el.dataset.path); } catch (e) {}
+    el.innerHTML = u ? '<a href="' + u + '" target="_blank" rel="noopener"><img src="' + u + '" alt="รูปใบอนุญาต" style="max-width:100%;border-radius:8px;border:1px solid var(--line)"></a><br>ลิงก์รูปใช้ได้ 10 นาที' : 'เปิดรูปไม่ได้';
+  });
+  V.querySelectorAll("[data-uid]").forEach(function (card) {
+    var cks = card.querySelectorAll(".ck"), mth = card.querySelector(".mth"), ok = card.querySelector('[data-a="verified"]');
+    function upd() { if (ok) ok.disabled = !([].every.call(cks, function (x) { return x.checked; }) && mth && mth.value); }
+    [].forEach.call(cks, function (x) { x.onchange = upd; }); if (mth) mth.onchange = upd;
+    card.querySelectorAll("[data-a]").forEach(function (b) {
+      b.onclick = async function () {
+        var a = b.dataset.a, note = card.querySelector(".nt").value.trim();
+        if (a !== "verified" && note.length < 5) { toast("ระบุเหตุผลให้ผู้ยื่นทราบ อย่างน้อย 5 ตัวอักษร"); return; }
+        if (a === "revoked" && !confirm("เพิกถอนสิทธิ์ผู้เชี่ยวชาญของบัญชีนี้? จะมองไม่เห็นเคสใดอีกทันที")) return;
+        b.disabled = true;
+        try { await CSBackend.reviewCredential(card.dataset.uid, a, mth ? mth.value : null, note || null); toast("บันทึกผลการตรวจแล้ว"); credsV(); }
+        catch (e) { toast("บันทึกไม่สำเร็จ: " + (e.message || e)); b.disabled = false; }
+      };
+    });
+  });
+}
+
 function go(sc){
   /* โอเวอร์เลย์บอร์ดอยู่เหนือทุกอย่าง ถ้าไม่ปิดก่อนย้ายหน้า จะบังหน้าถัดไปทั้งหน้า */
   if(WARD.on&&sc!=="ward")wardClose();
@@ -2915,15 +3160,15 @@ function deepLink(){
 var NAV_BY_ROLE={
   /* ผู้ประสานงานเห็นทั้งพอร์ตเพราะต้องจัดสรรงานและติดตามภาพรวม */
   care_manager:["ward","mine","queue","refer","meds","port","reports","audit","me"],
-  admin:       ["ward","mine","queue","refer","meds","port","reports","audit","users","data","me"],
+  admin:       ["ward","mine","queue","refer","meds","port","reports","audit","users","creds","data","me"],
   /* บริษัทประกันเห็นเฉพาะภาพรวมระดับกลุ่ม ไม่มีเมนูรายบุคคลเลย */
   insurer:     ["port","me"],
   /* วิชาชีพเห็นเฉพาะงานที่ส่งมาถึงตน ไม่มีคิวรวมทั้งพอร์ต
      เภสัชกรได้หน้าทบทวนยาเพิ่ม เพราะเป็นเครื่องมือของวิชาชีพนั้นโดยตรง */
-  pharmacist:  ["mine","refer","meds","me"],
-  physio:      ["mine","refer","me"],
-  doctor:      ["mine","refer","me"],
-  nurse:       ["mine","refer","me"]
+  pharmacist:  ["mine","refer","meds","cred","me"],
+  physio:      ["mine","refer","cred","me"],
+  doctor:      ["mine","refer","cred","me"],
+  nurse:       ["mine","refer","cred","me"]
 };
 function navForRole(){
   var allow=NAV_BY_ROLE[ST.role]||["mine","me"];
