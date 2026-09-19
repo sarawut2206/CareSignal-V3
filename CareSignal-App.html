@@ -58,6 +58,16 @@ textarea{min-height:70px}
 .opt button{text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:13px 15px;font:inherit;font-size:16.5px;cursor:pointer}
 .opt button.on{border-color:var(--brand);background:var(--surf2);font-weight:600}
 .yn{display:flex;gap:8px}.yn button{flex:1}
+.yn2{display:flex;gap:8px;margin-top:6px}.yn2 button{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:10px;font:inherit;font-size:15.5px;cursor:pointer}
+.yn2 button.on{border-color:var(--brand);background:var(--surf2);font-weight:700}
+.hz{padding:10px 0;border-bottom:1px dashed var(--line)}.hz:last-child{border-bottom:0}.hz p{margin:0;font-size:15.5px;line-height:1.5}
+.pri{display:inline-block;font-size:11.5px;font-weight:700;color:var(--c1);background:var(--c1b);border-radius:99px;padding:1px 8px;vertical-align:middle}
+.fixi{border-left:4px solid var(--c3);background:#FFFBEB;border-radius:0 12px 12px 0;padding:9px 12px;margin:8px 0;font-size:14.5px;line-height:1.55}.fixi.p1{border-left-color:var(--c1);background:var(--c1b)}
+.fixi b{display:block}.fixi div{margin-top:3px}.fixi .pill{margin-top:6px;border:0;background:#fff;color:var(--c4);font-weight:700}
+.adlsum{text-align:center}.adlsum .big{font-size:40px;font-weight:700;line-height:1.1}.adlsum .big small{font-size:18px;color:var(--ink3)}
+.adlsum.ok{border:2px solid var(--c4)}.adlsum.watch{border:2px solid var(--c3)}.adlsum.dep{border:2px solid var(--c1)}
+.noteb{background:var(--surf2);border-radius:14px;padding:10px 14px;font-size:14px;color:var(--ink2);margin-bottom:10px}
+.opt button small{color:var(--ink3);font-weight:400}
 .big{font-size:64px;font-weight:700;text-align:center;letter-spacing:-.02em;line-height:1;margin:14px 0 6px;font-variant-numeric:tabular-nums}
 .big small{font-size:22px;color:var(--ink2);font-weight:500}
 .sw{border:0;border-radius:26px;width:100%;padding:28px;font:inherit;font-size:26px;font-weight:700;color:#fff;background:var(--c4);cursor:pointer;box-shadow:var(--sh)}
@@ -271,6 +281,7 @@ body{font-size:18px}
 <script src="./cs-teleconsult.js"></script>
 <script src="./cs-camera.js"></script>
 <script src="./cs-install.js"></script>
+<script src="./cs-assess.js"></script>
 <script src="./cs-ocr.js"></script>
 <script>
 /* ============================================================
@@ -398,6 +409,7 @@ var IC = {
   edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
   install: '<rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3M10 18.5h4"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/>',
+  safe: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M8.5 14.5l2.5 2.5 4.5-4.5"/>',
   lock: '<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>'
 };
 function ic(k) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[k] || "") + '</svg>'; }
@@ -443,6 +455,7 @@ function render() {
   if (sc === "appts") return renderAppts(v);
   if (sc === "cloud") return renderCloud(v);
   if (sc === "meds") return renderMeds(v, null);
+  if (sc === "homechk") return renderHomeChk(v);
   if (sc === "doc") return renderDoc(v);
   renderHome(v);
 }
@@ -576,19 +589,23 @@ function renderHome(v) {
     else bn.unshift(["📞", x.dd < 0 ? "เลยนัดติดตามมา " + (-x.dd) + " วัน" : "วันนี้มีนัดติดตามจากทีมดูแล", x.nm + " · เปิดเสียงโทรศัพท์ไว้ เจ้าหน้าที่จะโทรหา", "ดูนัด", "go('appts')"]);
   });
   if (visitsProposed().length) bn.unshift(["📹", visitDest(visitsProposed()[0]) + "ขอนัดวิดีโอคอล", "เลือกเวลาที่สะดวก ไม่ต้องเดินทาง", "เลือกเวลา", "go('appts')"]);
+  var hc = lastHome(e.id), hcr = hc ? CSAssess.homeResult(hc.ans) : null;
+  if (!hc || (Date.now() - new Date(hc.date)) / 864e5 > 180) bn.push(["🏠", hc ? "ถึงเวลาสำรวจบ้านอีกครั้ง" : "สำรวจความปลอดภัยในบ้าน", "หาจุดเสี่ยงที่แก้ได้ เช่น พื้นลื่น แสงน้อย ไม่มีราวจับ พรม สายไฟ บันได", "สำรวจ", "S.homeRedo=!!lastHome(elder().id);S.homeAns=null;go('homechk')"]);
+  else if (hcr.priority) bn.unshift(["🏠", "ยังมีจุดเสี่ยงสำคัญในบ้าน " + hcr.priority + " จุด", hcr.open[0].fix, "ดูวิธีแก้", "go('homechk')"]);
   if (!meds) bn.push(["💊", "ถ่ายรูปซองยาให้เภสัชกรช่วยดู", "ยาบางกลุ่มทำให้เวียนหัวและเสี่ยงล้ม", "ถ่ายรูป", "go('meds')"]);
   if (!cloud) bn.push(["☁️", "เชื่อมระบบกลาง", "ให้ทีมดูแลและผู้เชี่ยวชาญเห็นผล และยืนยันผลให้", "เชื่อม", "go('cloud')"]);
   if (!installedApp() && !embedded()) bn.push(["📲", "ติดตั้งลงหน้าจอมือถือ", "เปิดง่ายเหมือนแอป ใช้วัดได้แม้ไม่มีเน็ต", "ติดตั้ง", "installApp()"]);
   var T = [
     ["watch", "วัดวันนี้", "startTest()", "", 1], ["cal", "นัดหมาย", "go('appts')", apptList().length ? String(apptList().length) : "", 0],
     ["pill", "ยาที่ใช้", "go('meds')", meds ? String(meds) : "", 0], ["fall", "บันทึกว่าล้ม", "go('fall')", "", 0],
-    ["chart", "แนวโน้ม", "go('history')", list.length ? String(list.length) : "", 0], ["doc", "ใบสรุปแพทย์", list.length ? "S.last=null;go('doc')" : "toast('ยังไม่มีผลวัด')", "", 0],
+    ["safe", "บ้านปลอดภัย", "S.homeRedo=false;S.homeAns=null;go('homechk')", hcr && hcr.open.length ? String(hcr.open.length) : "", 0], ["chart", "แนวโน้ม", "go('history')", list.length ? String(list.length) : "", 0], ["doc", "ใบสรุปแพทย์", list.length ? "S.last=null;go('doc')" : "toast('ยังไม่มีผลวัด')", "", 0],
     ["team", "ทีมดูแล", "go('cloud')", "", 0], ["phone", "เบอร์ฉุกเฉิน", "go('contacts')", "", 0]
   ];
   v.innerHTML =
     newConfirmBanner(list) +
     '<div class="who"><div class="av">' + esc((e.name || "?").trim().charAt(0)) + '</div><div><b>' + esc(e.name) + '</b><small>อายุ ' + e.age + ' ปี' + (e.aid ? ' · ใช้' + (e.aid === "cane" ? "ไม้เท้า" : "วอล์กเกอร์") : '') + '</small></div>' + chip + '</div>' +
     hero +
+    (lastBarthel(e.id) ? (function (b) { var bd = CSAssess.band(b.barthel.total); return '<div class="noteb" style="margin-top:10px">กิจวัตรประจำวัน (บาร์เธล) <b>' + b.barthel.total + '/20</b> · ' + esc(bd.nm) + '</div>'; })(lastBarthel(e.id)) : '') +
     '<div class="bn">' + bn.map(function (b) { return '<div class="it"><span class="em">' + b[0] + '</span><div><b>' + b[1] + '</b><small>' + esc(b[2]) + '</small></div><button onclick="' + b[4] + '">' + b[3] + '</button></div>'; }).join("") + '</div>' +
     visitsProposed().slice(0, 1).map(chooseCardHTML).join("") +
     apptSection() +
@@ -792,11 +809,12 @@ function renderVideo(v) {
 }
 
 /* ---------- 3. แบบทดสอบ ---------- */
-var FLOW = ["safety", "ftsst", "tug", "balance", "meds", "q", "confirm"];
+var FLOW = ["safety", "ftsst", "tug", "balance", "meds", "q", "adl", "homechk", "confirm"];   /* adl = บาร์เธล 10 ข้อ · homechk = ความปลอดภัยในบ้าน (cs-assess.js) */
 function startTest() {
   var e = elder();
   S.draft = { elderId: e.id, date: new Date().toISOString(), safety: {}, ftsst: null, tug: null, balance: null, balStages: [], balPassed: null, skipped: {},
               fallsCount: null, injury: null, getup: null, worried: null, medsCount: e.medsCount, adl: null, note: "" };
+  S.homeAns = null; S.homeRedo = false;
   S.step = 0; go("test");
 }
 function renderTest(v) {
@@ -813,6 +831,8 @@ function renderTest(v) {
   if (st === "ftsst" || st === "tug" || st === "balance") return renderStopwatch(v, st, prog);
   if (st === "meds") return renderMeds(v, prog);
   if (st === "q") return renderQ(v, prog);
+  if (st === "adl") return renderAdl(v, prog);
+  if (st === "homechk") return renderHomeStep(v, prog);
   if (st === "confirm") return renderConfirm(v, prog);
 }
 function setSafe(k, val) { S.draft.safety[k] = val; render(); }
@@ -1160,10 +1180,9 @@ var QS = [
   { k: "injury", q: "ครั้งที่ล้ม บาดเจ็บแค่ไหน", dep: "fallsCount", o: [["ไม่บาดเจ็บ", 0], ["ฟกช้ำ แผลเล็กน้อย", 1], ["ต้องพบแพทย์", 2], ["เข้าโรงพยาบาลหรือกระดูกหัก", 3]] },
   { k: "getup", q: "หลังล้ม ลุกขึ้นเองได้ไหม", dep: "fallsCount", o: [["ได้ทันที", 0], ["ได้แต่ใช้เวลานาน", 1], ["ต้องมีคนช่วย", 2], ["ลุกเองไม่ได้", 3]] },
   { k: "worried", q: "รู้สึกไม่มั่นคงเวลาเดิน หรือกลัวว่าจะล้มไหม", o: [["ไม่", false], ["ใช่", true]] },
-  { k: "adl", q: "กิจวัตรประจำวัน เช่น อาบน้ำ แต่งตัว เข้าห้องน้ำ ขึ้นบันได ทำเองได้แค่ไหน", o: [["ทำเองได้ทั้งหมด", 2], ["ต้องมีคนช่วยบางอย่าง", 1], ["ต้องมีคนช่วยเกือบทุกอย่าง", 0]] }
 ];
 function renderQ(v, prog) {
-  head("คำถาม", "ถามผู้สูงอายุ 5 ข้อ", "ถ้าท่านจำไม่ได้ ให้ลูกหลานตอบจากที่เห็น", null, prog);
+  head("คำถาม", "ถามผู้สูงอายุ 4 ข้อ", "ถ้าท่านจำไม่ได้ ให้ลูกหลานตอบจากที่เห็น", null, prog);
   var d = S.draft;
   v.innerHTML = QS.map(function (q) {
     if (q.dep && !(d[q.dep] >= 1 && d[q.dep] !== 9)) return "";
@@ -1176,8 +1195,122 @@ function renderQ(v, prog) {
 function setQ(k, val) { S.draft[k] = val; if (k === "fallsCount" && !(val >= 1 && val !== 9)) { S.draft.injury = null; S.draft.getup = null; } render(); }
 function qNext() {
   var d = S.draft; d.note = $("note").value.trim();
-  if (d.fallsCount == null || d.worried == null || d.adl == null) return toast("ตอบคำถามให้ครบก่อน");
-  S.step = FLOW.indexOf("confirm"); render();
+  if (d.fallsCount == null || d.worried == null) return toast("ตอบคำถามให้ครบก่อน");
+  S.step = FLOW.indexOf("adl"); render(); $("view").scrollTop = 0;
+}
+/* ============================================================
+   กิจวัตรประจำวัน (ดัชนีบาร์เธลเอดีแอล ฉบับภาษาไทย 10 ข้อ) และความปลอดภัยในบ้าน
+   ข้อคำถาม การคิดคะแนน และแหล่งอ้างอิงอยู่ใน cs-assess.js (ทดสอบได้แยก)
+   บาร์เธลแปลงเป็นค่า adl 0–2 เดิม คะแนนความเสี่ยงหกล้มจึงยังตรงกับ V2
+   ============================================================ */
+function lastBarthel(eid, before) { var l = assessmentsOf(eid).filter(function (a) { return a.barthelAns && (!before || a.date < before); }); return l.length ? l[l.length - 1] : null; }
+function homeChecksOf(eid) { D.homeChecks = D.homeChecks || []; return D.homeChecks.filter(function (h) { return h.elderId === eid; }); }
+function lastHome(eid) { var l = homeChecksOf(eid); return l.length ? l[l.length - 1] : null; }
+function srcLine(keys) { return '<span class="src">ที่มา: ' + keys.map(function (k) { return esc(CSAssess.SRC[k] || k); }).join(" · ") + '</span>'; }
+function renderAdl(v, prog) {
+  var d = S.draft, e = elder(), prev = lastBarthel(e.id);
+  if (!d.barthelAns) d.barthelAns = prev ? JSON.parse(JSON.stringify(prev.barthelAns)) : {};
+  var r = CSAssess.barthel(d.barthelAns);
+  head("กิจวัตรประจำวัน", "ช่วยเหลือตัวเองได้แค่ไหน", "ดัชนีบาร์เธลเอดีแอล 10 ข้อ · ตอบตามที่ทำได้จริงช่วงนี้ ไม่ใช่ที่ “น่าจะทำได้”", null, prog);
+  v.innerHTML = (prev ? '<div class="noteb">เติมคำตอบจากครั้งที่แล้ว (' + thDate(prev.date) + ') ไว้ให้ ตรวจทีละข้อ แก้เฉพาะข้อที่เปลี่ยนไป</div>' : '') +
+    CSAssess.BARTHEL.map(function (it, i) {
+      var a = d.barthelAns[it.k];
+      return '<div class="card"><p style="margin:0 0 2px;font-size:13px;color:var(--ink3)">' + (i + 1) + ' / 10 · ' + esc(it.nm) + '</p><p style="margin:0 0 10px;font-size:16.5px">' + esc(it.q) + '</p><div class="opt">' +
+        it.o.map(function (o) { return '<button class="' + (a === o[0] ? "on" : "") + '" onclick="setAdl(\'' + it.k + '\',' + o[0] + ')">' + esc(o[1]) + ' <small>(' + o[0] + ' คะแนน)</small></button>'; }).join("") + '</div></div>';
+    }).join("") + adlSummary(r, prev ? prev.barthel : null) + '<button class="btn" onclick="adlNext()">ต่อไป</button>';
+}
+function setAdl(k, val) { S.draft.barthelAns[k] = val; var y = $("view").scrollTop; render(); $("view").scrollTop = y; }
+/* สรุปคะแนนและกลุ่ม · เทียบครั้งก่อน */
+function adlSummary(r, prevB) {
+  if (!r.complete) return '<div class="card" style="text-align:center"><b>ตอบแล้ว ' + r.answered + ' จาก 10 ข้อ</b><p class="sub" style="margin:4px 0 0">ตอบครบแล้วจะเห็นคะแนนรวมและกลุ่ม</p></div>';
+  var b = r.band, ch = prevB ? CSAssess.barthelChange(prevB, r) : null;
+  return '<div class="card adlsum ' + b.cls + '"><div class="big">' + r.total + '<small> / 20</small></div><b>' + esc(b.nm) + '</b><p class="sub" style="margin:4px 0 0">' + esc(b.desc) + '</p>' +
+    (ch ? '<p style="margin:8px 0 0;font-weight:600;color:' + (ch.worse ? 'var(--c1)' : ch.better ? 'var(--c4)' : 'var(--ink2)') + '">' + (ch.delta === 0 ? 'เท่ากับครั้งก่อน' : (ch.delta > 0 ? 'เพิ่มขึ้น ' : 'ลดลง ') + Math.abs(ch.delta) + ' คะแนนจากครั้งก่อน (' + ch.from + ')') + (ch.worseBand ? ' · เปลี่ยนกลุ่มไปทางพึ่งพิง' : '') + '</p>' +
+      (ch.worse ? '<p class="sub" style="margin:2px 0 0">ลดลงตั้งแต่ 2 คะแนน หรือเปลี่ยนกลุ่ม ระบบจะแจ้งให้ทีมดูแลทราบ' + srcLine(["program"]) + '</p>' : '') : '') +
+    (r.weak.length ? '<div style="text-align:left;margin-top:10px"><b style="font-size:14.5px">ด้านที่ต้องมีคนช่วย</b>' + r.weak.map(function (w) { return '<div class="hist"><span>' + esc(w.nm) + '</span><b style="font-size:13.5px">' + w.v + '/' + w.max + '</b></div>'; }).join("") + '</div>' : '') +
+    srcLine(b.src) + '</div>';
+}
+function adlNext() {
+  var d = S.draft, r = CSAssess.barthel(d.barthelAns);
+  if (!r.complete) return toast("ตอบให้ครบ 10 ข้อก่อน (ตอบแล้ว " + r.answered + " ข้อ)");
+  var prev = lastBarthel(elder().id), ch = prev ? CSAssess.barthelChange(prev.barthel, r) : null;
+  d.adl = r.adl;
+  d.barthel = { total: r.total, band: r.band.short, band_key: r.band.k, band_nm: r.band.nm, dependent: r.band.dep, weak: r.weak.map(function (w) { return w.k; }),
+                change: ch ? { from: ch.from, delta: ch.delta, worse: ch.worse } : null };
+  S.step++; render(); $("view").scrollTop = 0;
+}
+
+/* ---------- ความปลอดภัยในบ้าน ---------- */
+function homeSeed(h) { var a = h ? JSON.parse(JSON.stringify(h.ans)) : {}; Object.keys(a.fixed || {}).forEach(function (k) { a[k] = false; }); delete a.fixed; return a; }
+function homeFoundHTML(r, withFix) {
+  if (!r.open.length) return '<div class="flag good"><b>ไม่พบจุดเสี่ยงที่ยังไม่ได้แก้</b><small>' + (r.fixedN ? 'แก้ไขแล้ว ' + r.fixedN + ' จุด · ' : '') + 'สำรวจซ้ำทุก 6 เดือน หรือเมื่อจัดบ้านใหม่ / ผู้สูงอายุเดินได้แย่ลง</small></div>';
+  return '<p style="margin:0 0 6px"><b>พบ ' + r.open.length + ' จุดที่ควรแก้</b>' + (r.priority ? ' · <span style="color:var(--c1);font-weight:700">จุดสำคัญ ' + r.priority + ' จุด</span>' : '') +
+      (r.fixedN ? ' · แก้แล้ว ' + r.fixedN + ' จุด' : '') + (r.helper === "alone" ? ' · อยู่คนเดียว' : '') + '</p>' +
+    r.open.map(function (h) { return '<div class="fixi' + (h.pri === 1 ? ' p1' : '') + '"><b>' + (h.pri === 1 ? '⚠️ ' : '') + esc(h.q) + '</b><div>วิธีแก้: ' + esc(h.fix) + '</div>' + srcLine(h.src) +
+      (withFix ? '<button class="pill" onclick="homeFixed(\'' + h.k + '\')">✓ แก้แล้ว</button>' : '') + '</div>'; }).join("");
+}
+function homeFormHTML(ctx) {
+  if (!S.homeAns) S.homeAns = homeSeed(S.homeRedo ? lastHome(elder().id) : null);
+  var a = S.homeAns;
+  var yn = function (k, val, label) { return '<button class="' + (a[k] === val ? "on" : "") + '" onclick="setHome(\'' + k + '\',' + val + ')">' + label + '</button>'; };
+  var h = '<div class="card" style="background:var(--surf2)"><b>ทำไมถึงถาม</b><p class="sub" style="margin:4px 0 0">การล้มของผู้สูงอายุเกิดในบ้านมากที่สุด โดยเฉพาะห้องน้ำ ทางเดิน และบันได การสำรวจและปรับบ้านช่วยลดการล้มได้ โดยเฉพาะในผู้ที่เสี่ยงสูง</p>' + srcLine(["cdcHome", "cochraneHome"]) + '</div>' +
+    '<p class="sub">เดินดูบ้านจริงพร้อมผู้สูงอายุ ตอบ <b>“มี”</b> เมื่อพบจุดนั้น · ข้อนี้ไม่มีผลต่อคะแนน</p>';
+  CSAssess.HOME.forEach(function (ar) {
+    h += '<div class="card"><h3>' + ar.ic + ' ' + esc(ar.nm) + '</h3>';
+    if (ar.gate) { h += '<p style="margin:0">' + esc(ar.gate) + '</p><div class="yn2">' + yn("stairs", true, "มี") + yn("stairs", false, "ไม่มี") + '</div>'; if (a.stairs !== true) { h += '</div>'; return; } }
+    CSAssess.HAZ.filter(function (x) { return x.area === ar.area; }).forEach(function (x) {
+      h += '<div class="hz"><p>' + esc(x.q) + (x.pri === 1 ? ' <span class="pri">จุดสำคัญ</span>' : '') + '</p><div class="yn2">' + yn(x.k, true, "มี") + yn(x.k, false, "ไม่มี") + '</div></div>';
+    });
+    h += '</div>';
+  });
+  h += '<div class="card"><h3>👪 มีคนอยู่ด้วยที่บ้านไหม</h3><div class="opt">' + [["alone", "อยู่คนเดียว"], ["day", "มีคนอยู่บางเวลา"], ["full", "มีคนอยู่ด้วยตลอด"]].map(function (o) {
+    return '<button class="' + (a.helper === o[0] ? "on" : "") + '" onclick="setHome(\'helper\',\'' + o[0] + '\')">' + o[1] + '</button>'; }).join("") + '</div></div>';
+  var r = CSAssess.homeResult(a);
+  return h + '<button class="btn" onclick="homeSave(\'' + ctx + '\')">' + (r.complete ? 'บันทึกผลสำรวจ' : 'บันทึก (ตอบแล้ว ' + r.answered + ' จาก ' + r.total + ' ข้อ)') + '</button>';
+}
+function setHome(k, val) { S.homeAns[k] = val; var y = $("view").scrollTop; render(); $("view").scrollTop = y; }
+function homeSave(ctx) {
+  var r = CSAssess.homeResult(S.homeAns);
+  if (!r.complete) return toast("ตอบให้ครบทุกข้อ ข้อที่ไม่พบให้กด “ไม่มี”");
+  var entry = { id: uid(), elderId: elder().id, date: new Date().toISOString(), ans: JSON.parse(JSON.stringify(S.homeAns)) };
+  D.homeChecks = D.homeChecks || []; D.homeChecks.push(entry); save();
+  S.homeAns = null; S.homeRedo = false;
+  toast(r.open.length ? "บันทึกแล้ว · พบ " + r.open.length + " จุดที่ควรแก้" : "บันทึกแล้ว · ไม่พบจุดเสี่ยง");
+  if (ctx === "step") { S.draft.home = CSAssess.homeDetail(entry.ans, entry.date); S.step++; }
+  render(); $("view").scrollTop = 0;
+}
+function homeFixed(k) {
+  var h = lastHome(elder().id); if (!h) return;
+  h.ans.fixed = h.ans.fixed || {}; h.ans.fixed[k] = new Date().toISOString(); save(); toast("บันทึกว่าแก้แล้ว 👍"); render();
+}
+function renderHomeStep(v, prog) {
+  var last = lastHome(elder().id), age = last ? (Date.now() - new Date(last.date)) / 864e5 : 1e9;
+  head("ความปลอดภัยในบ้าน", "จุดเสี่ยงในบ้านที่แก้ได้", "พื้นลื่น แสงน้อย ราวจับ พรม สายไฟ รองเท้า บันได", null, prog);
+  if (last && age <= 180 && !S.homeRedo) {
+    v.innerHTML = '<div class="card"><h3>สำรวจไว้เมื่อ ' + thDate(last.date) + '</h3>' + homeFoundHTML(CSAssess.homeResult(last.ans), true) + '</div>' +
+      '<button class="btn" onclick="homeKeep()">ยังเหมือนเดิม · ใช้ผลนี้</button><button class="btn sec" onclick="S.homeRedo=true;S.homeAns=null;render()">สำรวจใหม่</button>';
+    return;
+  }
+  v.innerHTML = homeFormHTML("step") + '<button class="btn ghost" onclick="homeLater()">ข้ามไปก่อน สำรวจภายหลัง</button>';
+}
+function homeKeep() { var h = lastHome(elder().id); S.draft.home = CSAssess.homeDetail(h.ans, h.date); S.step++; render(); $("view").scrollTop = 0; }
+function homeLater() { S.draft.home = null; S.draft.skipped = S.draft.skipped || {}; S.draft.skipped.home = "later"; S.homeAns = null; S.homeRedo = false; S.step++; render(); $("view").scrollTop = 0; }
+/* หน้าบ้านปลอดภัย (เปิดจากหน้าแรกได้ตลอด) */
+function renderHomeChk(v) {
+  var e = elder(), last = lastHome(e.id);
+  head("บ้านปลอดภัย", "จุดเสี่ยงในบ้านของ " + e.name, last && !S.homeRedo ? "สำรวจล่าสุด " + thDate(last.date) + " · กด “แก้แล้ว” เมื่อปรับเสร็จ" : "เดินสำรวจบ้านพร้อมผู้สูงอายุ ใช้เวลาราว 5 นาที", "home");
+  if (!last || S.homeRedo) { v.innerHTML = homeFormHTML("screen") + (last ? '<button class="btn ghost" onclick="S.homeRedo=false;S.homeAns=null;render()">ยกเลิก</button>' : ''); return; }
+  v.innerHTML = '<div class="card">' + homeFoundHTML(CSAssess.homeResult(last.ans), true) + '</div>' +
+    '<button class="btn sec" onclick="S.homeRedo=true;S.homeAns=null;render()">สำรวจใหม่ทั้งบ้าน</button>' +
+    '<p class="sub" style="font-size:12.5px">ผลสำรวจล่าสุดส่งไปกับการวัดครั้งถัดไป ให้พยาบาล/นักกายภาพใช้ประเมินบ้านต่อ</p>';
+}
+function adlLine(r) {
+  if (!r || !r.barthel) return "ไม่ได้ประเมิน";
+  return r.barthel.total + "/20 · " + esc(r.barthel.band_nm || r.barthel.band || "");
+}
+function homeLine(r) {
+  if (!r || !r.home) return r && r.skipped && r.skipped.home ? "ข้ามไว้ สำรวจภายหลัง" : "ไม่ได้สำรวจ";
+  return r.home.none ? "ไม่พบจุดเสี่ยง" : "พบ " + r.home.count + " จุด" + (r.home.priority ? " (จุดสำคัญ " + r.home.priority + ")" : "") + (r.home.helper === "alone" ? " · อยู่คนเดียว" : "");
 }
 function renderConfirm(v, prog) {
   var d = S.draft;
@@ -1188,7 +1321,7 @@ function renderConfirm(v, prog) {
     row("ลุกเดิน 3 เมตร", d.tug != null ? d.tug.toFixed(1) + " วิ" + camTag(d.cam, "tug") : "ข้าม") +
     row("ทรงตัว 4 ท่า", d.balPassed != null ? "ผ่าน " + d.balPassed + "/4 ท่า<br><small style=\"color:var(--ink2);font-weight:400\">" + balDetail(d.balStages) + "</small>" : "ข้าม") +
     row("ล้มใน 12 เดือน", d.fallsCount === 9 ? "จำไม่ได้" : d.fallsCount + " ครั้ง") +
-    row("กลัวล้ม", d.worried ? "ใช่" : "ไม่") + row("กิจวัตร", ["ต้องช่วยเกือบทุกอย่าง", "ต้องช่วยบางอย่าง", "ทำเองได้"][d.adl]) + '</div>' +
+    row("กลัวล้ม", d.worried ? "ใช่" : "ไม่") + row("กิจวัตร (บาร์เธล)", adlLine(d)) + row("บ้าน", homeLine(d)) + '</div>' +
     '<button class="btn" onclick="finish()">บันทึกและดูผล</button><button class="btn ghost" onclick="S.step=1;render()">ย้อนไปวัดใหม่</button>';
 }
 function finish() {
@@ -1236,11 +1369,32 @@ function measuredCard(r) {
   return '<div class="card"><h3>ค่าที่วัดได้วันนี้</h3>' +
     row("ลุกนั่ง 5 ครั้ง", r.ftsst != null ? r.ftsst.toFixed(1) + " วินาที" + camTag(r.cam, "ftsst") : "ข้าม") +
     row("ลุกเดิน 3 เมตร", r.tug != null ? r.tug.toFixed(1) + " วินาที" : "ข้าม") +
-    row("ทรงตัว 4 ท่า", balText(r)) + (r.balStages && r.balStages.length ? '<p class="sub" style="margin:4px 0 0;font-size:14px">' + balDetail(r.balStages) + '</p>' : '') + '</div>';
+    row("ทรงตัว 4 ท่า", balText(r)) + (r.balStages && r.balStages.length ? '<p class="sub" style="margin:4px 0 0;font-size:14px">' + balDetail(r.balStages) + '</p>' : '') +
+    (r.barthel ? row("กิจวัตรประจำวัน (บาร์เธล)", adlLine(r)) : '') + (r.home || (r.skipped && r.skipped.home) ? row("จุดเสี่ยงในบ้าน", homeLine(r)) : '') + '</div>';
 }
 function cloudLine(r) {
   if (r.cloud) return '<div class="flag ' + (r.cloud.level === "stable" ? "good" : "") + '"><b>☁️ ส่งถึงระบบกลางแล้ว</b><small>' + (r.cloud.level === "stable" ? "ไม่เปิดเคส เพราะไม่พบสัญญาณเสี่ยง" : "เปิดเคสให้เจ้าหน้าที่แล้ว") + '</small></div>';
   return CSCloud.connected() ? '<p class="sub">กำลังส่งขึ้นระบบกลาง…</p>' : '';
+}
+/* ความสามารถช่วยเหลือตัวเอง + จุดเสี่ยงในบ้าน (แสดงเมื่อผลไม่ได้รอผู้เชี่ยวชาญ) */
+function resultAdlHome(r) {
+  var h = '';
+  if (r.barthel) {
+    var bd = CSAssess.band(r.barthel.total), prevB = lastBarthel(r.elderId || elder().id, r.date), ch = prevB ? CSAssess.barthelChange(prevB.barthel, r.barthel) : null;
+    h += '<div class="card adlsum ' + bd.cls + '"><h3 style="text-align:left">ความสามารถในการช่วยเหลือตัวเอง</h3><div class="big">' + r.barthel.total + '<small> / 20</small></div><b>' + esc(bd.nm) + '</b>' +
+      '<p class="sub" style="margin:4px 0 0">' + esc(bd.desc) + '</p>' +
+      (ch && ch.delta ? '<p style="margin:6px 0 0;font-weight:600;color:' + (ch.worse ? 'var(--c1)' : 'var(--c4)') + '">' + (ch.delta > 0 ? 'ดีขึ้น ' : 'ลดลง ') + Math.abs(ch.delta) + ' คะแนนจากครั้งก่อน</p>' : '') +
+      ((r.barthel.weak || []).length ? '<p style="margin:8px 0 0;font-size:14px;text-align:left">ต้องมีคนช่วย: ' + r.barthel.weak.map(function (k) { var it = CSAssess.BARTHEL.filter(function (x) { return x.k === k; })[0]; return it ? esc(it.nm) : k; }).join(" · ") + '</p>' : '') +
+      srcLine(bd.src) + '</div>';
+  }
+  var hc = lastHome(elder().id);
+  if (r.home && hc) {
+    var hr = CSAssess.homeResult(hc.ans);
+    h += '<div class="card"><h3>🏠 จุดเสี่ยงในบ้านที่ควรแก้ก่อน</h3>' + (hr.open.length ? homeFoundHTML({ open: hr.open.slice(0, 3), priority: hr.priority, fixedN: hr.fixedN, helper: hr.helper }, false).replace(/<p style="margin:0 0 6px">[\s\S]*?<\/p>/, '') +
+      (hr.open.length > 3 ? '<p class="sub" style="margin:4px 0 0">และอีก ' + (hr.open.length - 3) + ' จุด</p>' : '') : homeFoundHTML(hr, false)) +
+      '<button class="btn sec" style="margin:8px 0 0" onclick="go(\'homechk\')">ดูทั้งหมด / บันทึกว่าแก้แล้ว</button></div>';
+  }
+  return h;
 }
 function renderResult(v) {
   var r = S.last || assessmentsOf(elder().id).slice(-1)[0]; if (!r) return go("home");
@@ -1277,6 +1431,7 @@ function renderResult(v) {
     (C && C.verdict === "not_confirm" ? '' : '<div class="tier ' + T.cls + '"><b>' + T.nm + '</b><span>' + T.advice + '</span></div>') +
     '<div class="card"><h3>ทำไมได้ผลนี้</h3>' + (items.length ? items.join("") : '<div class="flag good"><b>ไม่พบสัญญาณเสี่ยงจากการวัดครั้งนี้</b><small>เทียบกับเกณฑ์ CDC STEADI และค่าตัดประชากรไทย</small></div>') + '</div>' +
     '<div class="card"><h3>สิ่งที่ควรทำต่อ</h3><div class="steps">' + steps.join("") + '</div></div>' +
+    resultAdlHome(r) +
     cloudLine(r) +
     '<button class="btn" onclick="share()">📤 แจ้งครอบครัว (LINE / ข้อความ)</button>' +
     '<button class="btn sec" onclick="S.last=D.assessments.filter(function(x){return x.id===\'' + r.id + '\'})[0];go(\'doc\')">🩺 ใบสรุปสำหรับแพทย์</button>' +
@@ -1350,6 +1505,11 @@ function docHTML(r) {
        '<tr><td>ทรงตัว 4 ท่า</td><td>' + balText(r) + (r.balStages && r.balStages.length ? '<br><small>' + balDetail(r.balStages) + '</small>' : '') + '</td><td>ยืนต่อเท้าครบ 10 วินาที' + cite(["stage4"]) + '</td><td>' + res(r.balPassed != null ? r.balPassed >= 3 : (r.balance != null ? r.balance >= 10 : null)) + '</td></tr>' +
        '<tr><td>ประวัติหกล้ม 12 เดือน</td><td>' + fallsTxt + (r.injury >= 2 ? ' · บาดเจ็บจนต้องพบแพทย์' : '') + (r.getup >= 3 ? ' · ล้มแล้วลุกเองไม่ได้' : '') + '</td><td>ไม่เคยล้ม' + cite(["steadi"]) + '</td><td>' + res(r.fallsCount == null || r.fallsCount === 9 ? null : r.fallsCount === 0) + '</td></tr>' +
        '<tr><td>ยาที่ใช้ประจำ</td><td>' + (meds.length ? meds.length + ' รายการ (บันทึกจากรูปซองยา)' : (r.medsCount == null ? 'ไม่ได้ระบุ' : ['ไม่ใช้', '1–3 รายการ', '4–5 รายการ', '6–9 รายการ', '10 รายการขึ้นไป'][r.medsCount] || 'ไม่แน่ใจ')) + '</td><td>ไม่มียาเสี่ยงหกล้ม' + cite(["stoppfall"]) + '</td><td>' + (meds.length ? res(sumM.total < 2) : '<span>ดูข้อ ๕</span>') + '</td></tr></table>';
+  if (r.barthel) h += '<p><b>กิจวัตรประจำวัน (ดัชนีบาร์เธลเอดีแอล ฉบับภาษาไทย)</b> ' + r.barthel.total + '/20 · ' + esc(CSAssess.band(r.barthel.total).nm) + cite(["barthel", "barthelTh"]) +
+       ((r.barthel.weak || []).length ? ' · ต้องมีคนช่วย: ' + r.barthel.weak.map(function (k) { var it = CSAssess.BARTHEL.filter(function (x) { return x.k === k; })[0]; return it ? esc(it.nm) : k; }).join(", ") : '') +
+       (r.barthel.change && r.barthel.change.delta ? ' · ' + (r.barthel.change.delta > 0 ? 'เพิ่มขึ้น ' : 'ลดลง ') + Math.abs(r.barthel.change.delta) + ' คะแนนจากครั้งก่อน' : '') + '</p>';
+  if (r.home) h += '<p><b>สำรวจความปลอดภัยในบ้าน</b> (ครอบครัวสำรวจ ' + (r.home.checked_at ? thDate(r.home.checked_at) : '') + ') ' + (r.home.none ? 'ไม่พบจุดเสี่ยงที่ยังไม่ได้แก้' : 'พบ ' + r.home.count + ' จุด: ' + (r.home.items || []).map(function (x) { return esc(x.t); }).join(" · ")) +
+       (r.home.helper === "alone" ? ' · <b>อยู่คนเดียว</b>' : '') + cite(["cdcHome"]) + '</p>';
   /* ---------- ๓ แนวโน้ม ---------- */
   h += '<h2>๓. ผลทุกครั้งที่วัด (ล่าสุด ' + th(Math.min(6, list.length)) + ' ครั้ง)</h2><table><tr><th>วันที่</th><th>ลุก–นั่ง 5 ครั้ง (วินาที)</th><th>ลุกเดิน 3 ม. (วินาที)</th><th>ทรงตัว</th><th>ระดับ</th></tr>' +
        list.slice(-6).map(function (a) { return '<tr><td>' + thDate(a.date) + '</td><td>' + (a.ftsst != null ? a.ftsst.toFixed(1) : "–") + '</td><td>' + (a.tug != null ? a.tug.toFixed(1) : "–") + '</td><td>' + balText(a) + '</td><td>' + lvl(a) + '</td></tr>'; }).join("") + '</table>' +
@@ -1445,6 +1605,8 @@ function renderHistory(v) {
   var falls = D.falls.filter(function (f) { return f.elderId === e.id; });
   v.innerHTML = (chart ? '<div class="card"><h3>เวลาลุกนั่ง 5 ครั้ง (วินาที · ยิ่งน้อยยิ่งดี)</h3>' + chart + '</div>' : '<div class="card"><h3>ยังไม่มีข้อมูล</h3><p class="sub">วัดครั้งแรกวันนี้ แล้วครั้งต่อไปจะเห็นว่าดีขึ้นหรือแย่ลง</p><button class="btn" onclick="startTest()">เริ่มวัด</button></div>') +
     (list.length ? '<div class="card"><h3>ทุกครั้งที่วัด</h3>' + list.slice().reverse().map(function (a) { return '<div class="hist" style="cursor:pointer" onclick="S.last=D.assessments.filter(function(x){return x.id===\'' + a.id + '\'})[0];go(\'result\')"><span>' + thDate(a.date) + '<br><small style="color:var(--ink2)">ลุกนั่ง ' + (a.ftsst != null ? a.ftsst.toFixed(1) : "–") + ' · ลุกเดิน ' + (a.tug != null ? a.tug.toFixed(1) : "–") + ' · ทรงตัว ' + balText(a) + '</small></span>' + (pending(a) ? '<span class="pill" style="background:#EAF0FE;color:var(--brand2)">⏳ รอยืนยัน</span>' : '<span class="pill ' + CSScore.TIER[a.tier].cls + '">' + CSScore.TIER[a.tier].nm.split(" ·")[0] + (a.confirmed ? ' ✅' : '') + '</span>') + '</div>'; }).join("") + '</div>' : "") +
+    (list.filter(function (a) { return a.barthel; }).length ? '<div class="card"><h3>กิจวัตรประจำวัน (บาร์เธล 0–20)</h3>' + list.filter(function (a) { return a.barthel; }).slice(-6).reverse().map(function (a) {
+      var bd = CSAssess.band(a.barthel.total); return '<div class="hist"><span>' + thDate(a.date) + '</span><b>' + a.barthel.total + '/20 · ' + esc(bd.short) + '</b></div>'; }).join("") + '</div>' : '') +
     (falls.length ? '<div class="card"><h3>บันทึกการล้ม</h3>' + falls.slice().reverse().map(function (f) { return '<div class="hist"><span>' + thDate(f.date) + ' · ' + esc(f.where) + '</span><span>' + esc(f.injury) + '</span></div>'; }).join("") + '</div>' : "") +
     (list.length ? '<button class="btn sec" onclick="S.last=null;go(\'doc\')">🩺 ใบสรุปทุกครั้ง สำหรับแพทย์</button>' : "") +
     '<button class="btn ghost" onclick="go(\'contacts\')">📞 เบอร์ที่ควรมี และโรงพยาบาลใกล้บ้าน</button>';

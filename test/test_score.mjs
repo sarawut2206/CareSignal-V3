@@ -114,7 +114,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("คำแนะนำทุกข้อมีแหล่งอ้างอิง (src)", keys.length >= 8 && (ev.match(/src: "/g) || []).length === keys.length, keys.length);
   ok("อ้าง CDC STEADI · WHO 2020 · Cochrane 2019 · World Guidelines 2022 · STOPPFall · 1669", ["CDC STEADI", "WHO Guidelines on Physical Activity", "Cochrane", "World Guidelines for Falls Prevention", "STOPPFall", "1669"].every((k) => ev.includes(k)));
   ok("ลบคำแนะนำที่ไม่มีที่มาออกแล้ว", !/ลุกนั่ง 10 ครั้ง วันละ|ไม่ปล่อยอยู่คนเดียว|ไม่ปล่อยให้อยู่คนเดียว/.test(app));
-  ok("ขั้นตอนถ่ายรูปยาอยู่ใน FLOW หลังทรงตัว", /var FLOW = \["safety", "ftsst", "tug", "balance", "meds", "q", "confirm"\]/.test(app));
+  ok("ขั้นตอนถ่ายรูปยาอยู่ใน FLOW หลังทรงตัว · ตามด้วยบาร์เธลและสำรวจบ้านก่อนตรวจทาน", /var FLOW = \["safety", "ftsst", "tug", "balance", "meds", "q", "adl", "homechk", "confirm"\]/.test(app));
   ok("ถ่ายรูปยาด้วย input file (ไม่เปิดกล้องสด) + OCR + ส่งเภสัชกร", /capture="environment"/.test(app) && /tesseract\.js@5/.test(app) && /uploadMedPhoto/.test(app) && /saveMed\(/.test(app) && !/getUserMedia/.test(app));
   ok("ไม่มีคำสั่งหยุดยา", !/ให้หยุดยา|หยุดยาทันที/.test(app));
   ok("ใบสรุปแพทย์เป็นหน้าในแอป + พิมพ์จากแท็บใหม่เมื่อฝังในกรอบ", /function renderDoc/.test(app) && /window\.top !== window/.test(app) && /\?print=/.test(app));
@@ -162,7 +162,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("ปิดแถบชวนติดตั้งแล้วจำไว้", /localStorage\.setItem\(A2HS\.key, "no"\)/.test(app));
   ok("ทางลัด ?go= เปิดหน้าที่ต้องการได้", /\["fall", "test", "history", "meds", "video", "appts"\]\.indexOf\(goto\)/.test(app));
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
-  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-20/.test(sw));
+  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-21/.test(sw));
 }
 
 /* ใบส่งต่อแบบเอกสารทางการ: ทุกสัญญาณต้องมีเกณฑ์ เหตุผล และเอกสารอ้างอิง */
@@ -260,6 +260,32 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("BalanceEngine จำแนกท่าจากเท้า: ซ้อน=ชิด · เหลื่อมครึ่ง=กึ่งต่อ · เต็มเท้า=ต่อเท้า · ยก=ขาเดียว", B._stance({ gap: 0.2, lift: 0.1 }) === 0 && B._stance({ gap: 0.6, lift: 0.1 }) === 1 && B._stance({ gap: 1.2, lift: 0.1 }) === 2 && B._stance({ gap: 0.2, lift: 0.9 }) === 3);
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
   ok("service worker แคชโมดูลกล้องและโมเดล MediaPipe", /cs-camera\.js/.test(sw) && /storage\\\.googleapis\\\.com/.test(sw));
+}
+
+/* บาร์เธลเอดีแอล ฉบับภาษาไทย และสำรวจความปลอดภัยในบ้าน (cs-assess.js) */
+{
+  const A = require("../cs-assess.js"), C = require("../cs-cloud.js");
+  const app = readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8");
+  const full = {}; A.BARTHEL.forEach((it) => { full[it.k] = it.o[it.o.length - 1][0]; });
+  const withTotal = (t) => { const a = {}; let left = t; A.BARTHEL.forEach((it) => { const m = it.o[it.o.length - 1][0], v = Math.min(m, left); a[it.k] = v; left -= v; }); return a; };
+  ok("บาร์เธล 10 ข้อ คะแนนเต็ม 20 (ตรงฉบับกระทรวงสาธารณสุข: 2+1+3+2+3+2+2+1+2+2)", A.BARTHEL.length === 10 && A.BARTHEL_MAX === 20 && A.barthel(full).total === 20);
+  ok("กลุ่ม: 20 ช่วยตัวเองได้เต็มที่ · 12–19 ติดสังคมเริ่มต้องช่วย · 5–11 ติดบ้าน (พึ่งพิง) · 0–4 ติดเตียง",
+     A.band(20).k === "independent" && A.band(19).k === "social" && A.band(12).k === "social" && A.band(11).k === "home" && A.band(11).dep && A.band(5).k === "home" && A.band(4).k === "bed" && A.band(0).k === "bed");
+  ok("แปลงเป็นค่า adl 0–2 เดิม (คะแนนหกล้มหลักยังตรงกับ V2): 20→2 · 12–19→1 · ≤11→0", A.barthel(withTotal(20)).adl === 2 && A.barthel(withTotal(15)).adl === 1 && A.barthel(withTotal(12)).adl === 1 && A.barthel(withTotal(11)).adl === 0);
+  ok("ตอบไม่ครบ → ยังไม่ให้คะแนนรวม · ข้อที่ไม่เต็มแสดงเป็นด้านที่ต้องมีคนช่วย", A.barthel({ feed: 2 }).total === null && A.barthel(Object.assign({}, full, { bath: 0, stairs: 1 })).weak.map((w) => w.k).join() === "stairs,bath");
+  ok("เทียบครั้งก่อน: ลดลง ≥2 หรือเปลี่ยนกลุ่มไปทางพึ่งพิง = แย่ลง", A.barthelChange({ total: 18 }, { total: 16 }).worse && !A.barthelChange({ total: 18 }, { total: 17 }).worse && A.barthelChange({ total: 12 }, { total: 11 }).worseBand && A.barthelChange({ total: 14 }, { total: 17 }).better);
+  const none = { stairs: false, helper: "full" }; A.HAZ.forEach((h) => { none[h.k] = false; });
+  ok("บ้าน: ไม่มีบันได → ไม่ถามข้อบันได · ตอบครบ = complete", A.homeResult(none).complete && A.homeResult(none).total === A.HAZ.filter((h) => h.area !== "stairs").length && A.homeResult({ stairs: true, helper: "full" }).complete === false);
+  const some = Object.assign({}, none, { stairs: true, stair_rail: true, stair_light: false, stair_step: false, bath_rail: true, cord: true, helper: "alone" });
+  const hr = A.homeResult(some), hd = A.homeDetail(some, "2026-09-19");
+  ok("บ้าน: จุดสำคัญ (ห้องน้ำ บันได) ขึ้นก่อน · รหัสหลักตรงกับที่ใบส่งต่อ V2 รู้จัก", hr.open[0].pri === 1 && hr.priority === 2 && hd.hazards.every((k) => ["rug", "wet", "light", "rail", "stair", "shoe", "reach"].indexOf(k) >= 0) && hd.hazards.indexOf("rail") >= 0 && hd.helper === "alone" && hd.count === 3 && !hd.none);
+  ok("บ้าน: กด “แก้แล้ว” → ไม่นับเป็นจุดเสี่ยงค้าง", A.homeResult(Object.assign({}, some, { fixed: { bath_rail: "x" } })).open.length === 2 && A.homeResult(Object.assign({}, some, { fixed: { bath_rail: "x" } })).fixedN === 1);
+  ok("ครอบคลุมจุดที่ผู้ใช้ขอ: พื้นลื่น แสงน้อย ราวจับ พรม สายไฟ รองเท้า บันได", ["slick", "bath_slip", "night_path", "dim", "bath_rail", "rug_loose", "cord", "shoe_loose", "stair_rail"].every((k) => A.HAZ.some((h) => h.k === k)));
+  ok("ทุกคำแนะนำแก้บ้านมีวิธีแก้และแหล่งอ้างอิงที่มีอยู่จริงในรายการ", A.HAZ.every((h) => h.fix && h.src.length && h.src.every((s) => A.SRC[s])) && [20, 15, 8, 2].every((t) => A.band(t).src.every((s) => A.SRC[s])));
+  const p = C.payloadOf({ date: "2026-09-19", adl: 1, barthel: { total: 15, band: "ติดสังคม", band_key: "social", weak: ["bath"] }, barthelAns: full, home: hd, skipped: {} }, { age: 70 }, "x");
+  ok("ส่งขึ้นระบบกลางในชื่อฟิลด์ที่ใบส่งต่ออ่าน: detail.barthel.total/band · home_detail.hazards/helper", p.detail.barthel.total === 15 && p.detail.barthel.band === "ติดสังคม" && p.homeDetail.hazards.length === 3 && p.homeDetail.helper === "alone" && p.detail.adl === 1);
+  ok("แอป: ถามบาร์เธลแยก 10 ข้อ (ตัดคำถามกิจวัตรข้อเดียวเดิม) · มีหน้าบ้านปลอดภัยบนหน้าแรก · ใบส่งต่อมีทั้งสองส่วน",
+     !/\{ k: "adl", q:/.test(app) && /function renderAdl/.test(app) && /function renderHomeChk/.test(app) && /go\('homechk'\)/.test(app) && /ดัชนีบาร์เธลเอดีแอล ฉบับภาษาไทย\)<\/b>/.test(app) && /สำรวจความปลอดภัยในบ้าน<\/b>/.test(app) && /cs-assess\.js/.test(readFileSync(new URL("../sw.js", import.meta.url), "utf8")));
 }
 
 /* อ่านชื่อยาจากรูปแผงยา — ตัวอย่างจากรูปจริงของผู้ใช้ (แผง BESIX) */

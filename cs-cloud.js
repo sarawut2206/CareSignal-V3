@@ -77,7 +77,7 @@
       fallsDetail: { count: rec.fallsCount, injury: rec.injury, getup: rec.getup },
       medsDetail: { count: rec.medsCount, n: rec.medsItems ? rec.medsItems.length : null, items: rec.medsItems || null,
                     frid_high: rec.fridHigh == null ? null : rec.fridHigh, frid_total: rec.fridTotal == null ? null : rec.fridTotal },
-      homeDetail: null, notTested: rec.ftsst == null && rec.tug == null && rec.balance == null,
+      homeDetail: rec.home || null, notTested: rec.ftsst == null && rec.tug == null && rec.balance == null,
       testQuality: { measured_by: "carer", ended_by: ct ? "camera" : "carer", alone: false, alone_skip: false, distance_ok: rec.tug != null ? (ct ? ct.distanceOk : true) : null },
       detail: {
         method: anyCam ? "camera-pose" : "manual", measured_by: "carer", carer_name: carerName || null, app: "v3",
@@ -90,7 +90,10 @@
                    label: balPassed == null ? null : "ทรงตัวผ่าน " + balPassed + " จาก 4 ท่า" + (rec.balance != null ? " · ยืนต่อเท้า " + rec.balance + " วินาที" : ""),
                    stages: stages.length ? stages : null, alone: false, alone_skip: false },
         skipped: rec.skipped || {}, note: rec.note || null,
-        adl: rec.adl, pending_expert: !!rec.pending
+        adl: rec.adl, pending_expert: !!rec.pending,
+        /* บาร์เธล 10 ข้อ — ชื่อฟิลด์ตามที่ใบส่งต่อ (SQL 22 · cs-referral-forms.js) อ่าน: detail.barthel.total / band */
+        barthel: rec.barthel ? { total: rec.barthel.total, band: rec.barthel.band, band_key: rec.barthel.band_key, dependent: !!rec.barthel.dependent,
+                                 weak: rec.barthel.weak || [], change: rec.barthel.change || null, items: rec.barthelAns || null, scale: "barthel20_th" } : null
       }
     };
   }
@@ -185,7 +188,9 @@
                fallsCount: fd.count != null ? fd.count : null, injury: fd.injury || null, getup: fd.getup || null,
                worried: d.steadi ? !!d.steadi.worried : null, medsCount: md.count != null ? md.count : null,
                fridHigh: md.frid_high != null ? md.frid_high : null, fridTotal: md.frid_total != null ? md.frid_total : null,
-               adl: d.adl != null ? d.adl : null, note: d.note || null };
+               adl: d.adl != null ? d.adl : null, note: d.note || null,
+               barthel: d.barthel ? { total: d.barthel.total, band: d.barthel.band, band_key: d.barthel.band_key, dependent: d.barthel.dependent, weak: d.barthel.weak || [], change: d.barthel.change || null } : null,
+               barthelAns: d.barthel && d.barthel.items ? d.barthel.items : null, home: r.home_detail || null };
     });
   }
 

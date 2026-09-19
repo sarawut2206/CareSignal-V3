@@ -26,6 +26,10 @@
     steadirx: "CDC STEADI-Rx. Pharmacist Consultation for Older Adults at Risk of Falling (Coordinated Care Plan). 2019.",
     cochrane: "Sherrington C, et al. Exercise for preventing falls in older people living in the community. Cochrane Database of Systematic Reviews. 2019;1:CD012424.",
     who: "World Health Organization. WHO guidelines on physical activity and sedentary behaviour. Geneva: WHO; 2020.",
+    barthel: "Mahoney FI, Barthel DW. Functional evaluation: the Barthel Index. Maryland State Medical Journal. 1965;14:61–65 · ฉบับ 20 คะแนน: Collin C, Wade DT, Davies S, Horne V. The Barthel ADL Index: a reliability study. International Disability Studies. 1988;10(2):61–63.",
+    barthelTh: "ดัชนีบาร์เธลเอดีแอล ฉบับภาษาไทย ที่กระทรวงสาธารณสุขใช้คัดกรองผู้สูงอายุ · กลุ่มติดสังคม (≥12) ติดบ้าน (5–11) ติดเตียง (0–4) ตามระบบการดูแลระยะยาว (Long-Term Care) ของกระทรวงสาธารณสุขและ สปสช.",
+    cdcHome: "CDC STEADI. Check for Safety: A Home Fall Prevention Checklist for Older Adults. 2017.",
+    cochraneHome: "Gillespie LD, et al. Interventions for preventing falls in older people living in the community. Cochrane Database of Systematic Reviews. 2012;(9):CD007146.",
     program: "เกณฑ์ภายในโปรแกรม CareSignal — กำหนดเพื่อการติดตาม ยังไม่ผ่านการทดสอบความแม่นยำทางคลินิก"
   };
 
