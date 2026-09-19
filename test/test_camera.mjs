@@ -1,4 +1,4 @@
-/* ทดสอบเอนจินกล้องรุ่น 2 ด้วยสัญญาณจำลองที่รู้คำตอบ · node test/test_camera.mjs */
+/* ทดสอบเอนจินกล้องรุ่น 3 ด้วยสัญญาณจำลองที่รู้คำตอบ · node test/test_camera.mjs */
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const K = require("../cs-camera.js");
@@ -37,8 +37,38 @@ function legPose(kneeDeg, yaw) {
 }
 { const errs = []; for (const yaw of [0, 0.6, 1.2, 1.57]) for (const kd of [90, 120, 170]) { const wl = legPose(kd, yaw); errs.push(Math.abs(K.kneeAngle3D(wl, wl).k - kd)); }
   ok("มุมเข่า 3 มิติถูกต้องทุกมุมกล้อง (คลาด < 1°)", Math.max(...errs) < 1, Math.max(...errs)); }
-{ const refs = { sitRef: 0.30, standRef: 0.55, sitK: 92, standK: 172 };
-  ok("คะแนนท่าทาง: เข่าชัดใช้เข่าเป็นหลัก · เข่าไม่ชัดถอยไปใช้สะโพก", Math.abs(K.postureNorm({ h: 0.30, k: 172, kvis: 0.9 }, refs) - 0.6) < 0.01 && K.postureNorm({ h: 0.55, k: 92, kvis: 0.2 }, refs) === 1 && K.postureNorm({ h: null, k: 132, kvis: 0.9 }, refs) === 0.5); }
+/* รุ่น 3: นาฬิกาเดินหน้าเสมอ (MediaPipe ปฏิเสธเวลาซ้ำ/ถอยหลัง ซึ่งทำให้รุ่น 2 ไม่เห็นคนเลย) */
+{ const seq = [5, 5, 3, 10, 10]; let i = 0; const c = K.makeClock(() => seq[i++]); const out = seq.map(() => c());
+  ok("นาฬิกาที่ส่งให้โมเดลเพิ่มขึ้นทุกครั้ง แม้เวลาระบบซ้ำหรือถอยหลัง", out.every((v, j) => j === 0 || v > out[j - 1]), out); }
+
+/* ภาพจำลองจากกล้องหลังที่ถือสูงระดับอก: ไม่เห็นเท้า (ข้อเท้าหลุดกรอบ) · u = 0 นั่ง → 1 ยืน */
+function frontLm(u, side = false, jit = 0) {
+  const P = (x, y, v = 0.95) => ({ x: x + rnd() * jit, y: y + rnd() * jit, visibility: v }), m = (a, b) => a + (b - a) * u;
+  const sh = m(0.40, 0.18), hip = m(0.62, 0.42), knee = side ? m(0.63, 0.62) : m(0.70, 0.62), lm = [];
+  lm[11] = P(.45, sh); lm[12] = P(.55, sh); lm[23] = P(.46, hip); lm[24] = P(.54, hip); lm[25] = P(.46, knee); lm[26] = P(.54, knee);
+  lm[27] = P(.46, 1.05, 0.05); lm[28] = P(.54, 1.05, 0.05); return lm;
+}
+{ const fs = K.features(frontLm(0), null, 0.5625), fu = K.features(frontLm(1), null, 0.5625);
+  ok("ไม่เห็นเท้า ก็ยังได้ค่าท่าทางจากสะโพก–เข่า (นั่ง < 0.35 · ยืน > 0.8)", fs && fs.v != null && fs.h == null && K.absPosture(fs) < 0.35 && K.absPosture(fu) > 0.8, [K.absPosture(fs), K.absPosture(fu)]); }
+{ const lm = frontLm(0); lm[25] = { x: .46, y: 1.08, visibility: 0.7 }; lm[26] = { x: .54, y: 1.1, visibility: 0.7 }; const f = K.features(lm, null, 0.56);
+  ok("เข่าอยู่นอกกรอบภาพ (โมเดลเดาตำแหน่ง) → ไม่นับว่าเห็นท่า ไม่เริ่มวัดเอง", f && f.v == null && K.absPosture(f) === null, f); }
+{ ok("มองไม่เห็นสะโพก → ไม่เดาค่า", K.features(frontLm(0).map((p, i) => i === 23 || i === 24 ? { ...p, visibility: 0.1 } : p), null, 0.56) === null); }
+
+/* ลุกนั่งเต็มระบบ (ลักษณะท่าทาง → คะแนนปรับตัวเอง → ตัวนับ) ไม่มีขั้นสอบเทียบ */
+function simFull(fps, { side = false, peak = 1, jit = 0.004, cyc = 2.4 } = {}) {
+  const PO = new K.Posture(), D = new K.RepDetector({ target: 5 }); let t = 0, fin = null; const dt = 1000 / fps;
+  for (; t < 2000; t += dt) PO.push(K.features(frontLm(0, side, jit), null, 0.5625), t);   /* นั่งรอระหว่างนับถอยหลัง */
+  const seated = PO.arm(); const go = t; D.start(go);
+  const uAt = (s) => { s -= 0.4; if (s < 0) return 0; const u = (s % cyc) / cyc; return peak * (u < .35 ? smooth(u / .35) : u < .5 ? 1 : u < .85 ? 1 - smooth((u - .5) / .35) : 0); };
+  for (; t < go + 40000 && !fin; t += dt) { const e = D.push(PO.push(K.features(frontLm(uAt((t - go) / 1000), side, jit), null, 0.5625), t), t); if (e && e.event === "finish") fin = e; }
+  return { fin, reps: D.reps, seated, lo: 0.4 + 4.5 * cyc, hi: 0.4 + 5 * cyc };
+}
+for (const [fps, side] of [[30, false], [15, false], [10, false], [15, true]]) {
+  const r = simFull(fps, { side });
+  ok(`ลุกนั่งเต็มระบบ ${fps} เฟรม/วิ มุม${side ? "ข้าง" : "หน้าเฉียง"} ไม่เห็นเท้า: นับครบ 5 และเวลาอยู่ในช่วงนั่งลงครั้งที่ 5`, r.seated === true && r.reps === 5 && r.fin && r.fin.elapsed >= r.lo - 0.3 && r.fin.elapsed <= r.hi + 0.3, { reps: r.reps, el: r.fin && r.fin.elapsed, lo: r.lo, hi: r.hi }); }
+{ const r = simFull(15, { peak: 0.35 }); ok("เต็มระบบ: ลุกขึ้นแค่ครึ่งทาง ไม่ถูกนับ", r.reps === 0, r.reps); }
+{ const PO = new K.Posture(); for (let t = 0; t < 1500; t += 50) PO.push(K.features(frontLm(1), null, 0.5625), t);
+  ok("กดเริ่มตอนยังยืนอยู่ → ระบบรู้ว่ายังไม่นั่ง และใช้จุดอ้างอิงท่านั่งมาตรฐานแทน", PO.arm() === false && PO.R.v.lo === 0.30); }
 
 /* ลุกเดิน: mode depth = เดินออกจากกล้อง (ตัวเล็กลง) · lateral = เดินขวางกล้อง · หมุนตัวทำให้ไหล่แคบ แต่ความสูงลำตัวไม่เปลี่ยน */
 function simTug(fps, mode, total = 11, far = 1, noise = 0.01) {

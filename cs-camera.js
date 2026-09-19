@@ -1,15 +1,25 @@
 /* ============================================================
-   cs-camera.js — วัดด้วยกล้อง (ทางเลือกเสริมของแอป V3) · เอนจินรุ่น 2
+   cs-camera.js — วัดด้วยกล้อง (ทางเลือกเสริมของแอป V3) · เอนจินรุ่น 3
    ------------------------------------------------------------
-   รุ่นแรกยกตัวตรวจจับของ V2 มาตรง ๆ แล้วพบว่าไม่แม่นพอ รุ่นนี้เขียนใหม่โดยแก้ที่ต้นเหตุ:
+   รุ่น 3 (แก้ "กล้องหลังไม่นับ ไม่จับการลุกนั่ง" ของรุ่น 2):
+   ก. เวลาที่ส่งให้โมเดลมาจากนาฬิกาเดียวที่เดินหน้าเสมอ (mono) — รุ่น 2 ผสม captureTime ของเฟรม
+      กับ performance.now() ถ้าเวลาถอยหลัง MediaPipe จะปฏิเสธทุกเฟรม ระบบจึง "ไม่เห็นคน" ตลอด
+   ข. วงรอบเฟรมไม่ตายเมื่อเกิดข้อผิดพลาด (ลงทะเบียนเฟรมถัดไปก่อนประมวลผล + ตัวเฝ้าระวังปลุกวิดีโอ)
+   ค. ไม่ต้องเห็นเท้า: ท่านั่ง–ยืนคิดจาก "ต้นขาตั้งแค่ไหน" (ระยะสะโพก→เข่าแนวดิ่ง ÷ ความยาวลำตัว)
+      รวมกับมุมเข่า 3 มิติและสัดส่วนสะโพก เมื่อเห็นชัด — ถือมือถือใกล้จนเท้าหลุดกรอบก็ยังนับได้
+   ง. ไม่มีขั้นสอบเทียบ: จำท่านั่งตอนกดเริ่ม แล้วปรับช่วงนั่ง↔ยืนเองระหว่างทดสอบ
+   จ. มีแถบ "นั่ง ↔ ยืน" แบบสด + เฟรม/วินาที ให้ผู้วัดเห็นทันทีว่ากล้องจับท่าได้หรือไม่
+   ฉ. ถ้าโมเดลบน GPU ใช้ไม่ได้ในเครื่องนั้น สลับไป CPU เอง · ขอกล้องแบบผ่อนเงื่อนไขทีละขั้น
+   ------------------------------------------------------------
+   รุ่น 2 (ยังใช้อยู่):
    1. ท่านั่ง–ยืน ใช้ "มุมเข่า 3 มิติ" (world landmarks ของ MediaPipe หน่วยเมตร ไม่ขึ้นกับมุมกล้อง
       หรือการเอียงมือถือ) รวมกับสัดส่วนสะโพก ถ่วงน้ำหนักตามความชัดของขา — เดิมใช้สะโพกอย่างเดียว
    2. กรองสัญญาณด้วย One-Euro filter (หน่วงน้อยกว่าค่าเฉลี่ยเคลื่อนที่) และหาเวลาข้ามเกณฑ์
       แบบแทรกค่าระหว่างเฟรม — เวลาไม่หยาบเท่าช่วงเฟรมอีกต่อไป
-   3. ใช้เวลาจับภาพของเฟรมจริง (requestVideoFrameCallback · captureTime) ไม่ใช่เวลาที่ประมวลผลเสร็จ
-   4. ทดสอบความเร็วเครื่องก่อนวัด แล้วลดรุ่นโมเดลทันทีถ้าช้ากว่า ~12 เฟรม/วินาที
+   3. วนตามเฟรมวิดีโอจริง (requestVideoFrameCallback) ไม่ประมวลผลเฟรมซ้ำ
+   4. ทดสอบความเร็วเครื่องก่อนวัด แล้วลดรุ่นโมเดลทันทีถ้าช้ากว่า ~14 เฟรม/วินาที
       (เดิมเริ่มที่รุ่นหนักสุดเสมอ มือถือได้ 5–8 เฟรม/วินาที จับจังหวะไม่ทัน)
-   5. เลือกและล็อกคนที่ถูกวัด เมื่อมีมากกว่าหนึ่งคนในภาพ (เดิมหยิบคนแรกที่โมเดลคืนมา)
+   5. ติดตามคนเดียว (numPoses 1) ให้โมเดลตามคนเดิมต่อเนื่อง ไม่กระตุก
    6. ลุกนั่ง: จับเวลาตั้งแต่สัญญาณ "เริ่ม" จนนั่งลงครั้งที่ 5 — ตรงกับวิธีกดจับเวลาเองของแอป
       (เดิมจบตอนยืนครั้งที่ 5 ทำให้ผลจากกล้องสั้นกว่ากดเองราว 1 วินาที)
    7. ลุกเดิน: ประมาณระยะเป็นเมตรจาก "ความสูงลำตัวในภาพ" และการเคลื่อนด้านข้าง แทนความกว้างไหล่
@@ -19,7 +29,7 @@
    ผลทรงตัวผ่าน/ไม่ผ่านให้คนยืนยันเสมอ · ไม่มีสั่งงานด้วยเสียงหรือยกมือ
    ============================================================ */
 (function (g) {
-  var ENGINE = "cam-2.0";
+  var ENGINE = "cam-3.0";
   var LM = { NOSE: 0, LSH: 11, RSH: 12, LHIP: 23, RHIP: 24, LKNEE: 25, RKNEE: 26, LANK: 27, RANK: 28, LHEEL: 29, RHEEL: 30, LTOE: 31, RTOE: 32 };
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   function vz(p) { return p ? (p.visibility === undefined ? 1 : p.visibility) : 0; }
@@ -52,7 +62,16 @@
   /* ความสูงลำตัวในภาพ (กึ่งกลางไหล่ → กึ่งกลางข้อเท้า) หน่วยเท่าความสูงภาพ — ไม่หดเมื่อหมุนตัว */
   function bodyLen(lm, aspect) {
     var sx = (lm[LM.LSH].x + lm[LM.RSH].x) / 2, sy = midY(lm, LM.LSH, LM.RSH), ax = (lm[LM.LANK].x + lm[LM.RANK].x) / 2, ay = midY(lm, LM.LANK, LM.RANK);
+    if (Math.max(vz(lm[LM.LANK]), vz(lm[LM.RANK])) < 0.5) {   /* มองไม่เห็นข้อเท้า: ประมาณจากลำตัว (ไหล่→ข้อเท้า ≈ 2.5 เท่าของไหล่→สะโพก) */
+      var hx = (lm[LM.LHIP].x + lm[LM.RHIP].x) / 2, hy = midY(lm, LM.LHIP, LM.RHIP), tr = Math.hypot((sx - hx) * aspect, sy - hy) * 2.5;
+      return isFinite(tr) && tr > 0.05 ? tr : null;
+    }
     var d = Math.hypot((sx - ax) * aspect, sy - ay); return isFinite(d) && d > 0.05 ? d : null;
+  }
+  /* ความชัดของส่วนที่ต้องใช้นับ (ไหล่ สะโพก เข่า) — ไม่รวมเท้า */
+  function visCore(lm) {
+    var need = [LM.LSH, LM.RSH, LM.LHIP, LM.RHIP, LM.LKNEE, LM.RKNEE], s = 0;
+    for (var i = 0; i < need.length; i++) s += vz(lm[need[i]]) > 0.5 ? 1 : 0; return s / need.length;
   }
 
   /* ---------- One-Euro filter (Casiez 2012): เรียบเมื่อช้า ตามทันเมื่อเร็ว ---------- */
@@ -66,15 +85,87 @@
     var a = alpha(this.minCut + this.beta * Math.abs(this.dx)); this.x = a * x + (1 - a) * this.x; return this.x;
   };
 
-  /* ---------- คะแนนท่าทาง 0 (นั่ง) → 1 (ยืน): รวมมุมเข่า 3 มิติกับสัดส่วนสะโพก ---------- */
-  function postureNorm(s, refs) {
-    var hN = s.h != null && refs.standRef != null ? (s.h - refs.sitRef) / (refs.standRef - refs.sitRef) : null;
-    var kN = s.k != null && refs.sitK != null && refs.standK != null && refs.standK - refs.sitK >= 25 ? (s.k - refs.sitK) / (refs.standK - refs.sitK) : null;
-    if (hN == null && kN == null) return null; if (kN == null) return hN; if (hN == null) return kN;
-    var w = 0.6 * clamp(((s.kvis || 0) - 0.45) / 0.35, 0, 1);
-    return w * kN + (1 - w) * hN;
+  /* ---------- นาฬิกาเดียวที่เดินหน้าเสมอ: MediaPipe VIDEO mode ปฏิเสธเวลาที่ซ้ำหรือถอยหลัง ---------- */
+  function makeClock(nowFn) { var last = -Infinity; return function () { var t = nowFn(); if (!(t > last)) t = last + 1; last = t; return t; }; }
+  var mono = makeClock(function () { return typeof performance !== "undefined" ? performance.now() : Date.now(); });
+
+  /* ---------- ลักษณะท่าทางจากหนึ่งเฟรม (ไม่บังคับให้เห็นเท้า) ----------
+     v = ระยะแนวดิ่งสะโพก→เข่า ÷ ความยาวลำตัว (ไหล่→สะโพก): นั่ง ≈ 0–0.4 (ต้นขาแนวนอน) · ยืน ≈ 0.8–0.95 (ต้นขาตั้ง)
+     k = มุมเข่า 3 มิติ (ต้องเห็นข้อเท้าพอควร) · h = สัดส่วนสะโพก (ต้องเห็นข้อเท้าชัด) */
+  function features(lm, wl, aspect) {
+    if (!lm) return null; aspect = aspect || 1;
+    /* จุดที่อยู่นอกกรอบภาพ โมเดลเดาตำแหน่งให้ — ห้ามใช้ (เดิมทำให้เห็นว่า "นั่ง" ทั้งที่มองไม่เห็นเข่า) */
+    function seen(i, th) { var p = lm[i]; return p && vz(p) >= th && p.x > -0.01 && p.x < 1.01 && p.y > -0.01 && p.y < 1.0 ? vz(p) : 0; }
+    var shV = Math.min(vz(lm[LM.LSH]), vz(lm[LM.RSH])), hpV = Math.min(vz(lm[LM.LHIP]), vz(lm[LM.RHIP]));
+    if (!seen(LM.LSH, 0.3) && !seen(LM.RSH, 0.3) || !seen(LM.LHIP, 0.3) && !seen(LM.RHIP, 0.3)) return null;
+    var sx = (lm[LM.LSH].x + lm[LM.RSH].x) / 2 * aspect, sy = midY(lm, LM.LSH, LM.RSH), hx = (lm[LM.LHIP].x + lm[LM.RHIP].x) / 2 * aspect, hy = midY(lm, LM.LHIP, LM.RHIP);
+    var T = Math.hypot(sx - hx, sy - hy); if (!isFinite(T) || T < 0.03) return null;
+    var f = { T: T, vis: Math.min(1, (shV + hpV) / 2 + 0.1), v: null, vVis: 0, k: null, kVis: 0, h: null };
+    var lk = seen(LM.LKNEE, 0.4), rk = seen(LM.RKNEE, 0.4), sum = 0, w = 0;
+    if (lk) { sum += (lm[LM.LKNEE].y - lm[LM.LHIP].y) * lk; w += lk; }
+    if (rk) { sum += (lm[LM.RKNEE].y - lm[LM.RHIP].y) * rk; w += rk; }
+    if (w > 0) { f.v = sum / w / T; f.vVis = Math.max(lk, rk); }
+    var la = seen(LM.LANK, 0.35), ra = seen(LM.RANK, 0.35);
+    if (!lk && !rk) return f;
+    if (wl && Math.max(la, ra) >= 0.35) { var ka = kneeAngle3D(wl, lm); if (ka.k != null && ka.vis >= 0.3) { f.k = ka.k; f.kVis = ka.vis; } }
+    if (Math.min(la, ra) >= 0.5 && shV >= 0.5) f.h = hipRatio(lm);
+    return f;
   }
-  function sampleOf(lm, wl) { var ka = kneeAngle3D(wl, lm); return { h: hipRatio(lm), k: ka.k, kvis: ka.vis }; }
+  /* จุดอ้างอิงสัมบูรณ์ (ใช้ก่อนกดเริ่ม เพื่อแสดงแถบสด และดูว่านั่งอยู่หรือยัง) · ช่วงขั้นต่ำระหว่างนั่ง↔ยืน */
+  var ABS = { v: [0.30, 0.82], k: [100, 165], h: [0.30, 0.48] }, PRIOR = { v: 0.40, k: 55, h: 0.15 }, WT = { v: 1.0, k: 1.0, h: 0.6 }, KEYS = ["v", "k", "h"];
+  function fuse(f, map) {
+    var s = 0, w = 0;
+    KEYS.forEach(function (key) {
+      if (f[key] == null) return; var r = map(key); if (!r) return;
+      var q = key === "v" ? clamp((f.vVis - 0.25) / 0.45, 0.15, 1) : key === "k" ? clamp((f.kVis - 0.25) / 0.45, 0.15, 1) : 1;
+      s += WT[key] * q * clamp((f[key] - r[0]) / (r[1] - r[0]), -0.2, 1.2); w += WT[key] * q;
+    });
+    return w ? s / w : null;
+  }
+  function absPosture(f) { return f ? fuse(f, function (k) { return ABS[k]; }) : null; }
+
+  /* ---------- คะแนนท่าทาง 0 (นั่ง) → 1 (ยืน) แบบปรับตัวเอง ----------
+     ก่อนเริ่ม: ใช้จุดอ้างอิงสัมบูรณ์ · กดเริ่ม (ผู้สูงอายุนั่งอยู่): จำค่าท่านั่งของคนนี้ในมุมกล้องนี้
+     ระหว่างทดสอบ: ช่วงนั่ง↔ยืน ขยายตามค่าต่ำสุด/สูงสุดที่เห็นจริง (ไม่แคบกว่าช่วงขั้นต่ำ) */
+  function Posture(prior) {
+    this.P = {}; var self = this; KEYS.forEach(function (k) { self.P[k] = prior && prior[k] ? prior[k] : PRIOR[k]; });
+    this.F = {}; this.hist = []; this.R = null; this.last = null;
+  }
+  Posture.prototype._filt = function (f, t) {
+    var o = {}, self = this;
+    KEYS.forEach(function (k) { if (f[k] == null) return; if (!self.F[k]) self.F[k] = new OneEuro(1.5, 0.3); o[k] = self.F[k].filter(f[k], t); });
+    return o;
+  };
+  Posture.prototype.push = function (f, t) {
+    if (!f) { this.last = null; return null; }
+    var fl = this._filt(f, t), self = this; this.hist.push({ t: t, f: fl }); while (this.hist.length && t - this.hist[0].t > 2000) this.hist.shift();
+    if (this.R) KEYS.forEach(function (k) {
+      if (fl[k] == null) return; var r = self.R[k];
+      if (!r) { var a = absPosture({ v: k === "v" ? fl.v : null, k: k === "k" ? fl.k : null, h: k === "h" ? fl.h : null, vVis: 1, kVis: 1 }); var lo = a != null && a > 0.6 ? ABS[k][0] : fl[k]; r = self.R[k] = { lo: lo, hi: lo + self.P[k] }; }
+      if (fl[k] < r.lo) { r.lo = fl[k]; r.hi = Math.max(r.hi, r.lo + self.P[k]); }
+      if (fl[k] > r.hi) r.hi = fl[k];
+    });
+    var p = this.R ? fuse(f, function (k) { var r = self.R[k]; return r ? [r.lo, Math.max(r.hi, r.lo + self.P[k])] : null; }) : absPosture(f);
+    this.last = p; return p;
+  };
+  /* กดเริ่ม: ค่าท่านั่ง = มัธยฐาน 1 วินาทีล่าสุด · ถ้าดูเหมือนยืนอยู่ ใช้จุดอ้างอิงสัมบูรณ์แทน แล้วให้ค่าต่ำสุดที่เห็นปรับเอง */
+  Posture.prototype.arm = function () {
+    var self = this, t1 = this.hist.length ? this.hist[this.hist.length - 1].t : 0, R = {};
+    KEYS.forEach(function (k) {
+      var xs = self.hist.filter(function (e) { return t1 - e.t <= 1000 && e.f[k] != null; }).map(function (e) { return e.f[k]; }).sort(function (a, b) { return a - b; });
+      if (!xs.length) return; var m = xs[Math.floor(xs.length / 2)], one = {}; one[k] = m; one.vVis = 1; one.kVis = 1;
+      var a = absPosture(one), lo = a != null && a > 0.6 ? ABS[k][0] : m; R[k] = { lo: lo, hi: lo + self.P[k] };
+    });
+    this.R = R; return this.seatedAbs();
+  };
+  Posture.prototype.seatedAbs = function () {
+    var e = this.hist[this.hist.length - 1]; if (!e) return null; var f = e.f; f.vVis = 1; f.kVis = 1; var a = absPosture(f); return a == null ? null : a < 0.35;
+  };
+  /* ช่วงที่เรียนรู้ไว้ใช้เป็นช่วงขั้นต่ำของการวัดถัดไป (เช่น ลุกเดินหลังลุกนั่ง) */
+  Posture.prototype.learned = function () {
+    var o = { engine: ENGINE }, R = this.R || {}, self = this;
+    KEYS.forEach(function (k) { if (R[k]) o[k] = clamp((R[k].hi - R[k].lo) * 0.85, PRIOR[k] * 0.75, PRIOR[k] * 1.8); }); return o;
+  };
   /* เวลาที่สัญญาณข้ามเกณฑ์ แทรกค่าระหว่างสองเฟรม */
   function crossT(p0, t0, p1, t1, th) { if (p0 == null || p1 === p0) return t1; return t0 + clamp((th - p0) / (p1 - p0), 0, 1) * (t1 - t0); }
 
@@ -228,18 +319,19 @@
   function qualityText(q) { return "ความน่าเชื่อถือ" + q.level + " (" + (q.fps == null ? "–" : q.fps) + " เฟรม/วิ · เห็นตัว " + q.vis + "%)"; }
 
   /* ---------- โมเดล: เริ่มที่รุ่นที่เหมาะกับเครื่อง แล้วทดสอบความเร็วจริงก่อนวัด ---------- */
-  var POSE = null, MOD = null, FILESET = null, POSE_COUNT = 0, LOCK = null;
+  var POSE = null, MOD = null, FILESET = null, POSE_COUNT = 0, DERR = 0, SWAPPING = false;
   var LEVELS = [
     { k: "heavy", nm: "ละเอียดสูงสุด", u: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task" },
     { k: "full", nm: "ละเอียดสูง", u: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task" },
     { k: "lite", nm: "เร็ว", u: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task" }];
-  async function createLevel(i, say) {
+  /* numPoses 1: โมเดลติดตามคนเดิมต่อเนื่อง (ใส่ 2 ทำให้ตัวค้นหาคนทำงานทุกเฟรม ช้าและกระตุก) */
+  async function createLevel(i, say, only) {
     var L = LEVELS[i]; if (say) say("กำลังโหลดโมเดล" + L.nm + "…");
-    var dels = ["GPU", "CPU"];
+    var dels = only ? [only] : ["GPU", "CPU"];
     for (var d = 0; d < dels.length; d++) {
       try {
-        var p = await MOD.PoseLandmarker.createFromOptions(FILESET, { baseOptions: { modelAssetPath: L.u, delegate: dels[d] }, runningMode: "VIDEO", numPoses: 2, minPoseDetectionConfidence: .5, minPosePresenceConfidence: .5, minTrackingConfidence: .5 });
-        p.modelLevel = L.k; p.levelIx = i; return p;
+        var p = await MOD.PoseLandmarker.createFromOptions(FILESET, { baseOptions: { modelAssetPath: L.u, delegate: dels[d] }, runningMode: "VIDEO", numPoses: 1, minPoseDetectionConfidence: .4, minPosePresenceConfidence: .4, minTrackingConfidence: .4 });
+        p.modelLevel = L.k; p.levelIx = i; p.delegate = dels[d]; return p;
       } catch (e) {}
     }
     return null;
@@ -248,44 +340,46 @@
     if (POSE) return POSE;
     if (!MOD) { MOD = await import("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14"); FILESET = await MOD.FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"); }
     var coarse = false; try { coarse = matchMedia("(pointer:coarse)").matches; } catch (e) {}
-    var start = coarse ? 1 : 0;
-    try { var si = LEVELS.findIndex(function (l) { return l.k === localStorage.getItem("cs-pose-model2"); }); if (si >= 0) start = si; } catch (e) {}
-    for (var i = start; i < LEVELS.length; i++) { POSE = await createLevel(i, say); if (POSE) return POSE; }
+    var start = coarse ? 1 : 0, only = null;
+    try { var si = LEVELS.findIndex(function (l) { return l.k === localStorage.getItem("cs-pose-model3"); }); if (si >= 0) start = si; only = localStorage.getItem("cs-pose-del3") === "CPU" ? "CPU" : null; } catch (e) {}
+    for (var i = start; i < LEVELS.length; i++) { POSE = await createLevel(i, say, only); if (POSE) return POSE; }
     throw new Error("model-load-failed");
   }
-  /* วัดเวลาประมวลผลจริง 10 เฟรม ถ้าเกิน ~80 มิลลิวินาทีต่อเฟรม ลดรุ่นทันที (ไม่รอครั้งหน้า) */
+  function waitVideo(video, ms) {
+    return new Promise(function (res) { var t0 = Date.now(); (function chk() { if (video.readyState >= 2 && video.videoWidth > 0) return res(true); if (Date.now() - t0 > ms) return res(false); setTimeout(chk, 50); })(); });
+  }
+  /* สลับไปใช้ CPU เมื่อ GPU ของเครื่องนั้นประมวลผลไม่ได้ (บางรุ่นสร้างได้แต่ตรวจจับแล้วพัง) */
+  async function toCpu(say) {
+    if (SWAPPING || !POSE || POSE.delegate === "CPU") return false; SWAPPING = true;
+    try { var p = await createLevel(Math.max(POSE.levelIx, 1), say, "CPU"); if (p) { try { POSE.close(); } catch (e) {} POSE = p; DERR = 0; try { localStorage.setItem("cs-pose-del3", "CPU"); } catch (e) {} return true; } }
+    finally { SWAPPING = false; }
+    return false;
+  }
+  /* วัดเวลาประมวลผลจริง ถ้าเกิน ~70 มิลลิวินาทีต่อเฟรม ลดรุ่นทันที · ถ้าตรวจจับพังทุกเฟรม สลับไป CPU */
   async function tuneModel(video, say) {
-    for (var round = 0; round < 2; round++) {
-      var sum = 0, n = 0;
+    await waitVideo(video, 4000);
+    for (var round = 0; round < 3; round++) {
+      var sum = 0, n = 0, errs = 0;
       for (var i = 0; i < 12; i++) {
         await new Promise(function (r) { setTimeout(r, 30); });
-        var t = performance.now(); try { POSE.detectForVideo(video, t); } catch (e) { continue; }
+        var t = mono(); try { POSE.detectForVideo(video, t); } catch (e) { errs++; continue; }
         if (i >= 2) { sum += performance.now() - t; n++; }
       }
+      if (errs >= 8) { if (await toCpu(say)) continue; break; }
       var avg = n ? sum / n : 0;
-      if (avg <= 80 || POSE.levelIx >= LEVELS.length - 1) break;
+      if (avg <= 70 || POSE.levelIx >= LEVELS.length - 1) break;
       if (say) say("เครื่องนี้ประมวลผลช้า กำลังสลับเป็นโมเดลที่เร็วกว่า…");
-      var next = await createLevel(POSE.levelIx + 1, say); if (!next) break;
+      var next = await createLevel(POSE.levelIx + 1, say, POSE.delegate); if (!next) break;
       try { POSE.close(); } catch (e) {} POSE = next;
     }
-    try { localStorage.setItem("cs-pose-model2", POSE.modelLevel); } catch (e) {}
-  }
-  /* เลือกคนที่ถูกวัด: ครั้งแรกเอาคนที่ตัวใหญ่ที่สุดในภาพ จากนั้นล็อกคนที่อยู่ใกล้ตำแหน่งเดิมที่สุด */
-  function pickPerson(L) {
-    var best = -1, bs = -1;
-    for (var i = 0; i < L.length; i++) {
-      var lm = L[i], cx = (lm[LM.LHIP].x + lm[LM.RHIP].x) / 2, cy = midY(lm, LM.LHIP, LM.RHIP), h = Math.abs(midY(lm, LM.LANK, LM.RANK) - midY(lm, LM.LSH, LM.RSH));
-      var sc = LOCK ? -Math.hypot(cx - LOCK.x, cy - LOCK.y) : h;
-      if (best < 0 || sc > bs) { best = i; bs = sc; }
-    }
-    if (best >= 0) { var m = L[best]; LOCK = { x: (m[LM.LHIP].x + m[LM.RHIP].x) / 2, y: midY(m, LM.LHIP, LM.RHIP) }; }
-    return best;
+    try { localStorage.setItem("cs-pose-model3", POSE.modelLevel); } catch (e) {}
   }
   function detectPose(video, t) {
-    if (!POSE) return null; var r = null;
-    try { r = POSE.detectForVideo(video, t); } catch (e) { POSE_COUNT = 0; return null; }
+    if (!POSE || SWAPPING) return null; var r = null;
+    try { r = POSE.detectForVideo(video, t); DERR = 0; }
+    catch (e) { POSE_COUNT = 0; if (++DERR === 12) toCpu(); return null; }
     var L = r && r.landmarks ? r.landmarks : []; POSE_COUNT = L.length; if (!L.length) return null;
-    var i = pickPerson(L); return { lm: L[i], wl: r.worldLandmarks ? r.worldLandmarks[i] : null };
+    return { lm: L[0], wl: r.worldLandmarks ? r.worldLandmarks[0] : null };
   }
   function drawPose(ctx, canvas, video, lm) {
     if (canvas.width !== video.videoWidth) { canvas.width = video.videoWidth; canvas.height = video.videoHeight; }
@@ -322,7 +416,10 @@
     ".cscam .obs{background:rgba(255,255,255,.08);border-radius:12px;padding:8px 12px;font-size:12.5px;line-height:1.55}",
     ".cscam .btns{display:flex;flex-direction:column;gap:6px}.cscam .btns button{border:0;border-radius:14px;padding:13px;font:inherit;font-size:16px;font-weight:700;cursor:pointer;background:#17B3A1;color:#fff}.cscam .btns button.sec{background:rgba(255,255,255,.12)}.cscam .btns button.no{background:rgba(220,38,38,.85)}.cscam .btns button:disabled{opacity:.45}",
     ".cscam .row{display:flex;gap:6px}.cscam .row button{flex:1}",
-    ".cscam .foot{font-size:11.5px;color:rgba(255,255,255,.6);text-align:center;line-height:1.45}.cscam .foot a{color:#9FE3DA;cursor:pointer;text-decoration:underline}"
+    ".cscam .foot{font-size:11.5px;color:rgba(255,255,255,.6);text-align:center;line-height:1.45}.cscam .foot a{color:#9FE3DA;cursor:pointer;text-decoration:underline}",
+    ".cscam .meter{display:flex;align-items:center;gap:10px;font-size:12.5px;font-weight:700;color:rgba(255,255,255,.75)}.cscam .meter[hidden]{display:none}",
+    ".cscam .mb{position:relative;flex:1;height:12px;border-radius:99px;background:linear-gradient(90deg,rgba(96,165,250,.45),rgba(252,211,77,.45))}.cscam .mb .th{position:absolute;top:-3px;bottom:-3px;width:2px;background:rgba(255,255,255,.55)}",
+    ".cscam .mb b{position:absolute;top:50%;left:0;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(23,179,161,.9);transition:left .08s linear}.cscam .mb b.off{background:#64748B;box-shadow:none;left:50%!important}"
   ].join("\n");
   function injectCSS() { if (document.getElementById("cscamCSS")) return; var s = document.createElement("style"); s.id = "cscamCSS"; s.textContent = CSS; document.head.appendChild(s); }
 
@@ -341,25 +438,53 @@
     status("green", text + " — เตรียมตัว " + n); speak(text + " เตรียมตัว สาม");
     CD = setInterval(function () { n--; if (n >= 1) { status("green", "เตรียมตัว… " + n); speak(W[n]); } else { cdCancel(); status("green", "เริ่ม"); speak("เริ่ม"); fire(); } }, 1000);
   }
-  /* วนตามเฟรมวิดีโอจริง: ไม่ประมวลผลเฟรมซ้ำ และใช้เวลาจับภาพของเฟรมเป็นเวลาอ้างอิง */
+  /* วนตามเฟรมวิดีโอ: ลงทะเบียนเฟรมถัดไปก่อนประมวลผล (ข้อผิดพลาดในเฟรมหนึ่งไม่ทำให้ระบบหยุด)
+     เวลาทุกเฟรมมาจาก mono() ตัวเดียว · ตัวเฝ้าระวังปลุกวิดีโอที่ถูกหยุด และสลับวิธีวนถ้าเฟรมไม่มา */
+  var FPS = 0, LAST_FR = 0;
   function startLoop(video, fn) {
-    stopLoop(); var alive = { on: true }, lastCT = -1; LOOP = alive;
-    if (video.requestVideoFrameCallback) {
-      var step = function (now, meta) { if (!alive.on || !UI) return; fn(meta && meta.captureTime ? meta.captureTime : now); if (alive.on) video.requestVideoFrameCallback(step); };
-      video.requestVideoFrameCallback(step);
-    } else {
-      var raf = function () { if (!alive.on || !UI) return; if (video.currentTime !== lastCT) { lastCT = video.currentTime; fn(performance.now()); } requestAnimationFrame(raf); };
-      requestAnimationFrame(raf);
+    stopLoop(); var alive = { on: true, last: mono(), mode: video.requestVideoFrameCallback ? "rvfc" : "raf" }, lastCT = -1; LOOP = alive; FPS = 0; LAST_FR = 0;
+    function tick() {
+      if (!alive.on || !UI || video.readyState < 2 || !video.videoWidth) return;
+      var t = mono(); if (LAST_FR) { var dt = t - LAST_FR; if (dt > 0 && dt < 1000) FPS = FPS ? FPS * 0.9 + 100 / dt : 1000 / dt; } LAST_FR = t; alive.last = t;
+      try { fn(t); } catch (e) { try { console.warn("cs-camera", e); } catch (x) {} }
     }
+    function step() { if (!alive.on || !UI) return; if (alive.mode === "rvfc") video.requestVideoFrameCallback(step); tick(); }
+    function raf() { if (!alive.on || !UI || alive.mode !== "raf") return; requestAnimationFrame(raf); if (video.currentTime !== lastCT || video.currentTime === 0) { lastCT = video.currentTime; tick(); } }
+    if (alive.mode === "rvfc") video.requestVideoFrameCallback(step); else requestAnimationFrame(raf);
+    alive.wd = setInterval(function () {
+      if (!alive.on || !UI) { clearInterval(alive.wd); return; }
+      if (video.paused) { var pr = video.play(); if (pr && pr.catch) pr.catch(function () {}); }
+      if (mono() - alive.last > 1500 && alive.mode === "rvfc") { alive.mode = "raf"; requestAnimationFrame(raf); }
+    }, 1000);
   }
-  function stopLoop() { if (LOOP) LOOP.on = false; LOOP = null; }
+  function stopLoop() { if (LOOP) { LOOP.on = false; clearInterval(LOOP.wd); } LOOP = null; }
   function close() {
-    cdCancel(); stopLoop(); LOCK = null;
+    cdCancel(); stopLoop();
     if (STREAM) { STREAM.getTracks().forEach(function (t) { t.stop(); }); STREAM = null; }
     try { speechSynthesis.cancel(); } catch (e) {}
     if (UI) UI.remove(); UI = null;
   }
   function aspectOf(video) { return video.videoWidth && video.videoHeight ? video.videoWidth / video.videoHeight : 0.5625; }
+  /* แถบสด นั่ง ↔ ยืน และสถานะการมองเห็น — ให้ผู้วัดรู้ทันทีว่ากล้องจับท่าได้ */
+  function live(lm, f, p, extra) {
+    var pb = $("csPB"), tag = $("csTag");
+    if (pb) { if (p == null) pb.className = "off"; else { pb.className = ""; pb.style.left = (clamp(p, 0, 1) * 100) + "%"; } }
+    if (!tag) return;
+    var fps = Math.round(FPS) + " เฟรม/วิ";
+    if (DERR >= 3) tag.textContent = "ระบบตรวจจับขัดข้อง กำลังสลับโหมด… · " + fps;
+    else if (!lm) tag.textContent = "ไม่พบคนในภาพ · " + fps;
+    else if (!f || (f.v == null && f.k == null && f.h == null)) tag.textContent = "ยังไม่เห็นเข่า · " + fps;
+    else tag.textContent = (extra ? extra + " · " : "✓ จับท่าได้ · ") + fps + (f.k != null ? " · เข่า " + Math.round(f.k) + "°" : "");
+  }
+  function meter(on) { var m = $("csMeter"); if (m) m.hidden = !on; }
+  async function getStream() {
+    var sets = [{ facingMode: { ideal: FACING }, width: { ideal: 960 }, height: { ideal: 540 }, frameRate: { ideal: 30 } }, { facingMode: { ideal: FACING } }, {}], err = null;
+    for (var i = 0; i < sets.length; i++) {
+      try { return await navigator.mediaDevices.getUserMedia({ video: sets[i], audio: false }); }
+      catch (e) { err = e; if (e && (e.name === "NotAllowedError" || e.name === "SecurityError")) break; }
+    }
+    throw err;
+  }
 
   async function open(opts) {
     close(); injectCSS();
@@ -369,6 +494,7 @@
     UI.innerHTML = '<div class="st"><video id="csV" playsinline muted autoplay></video><canvas id="csK"></canvas>' +
       '<div class="top"><span class="tag" id="csTag">กำลังเปิดกล้อง…</span><button id="csFlip">🔄 สลับกล้อง</button></div></div>' +
       '<div class="dock"><div class="cnt" id="csCnt"><b id="csN">0</b><span id="csOf"></span><span class="clk" id="csClk"></span></div>' +
+      '<div class="meter" id="csMeter" hidden><span>นั่ง</span><div class="mb"><i class="th" style="left:30%"></i><i class="th" style="left:72%"></i><b id="csPB" class="off"></b></div><span>ยืน</span></div>' +
       '<div class="trk" id="csTrkW" hidden><i id="csTrk"></i></div><div class="chips" id="csChips" hidden></div>' +
       '<div class="coach" id="csC">' + esc(KIND_NM[opts.kind]) + '</div><div class="stat"><i id="csL"></i><span id="csT">กำลังเตรียมระบบ…</span></div>' +
       '<div class="obs" id="csObs" hidden></div><div class="btns" id="csB"></div>' +
@@ -380,86 +506,55 @@
     var video = $("csV"), canvas = $("csK"), ctx = canvas.getContext("2d"), tag = $("csTag");
     var toManual = [{ t: "จับเวลาเองแทน", fn: function () { close(); if (opts.onManual) opts.onManual(); } }];
     status("yellow", "กำลังเปิดกล้อง กรุณารอสักครู่");
-    try { STREAM = await navigator.mediaDevices.getUserMedia({ video: { facingMode: FACING, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30, min: 15 } }, audio: false }); }
-    catch (e) { if (FACING !== "user") { FACING = "user"; close(); return open(opts); } tag.textContent = "เปิดกล้องไม่ได้"; status("red", "เปิดกล้องไม่ได้ — อนุญาตกล้องในเบราว์เซอร์ หรือจับเวลาเองแทน"); buttons(toManual); return; }
-    if (!UI) return;
+    try { STREAM = await getStream(); }
+    catch (e) {
+      if (!UI) return;
+      var denied = e && (e.name === "NotAllowedError" || e.name === "SecurityError");
+      if (!denied && FACING !== "user") { FACING = "user"; close(); return open(opts); }
+      tag.textContent = "เปิดกล้องไม่ได้"; status("red", denied ? "ยังไม่ได้อนุญาตให้ใช้กล้อง — กดอนุญาตในเบราว์เซอร์ แล้วเปิดใหม่ หรือจับเวลาเองแทน" : "เปิดกล้องไม่ได้ — จับเวลาเองแทน"); buttons(toManual); return;
+    }
+    if (!UI) { STREAM.getTracks().forEach(function (t) { t.stop(); }); STREAM = null; return; }
     video.srcObject = STREAM;
     await Promise.race([video.play().catch(function () {}), new Promise(function (r) { setTimeout(r, 1500); })]);
     status("yellow", "กำลังโหลดระบบตรวจจับท่าทาง (ครั้งแรกใช้เน็ต)");
     try { await loadModel(function (t) { if (UI) tag.textContent = t; }); if (UI) { status("yellow", "กำลังทดสอบความเร็วของเครื่อง…"); await tuneModel(video, function (t) { if (UI) tag.textContent = t; }); } }
     catch (e) { if (!UI) return; tag.textContent = "โหลดโมเดลไม่สำเร็จ"; status("red", "โหลดระบบไม่สำเร็จ — ต้องต่ออินเทอร์เน็ตครั้งแรก หรือจับเวลาเองแทน"); buttons(toManual); return; }
     if (!UI) return;
-    tag.textContent = "พร้อม · โมเดล" + (LEVELS[POSE.levelIx] || {}).nm;
+    tag.textContent = "พร้อม · โมเดล" + (LEVELS[POSE.levelIx] || {}).nm + (POSE.delegate === "CPU" ? " (CPU)" : "");
     var fin = function (res) { close(); opts.onDone(res); };
     if (opts.kind === "balance") return runBalance(video, canvas, ctx, opts, fin);
-    var refs = opts.refs && opts.refs.sitRef != null && opts.refs.engine === ENGINE ? opts.refs : null;
-    var after = function (r) { if (opts.kind === "ftsst") runFtsst(video, canvas, ctx, r, fin); else runTug(video, canvas, ctx, r, fin); };
-    if (refs) after(refs); else runCalib(video, canvas, ctx, after);
+    var prior = opts.refs && opts.refs.engine === ENGINE ? opts.refs : null;
+    if (opts.kind === "ftsst") runFtsst(video, canvas, ctx, prior, fin); else runTug(video, canvas, ctx, prior, fin);
   }
 
-  /* สอบเทียบ: เก็บทั้งสัดส่วนสะโพกและมุมเข่าของท่านั่งและท่ายืน (มัธยฐาน 12 เฟรมล่าสุด) */
-  function runCalib(video, canvas, ctx, done) {
-    var sit = null, stand = null, cur = null, H = [], K = [], want = "sit", arming = false;
-    coach("<b>ขั้นเตรียม</b> วางมือถือพิงของให้นิ่ง (หรือถือสองมือ) ให้เห็นตั้งแต่ศีรษะถึงเท้า มุมเฉียงด้านข้างดีที่สุด<br>ให้ผู้สูงอายุ<b>นั่ง</b>ก่อน แล้วกดบันทึกท่านั่ง");
-    speak("ขั้นเตรียม วางมือถือให้นิ่ง ให้เห็นทั้งตัว ให้ผู้สูงอายุนั่งบนเก้าอี้ แล้วกดบันทึกท่านั่ง");
-    function med(a) { var b = a.filter(function (x) { return x != null; }).sort(function (x, y) { return x - y; }); return b.length ? b[Math.floor(b.length / 2)] : null; }
-    function btns() { buttons([{ t: sit ? "บันทึกท่านั่งใหม่" : "บันทึกท่านั่ง", cls: sit ? "sec" : "", id: "cSit", dis: !cur, fn: function () { cap("sit"); } }, { t: stand ? "บันทึกท่ายืนใหม่" : "บันทึกท่ายืน", cls: stand ? "sec" : "", id: "cStand", dis: !cur, fn: function () { cap("stand"); } }]); }
-    function cap(kind) {
-      cdCancel(); arming = false;
-      if (!cur || H.length < 6) { status("yellow", "ยังเห็นตัวไม่ชัดหรือยังไม่นิ่ง รอสักครู่"); return; }
-      var v = { h: med(H), k: med(K) };
-      if (kind === "sit") { sit = v; want = "stand"; speak("บันทึกท่านั่งแล้ว ให้ยืนขึ้น แล้วกดบันทึกท่ายืน"); coach("<b>บันทึกท่านั่งแล้ว ✓</b>" + (v.k != null ? " (เข่า " + Math.round(v.k) + "°)" : "") + " ให้ผู้สูงอายุ<b>ยืนขึ้นตัวตรง</b> แล้วกดบันทึกท่ายืน"); }
-      else { stand = v; want = "sit"; speak("บันทึกท่ายืนแล้ว"); coach("<b>บันทึกท่ายืนแล้ว ✓</b>" + (v.k != null ? " (เข่า " + Math.round(v.k) + "°)" : "")); }
-      H = []; K = []; btns();
-      if (sit && stand) {
-        var hOk = stand.h != null && sit.h != null && stand.h - sit.h >= 0.045, kOk = stand.k != null && sit.k != null && stand.k - sit.k >= 40;
-        if (!hOk && !kOk) { status("red", "ท่านั่งกับท่ายืนต่างกันน้อยเกินไป บันทึกใหม่ทีละท่า"); speak("ค่าสองท่าต่างกันน้อยเกินไป บันทึกใหม่ทีละท่า"); sit = null; stand = null; want = "sit"; btns(); return; }
-        status("green", "สอบเทียบเรียบร้อย" + (kOk ? " · ใช้มุมเข่าร่วมด้วย" : " · มองเข่าไม่ชัด ใช้สะโพกอย่างเดียว")); stopLoop();
-        var refs = { engine: ENGINE, sitRef: sit.h, standRef: hOk ? stand.h : null, sitK: kOk ? sit.k : null, standK: kOk ? stand.k : null };
-        setTimeout(function () { if (UI) done(refs); }, 700);
-      }
+  function runFtsst(video, canvas, ctx, prior, done) {
+    var PO = new Posture(prior), DET = new RepDetector({ target: 5 }), Q = new Quality(), running = false, tGo = 0, lastEvt = 0, readySince = null, arming = false, stall = false;
+    $("csOf").textContent = "/ 5 ครั้ง"; $("csTrkW").hidden = false; meter(true);
+    coach("ถือมือถือให้นิ่ง (หรือพิงของ) ห่าง 2–3 เมตร มุมเฉียงด้านข้างดีที่สุด ให้เห็น<b>ไหล่ สะโพก และเข่า</b> (ไม่ต้องเห็นเท้า)<br>ผู้สูงอายุ<b>นั่ง กอดอก</b> — จุดขาวบนแถบต้องอยู่ฝั่ง “นั่ง” แล้วกด <b>เริ่ม</b>");
+    speak("ทดสอบลุกนั่ง ห้าครั้ง ถือมือถือให้นิ่ง ให้เห็นไหล่ สะโพก และเข่า ให้ผู้สูงอายุนั่ง กอดอก เมื่อพร้อม กดเริ่ม");
+    function btns() { buttons(running ? [{ t: "นับไม่ขึ้น · หยุดแล้วจับเวลาเอง", cls: "sec", fn: function () { close(); done({ kind: "ftsst", manual: true }); } }] : [{ t: "▶ เริ่ม (นับ 3-2-1)", fn: arm, dis: arming }]); }
+    function arm() { if (running || arming) return; arming = true; btns(); countdown("พร้อมแล้ว", begin); }
+    function begin() {
+      arming = false; running = true; var seated = PO.arm(); tGo = mono(); lastEvt = tGo; DET.start(tGo);
+      status("green", seated === false ? "เริ่ม — (กล้องเห็นว่ายังไม่นั่งเต็มที่ นั่งให้สุดก่อนลุก)" : "เริ่ม — ลุกนั่งต่อเนื่อง 5 ครั้ง");
+      coach("ลุกยืนให้ตัวตรง แล้วนั่งลงให้ก้นแตะเก้าอี้ ทำต่อเนื่อง · จุดขาวต้องข้ามเส้นขวาเมื่อยืน และข้ามเส้นซ้ายเมื่อนั่ง"); btns();
     }
     btns();
     startLoop(video, function (t) {
-      var d = detectPose(video, t), lm = d && d.lm; drawPose(ctx, canvas, video, lm); var ok = false;
-      if (lm) {
-        var q = visOK(lm), s = sampleOf(lm, d.wl);
-        if (q < 0.85) { cur = null; status("yellow", "ยังเห็นตัวไม่ครบ ถอยให้เห็นตั้งแต่หัวถึงเท้า"); }
-        else if (s.h == null) { cur = null; status("yellow", "ถอยห่างอีกนิด ให้เห็นทั้งตัว"); }
-        else { cur = s; ok = true; H.push(s.h); K.push(s.kvis >= 0.5 ? s.k : null); if (H.length > 12) { H.shift(); K.shift(); } if (!arming) status("green", "เห็นตัวชัดแล้ว กด" + (want === "sit" ? "บันทึกท่านั่ง" : "บันทึกท่ายืน") + " หรือรอให้นับถอยหลัง"); }
-      } else { cur = null; status("yellow", "ยังไม่พบคนในภาพ"); }
-      var bs = $("cSit"), bt = $("cStand"); if (bs) bs.disabled = !ok; if (bt) bt.disabled = !ok;
-      if (!ok) { H = []; K = []; if (arming) { cdCancel(); arming = false; } }
-      var steady = H.length >= 12 && (Math.max.apply(null, H) - Math.min.apply(null, H)) < 0.012;
-      var need = want === "sit" ? !sit : !stand, far = want === "sit" || (sit && cur && ((cur.h - sit.h >= 0.045) || (cur.k != null && sit.k != null && cur.k - sit.k >= 40)));
-      if (ok && steady && need && far && !arming) { arming = true; var k = want; countdown(k === "sit" ? "เห็นว่านั่งแล้ว" : "เห็นว่ายืนแล้ว", function () { cap(k); }); }
-    });
-  }
-
-  function runFtsst(video, canvas, ctx, refs, done) {
-    var DET = new RepDetector({ target: 5 }), Q = new Quality(), running = false, tGo = 0, lastEvt = 0, readySince = null, arming = false, stall = false, pIdle = new OneEuro(2, 0.6);
-    $("csOf").textContent = "/ 5 ครั้ง"; $("csTrkW").hidden = false;
-    coach("ให้ผู้สูงอายุ<b>นั่ง กอดอก</b> กด <b>เริ่ม</b> แล้วรอสัญญาณ 3-2-1<br>ลุกยืนให้ตัวตรง แล้วนั่งให้ก้นแตะเก้าอี้ ต่อเนื่อง 5 ครั้ง · จับเวลาถึงตอน<b>นั่งลงครั้งที่ 5</b>");
-    speak("ทดสอบลุกนั่ง ห้าครั้ง ให้ผู้สูงอายุนั่ง กอดอก เมื่อพร้อม กดเริ่ม");
-    function btns() { buttons(running ? [{ t: "นับไม่ขึ้น · หยุดแล้วจับเวลาเอง", cls: "sec", fn: function () { close(); done({ kind: "ftsst", manual: true }); } }] : [{ t: "▶ เริ่ม (นับ 3-2-1)", fn: arm, dis: arming }]); }
-    function arm() { if (running || arming) return; arming = true; btns(); countdown("พร้อมแล้ว", begin); }
-    function begin() { arming = false; running = true; tGo = performance.now(); lastEvt = tGo; DET.start(tGo); status("green", "เริ่ม — ลุกนั่งต่อเนื่อง 5 ครั้ง"); coach("ลุกยืนให้ตัวตรง แล้วนั่งลงให้สุด ทำต่อเนื่อง"); btns(); }
-    btns();
-    startLoop(video, function (t) {
       var d = detectPose(video, t), lm = d && d.lm; drawPose(ctx, canvas, video, lm);
-      var q = lm ? visOK(lm) : null, p = lm && q >= 0.6 ? postureNorm(sampleOf(lm, d.wl), refs) : null;
+      var f = lm ? features(lm, d.wl, aspectOf(video)) : null, p = PO.push(f, t); live(lm, f, p);
       if (running) {
-        Q.add(t, q); var ev = DET.push(p, t);
+        Q.add(t, lm ? visCore(lm) : null); var ev = DET.push(p, t);
         $("csN").textContent = DET.reps; $("csTrk").style.width = (Math.min(DET.reps, 5) / 5 * 100) + "%"; $("csClk").textContent = ((t - tGo) / 1000).toFixed(1) + " วิ";
-        if (ev && (ev.event === "rep" || ev.event === "down")) lastEvt = t;
+        if (ev && (ev.event === "rep" || ev.event === "down")) { lastEvt = t; stall = false; }
         if (ev && ev.event === "rep") { status("green", ev.reps >= 5 ? "ยืนครบ 5 ครั้ง — นั่งลงให้เรียบร้อย" : "นับได้ " + ev.reps + " จาก 5 ครั้ง"); speak(["", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า นั่งลง"][ev.reps]); }
         if (ev && ev.event === "finish") { stopLoop(); return finish(ev); }
-        if (t - lastEvt > 20000 && !stall) { stall = true; status("red", "ระบบนับไม่ขึ้น ลุกให้ตัวตรง นั่งให้สุด หรือกดปุ่มจับเวลาเอง"); }
+        if (t - lastEvt > 15000 && !stall) { stall = true; status("red", p == null ? "กล้องมองไม่เห็นสะโพก/เข่า ขยับมือถือให้เห็นช่วงล่าง หรือกดจับเวลาเอง" : "ระบบนับไม่ขึ้น ลุกให้ตัวตรง นั่งให้สุด หรือกดปุ่มจับเวลาเอง"); }
       } else if (!arming) {
-        if (p == null) { readySince = null; status("yellow", lm ? "เห็นตัวไม่ครบ ขยับให้เห็นทั้งตัว" : "ยังไม่พบคนในภาพ"); }
-        else { var ps = pIdle.filter(p, t); if (ps < 0.25) { if (readySince == null) readySince = t; status("green", "เห็นท่านั่งแล้ว กดเริ่มเมื่อพร้อม"); if (t - readySince > 3000) arm(); } else { readySince = null; status("yellow", "ให้ผู้สูงอายุนั่งลงบนเก้าอี้ก่อน"); } }
+        if (p == null) { readySince = null; status("yellow", lm ? "เห็นตัวไม่พอ — ให้เห็นไหล่ สะโพก และเข่า" : "ยังไม่พบคนในภาพ — หันกล้องไปที่ผู้สูงอายุ ถอยให้เห็นครึ่งตัวล่าง"); }
+        else if (p < 0.35) { if (readySince == null) readySince = t; status("green", "เห็นท่านั่งแล้ว กดเริ่มเมื่อพร้อม"); if (t - readySince > 3000) arm(); }
+        else { readySince = null; status("yellow", "ให้ผู้สูงอายุนั่งลงบนเก้าอี้ก่อน (หรือกดเริ่มถ้านั่งอยู่แล้ว)"); }
       }
-      if (lm) $("csTag").textContent = "เห็นตัว " + Math.round(q * 100) + "%" + (POSE_COUNT > 1 ? " · มี " + POSE_COUNT + " คนในภาพ (ล็อกคนเดิม)" : "");
     });
     function finish(ev) {
       var gaps = []; for (var i = 1; i < DET.stamps.length; i++) gaps.push(Math.round((DET.stamps[i] - DET.stamps[i - 1]) / 100) / 10);
@@ -467,30 +562,31 @@
       var sec = Math.round(ev.elapsed * 10) / 10, ql = Q.report();
       status(ql.level === "ต่ำ" ? "yellow" : "green", "ครบ 5 ครั้ง " + sec.toFixed(1) + " วินาที · " + qualityText(ql) + (ev.endedStanding ? " · ไม่เห็นตอนนั่งลงครั้งสุดท้าย" : ""));
       speak("ครบห้าครั้ง ใช้เวลา " + Math.round(sec) + " วินาที");
-      setTimeout(function () { done({ kind: "ftsst", sec: sec, reps: DET.reps, gaps: gaps, cv: cv, reaction: ev.reaction != null ? Math.round(ev.reaction * 10) / 10 : null, endedStanding: ev.endedStanding, quality: ql, refs: refs }); }, 1600);
+      setTimeout(function () { done({ kind: "ftsst", sec: sec, reps: DET.reps, gaps: gaps, cv: cv, reaction: ev.reaction != null ? Math.round(ev.reaction * 10) / 10 : null, endedStanding: ev.endedStanding, quality: ql, refs: PO.learned() }); }, 1600);
     }
   }
 
-  function runTug(video, canvas, ctx, refs, done) {
-    var phase = "waitSit", TUG = null, Q = new Quality(), seatedSince = null, arming = false, pIdle = new OneEuro(2, 0.6);
-    $("csOf").textContent = "วินาที"; $("csN").textContent = "0.0";
-    coach("<b>เตรียม:</b> ทำจุดหมายห่างเก้าอี้ 3 เมตร · วางมือถือให้นิ่ง เห็นทั้งเก้าอี้และทางเดินตลอดเส้น (เดินออกจากกล้องหรือเดินขวางกล้องก็ได้)<br>ได้ยิน “เริ่ม” → ลุก เดินไปจุดหมาย หมุนกลับ มานั่งลง");
-    speak("ลุกเดินสามเมตร ให้ผู้สูงอายุนั่งพิงพนักเก้าอี้ วางมือถือให้เห็นทั้งเก้าอี้และทางเดิน เมื่อพร้อม กดเริ่ม");
+  function runTug(video, canvas, ctx, prior, done) {
+    var PO = new Posture(prior), phase = "waitSit", TUG = null, Q = new Quality(), seatedSince = null;
+    $("csOf").textContent = "วินาที"; $("csN").textContent = "0.0"; meter(true);
+    coach("<b>เตรียม:</b> ทำจุดหมายห่างเก้าอี้ 3 เมตร · ถือมือถือให้นิ่ง เห็นทั้งเก้าอี้และทางเดิน (เดินออกจากกล้องหรือเดินขวางกล้องก็ได้)<br>ได้ยิน “เริ่ม” → ลุก เดินไปจุดหมาย หมุนกลับ มานั่งลง");
+    speak("ลุกเดินสามเมตร ให้ผู้สูงอายุนั่งพิงพนักเก้าอี้ ถือมือถือให้เห็นทั้งเก้าอี้และทางเดิน เมื่อพร้อม กดเริ่ม");
     function btns() { buttons(phase === "waitSit" ? [{ t: "▶ เริ่ม (นับ 3-2-1)", fn: arm }] : phase === "active" ? [{ t: "ระบบไม่หยุด · จับเวลาเองแทน", cls: "sec", fn: function () { close(); done({ kind: "tug", manual: true }); } }] : []); }
-    function arm() { if (phase !== "waitSit") return; phase = "arming"; arming = true; btns(); countdown("พร้อมทดสอบ", begin); }
-    function begin() { phase = "active"; TUG = new TugTracker(); TUG.goAt = performance.now(); status("green", "เริ่ม — ลุกขึ้น เดินไปจุดหมาย หมุนกลับ มานั่งลง"); coach("ลุกขึ้น → เดินไปจุดหมาย → หมุนกลับ → นั่งลงพิงพนัก"); btns(); }
+    function arm() { if (phase !== "waitSit") return; phase = "arming"; btns(); countdown("พร้อมทดสอบ", begin); }
+    function begin() { phase = "active"; PO.arm(); TUG = new TugTracker(); TUG.goAt = mono(); status("green", "เริ่ม — ลุกขึ้น เดินไปจุดหมาย หมุนกลับ มานั่งลง"); coach("ลุกขึ้น → เดินไปจุดหมาย → หมุนกลับ → นั่งลงพิงพนัก"); btns(); }
     btns();
     startLoop(video, function (t) {
       var d = detectPose(video, t), lm = d && d.lm; drawPose(ctx, canvas, video, lm);
-      var q = lm ? visOK(lm) : null, ok = lm && q >= 0.6, p = ok ? postureNorm(sampleOf(lm, d.wl), refs) : null;
+      var asp = aspectOf(video), f = lm ? features(lm, d.wl, asp) : null, p = PO.push(f, t);
       if (phase === "waitSit") {
-        var ps = p == null ? null : pIdle.filter(p, t), seated = ps != null && ps < 0.22;
-        if (seated) { if (seatedSince == null) seatedSince = t; status("green", "เห็นว่านั่งอยู่แล้ว กดเริ่มเมื่อพร้อม"); if (t - seatedSince > 3000) arm(); }
-        else { seatedSince = null; status("yellow", lm ? "ให้ผู้สูงอายุกลับมานั่งพิงพนักก่อน" : "ขยับให้กล้องเห็นทั้งตัวและเก้าอี้"); }
-      } else if (phase === "active") {
-        Q.add(t, q);
-        var ev = TUG.pushFrame(p, ok ? bodyLen(lm, aspectOf(video)) : null, ok ? (lm[LM.LHIP].x + lm[LM.RHIP].x) / 2 * aspectOf(video) : null, t);
-        var PH = { waiting: "รอลุก", rising: "กำลังลุก", standing: "ยืนแล้ว", walkOut: "ขาไป " + Math.round(Math.min(1, TUG.E) * 100) + "%", walkBack: "ขากลับ" }; $("csTag").textContent = PH[TUG.state] || "";
+        live(lm, f, p);
+        if (p != null && p < 0.35) { if (seatedSince == null) seatedSince = t; status("green", "เห็นว่านั่งอยู่แล้ว กดเริ่มเมื่อพร้อม"); if (t - seatedSince > 3000) arm(); }
+        else { seatedSince = null; status("yellow", p == null ? (lm ? "เห็นตัวไม่พอ — ให้เห็นไหล่ สะโพก และเข่า" : "ยังไม่พบคนในภาพ — ให้เห็นทั้งตัวและเก้าอี้") : "ให้ผู้สูงอายุนั่งพิงพนักก่อน (หรือกดเริ่มถ้านั่งอยู่แล้ว)"); }
+      } else if (phase === "arming") { live(lm, f, p); }
+      else if (phase === "active") {
+        Q.add(t, lm ? visCore(lm) : null);
+        var ev = TUG.pushFrame(p, f ? bodyLen(lm, asp) : null, f ? (lm[LM.LHIP].x + lm[LM.RHIP].x) / 2 * asp : null, t);
+        var PH = { waiting: "รอลุก", rising: "กำลังลุก", standing: "ยืนแล้ว", walkOut: "ขาไป " + Math.round(Math.min(1, TUG.E) * 100) + "%", walkBack: "ขากลับ" }; live(lm, f, p, PH[TUG.state] || "");
         if (ev && ev.event === "walk") { coach("เดินไปให้ถึงจุดหมาย 3 เมตร"); speak("เดินไปที่จุดหมายได้เลย"); }
         if (ev && ev.event === "turn") { coach("ถึงจุดกลับแล้ว เดินกลับมานั่งลง"); speak("เดินกลับมานั่งลงได้เลย"); }
         if (ev && ev.event === "finish") { stopLoop(); return finish(ev); }
@@ -502,23 +598,23 @@
       status(sec >= 12 || ql.level === "ต่ำ" || !ev.distanceOk ? "yellow" : "green", "เสร็จสิ้น " + sec.toFixed(1) + " วินาที · " + (ev.distanceOk ? "เดินครบระยะ" : "ระยะอาจไม่ครบ 3 เมตร") + " (ประมาณ " + ev.meters + " ม.) · " + qualityText(ql));
       speak("เสร็จสิ้น ใช้เวลา " + Math.round(sec) + " วินาที");
       setTimeout(function () { done({ kind: "tug", sec: sec, out: ev.out != null ? Math.round(ev.out * 10) / 10 : null, back: ev.back != null ? Math.round(ev.back * 10) / 10 : null, distanceOk: !!ev.distanceOk, meters: ev.meters, turnSeen: ev.turnSeen, axis: ev.axis,
-        drift: ev.drift ? Math.round(ev.drift.max * 100) / 100 : null, gait: gaitLabel(ev.drift), reaction: ev.reaction != null ? Math.round(ev.reaction * 10) / 10 : null, quality: ql, refs: refs }); }, 1600);
+        drift: ev.drift ? Math.round(ev.drift.max * 100) / 100 : null, gait: gaitLabel(ev.drift), reaction: ev.reaction != null ? Math.round(ev.reaction * 10) / 10 : null, quality: ql, refs: PO.learned() }); }, 1600);
     }
   }
 
   function runBalance(video, canvas, ctx, opts, done) {
     var stage = opts.stage || 0, NM = opts.stageNames || ["ยืนเท้าชิดกัน", "ยืนเท้าเหลื่อม", "ยืนต่อเท้า", "ยืนขาเดียว"], SEC = 10;
-    var ENG = new BalanceEngine(stage), Q = new Quality(), phase = "setup", t0 = 0, armed = false, half = false, extraN = 0, pending = null;
+    var ENG = new BalanceEngine(stage), Q = new Quality(), phase = "setup", t0 = 0, armed = false, half = false, pending = null;
     var chips = $("csChips"); chips.hidden = false; chips.innerHTML = NM.map(function (n, i) { return '<span class="' + (i < stage ? "ok" : i === stage ? "on" : "") + '">' + (i + 1) + " " + esc(n.replace(/^ยืน/, "")) + "</span>"; }).join("");
     $("csOf").textContent = "วินาที"; $("csN").textContent = SEC; $("csTrkW").hidden = false;
     coach("<b>ท่าที่ " + (stage + 1) + " · " + esc(NM[stage]) + "</b><br>" + esc(opts.how || "") + "<br>วางมือถือให้นิ่ง · ผู้สูงอายุ<b>ยืนหันข้าง</b>ให้กล้อง ห่าง 2–3 เมตร เห็นเท้าชัด · ลูกหลานยืนอีกข้างพร้อมพยุง");
     speak("ท่าที่ " + (stage + 1) + " " + NM[stage] + " ยืนหันข้างให้กล้อง เมื่อพร้อม กดเริ่ม");
     function startCd(text) { if (phase !== "setup") return; phase = "arming"; buttons([]); countdown(text || "พร้อมแล้ว", beginHold); }
-    function beginHold() { phase = "holding"; t0 = performance.now(); ENG.beginHold(t0); status("green", "กำลังจับเวลา ยืนนิ่ง 10 วินาที ลืมตาไว้"); speak("เริ่มจับเวลา ยืนนิ่ง ๆ สิบวินาที"); coach("<b>" + esc(NM[stage]) + "</b> ยืนนิ่ง ๆ อย่าขยับเท้า");
-      buttons([{ t: "■ หยุดเพื่อความปลอดภัย", cls: "no", fn: function () { endStage(Math.min((performance.now() - t0) / 1000, SEC), "หยุดเพื่อความปลอดภัย", true); } }]); }
+    function beginHold() { phase = "holding"; t0 = mono(); ENG.beginHold(t0); status("green", "กำลังจับเวลา ยืนนิ่ง 10 วินาที ลืมตาไว้"); speak("เริ่มจับเวลา ยืนนิ่ง ๆ สิบวินาที"); coach("<b>" + esc(NM[stage]) + "</b> ยืนนิ่ง ๆ อย่าขยับเท้า");
+      buttons([{ t: "■ หยุดเพื่อความปลอดภัย", cls: "no", fn: function () { endStage(Math.min((mono() - t0) / 1000, SEC), "หยุดเพื่อความปลอดภัย", true); } }]); }
     function endStage(held, reason, safety) {
       if (phase !== "holding") return; phase = "confirm"; stopLoop();
-      var o = ENG.observe(), ql = Q.report(); if (extraN > 15) o.obs.push("เห็นคนมากกว่าหนึ่งคนในภาพ หากมีการช่วยพยุงถือว่าไม่ผ่าน");
+      var o = ENG.observe(), ql = Q.report();
       pending = { held: Math.round(held * 10) / 10, reason: reason || null, o: o, ql: ql }; var full = held >= SEC - 0.2;
       $("csObs").hidden = false; $("csObs").innerHTML = "<b>กล้องสังเกตเห็น</b> (ข้อมูลประกอบ ไม่ใช่คำตัดสิน)<br>· " + o.obs.map(esc).join("<br>· ") + "<br>· เห็นเท้าชัด " + o.feetSeen + "% ของเวลา · " + esc(qualityText(ql));
       status(o.suggest === "fail" ? "yellow" : "green", (full ? "ครบ 10 วินาที" : "หยุดที่ " + held.toFixed(1) + " วินาที") + " — ลูกหลานยืนยันผล");
@@ -530,7 +626,7 @@
     function settle(pass) { if (!pending) return; var p = pending; pending = null; done({ kind: "balance", stage: stage, held: p.held, pass: !!pass, obs: p.o.obs, suggest: p.o.suggest, feetSeen: p.o.feetSeen, reason: p.reason, quality: p.ql }); }
     buttons([{ t: "▶ เริ่มท่านี้ (นับ 3-2-1)", fn: function () { startCd(); } }]);
     startLoop(video, function (t) {
-      var d = detectPose(video, t), lm = d && d.lm; drawPose(ctx, canvas, video, lm);
+      var d = detectPose(video, t), lm = d && d.lm; drawPose(ctx, canvas, video, lm); live(lm, lm ? features(lm, d.wl, aspectOf(video)) : null, null, lm ? "เห็นตัว " + Math.round(visOK(lm) * 100) + "%" : "");
       if (phase === "setup") {
         var gg = ENG.frame(lm, t);
         if (!gg.seen) status("yellow", "ถอยให้กล้องเห็นทั้งตัว แล้วให้ยืนหันข้าง");
@@ -540,9 +636,9 @@
         else status(gg.ready ? "green" : "yellow", gg.ready ? "ยืนนิ่งแล้ว มองเท้าไม่ชัด — กดเริ่มเมื่อท่าถูกต้อง" : "ยืนนิ่ง ๆ ในท่า " + NM[stage]);
       } else if (phase === "arming") { ENG.frame(lm, t); }
       else if (phase === "holding") {
-        var h = ENG.frame(lm, t), el = (performance.now() - t0) / 1000; Q.add(t, lm ? visOK(lm) : null);
+        var h = ENG.frame(lm, t), el = (t - t0) / 1000; Q.add(t, lm ? visOK(lm) : null);
         $("csN").textContent = Math.max(0, SEC - el).toFixed(0); $("csTrk").style.width = Math.min(100, el / SEC * 100) + "%";
-        if (POSE_COUNT > 1) extraN++; if (h.remind) speak(h.remind);
+        if (h.remind) speak(h.remind);
         if (!half && el >= SEC / 2) { half = true; speak("เหลืออีก ห้า วินาที"); }
         if (h.dropped) { speak("ระวัง ให้ลูกหลานเข้าไปช่วยพยุง"); return endStage(Math.min(el, SEC), h.why); }
         if (h.fail) return endStage(Math.min(el, SEC), h.why);
@@ -551,7 +647,7 @@
     });
   }
 
-  var PURE = { ENGINE: ENGINE, OneEuro: OneEuro, RepDetector: RepDetector, TugTracker: TugTracker, BalanceEngine: BalanceEngine, Quality: Quality, postureNorm: postureNorm, kneeAngle3D: kneeAngle3D, hipRatio: hipRatio, visOK: visOK, gaitLabel: gaitLabel, crossT: crossT, LM: LM };
+  var PURE = { ENGINE: ENGINE, OneEuro: OneEuro, RepDetector: RepDetector, TugTracker: TugTracker, BalanceEngine: BalanceEngine, Quality: Quality, Posture: Posture, features: features, absPosture: absPosture, makeClock: makeClock, visCore: visCore, bodyLen: bodyLen, kneeAngle3D: kneeAngle3D, hipRatio: hipRatio, visOK: visOK, gaitLabel: gaitLabel, crossT: crossT, LM: LM };
   g.CSCam = Object.assign({ open: open, close: close, isOpen: function () { return !!UI; }, supported: function () { return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia); },
     ttsOn: ttsOn, setTts: function (on) { try { localStorage.setItem("cs3:tts", on ? "on" : "off"); } catch (e) {} } }, PURE);
   if (typeof module !== "undefined" && module.exports) module.exports = PURE;

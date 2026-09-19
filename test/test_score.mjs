@@ -151,7 +151,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("ปิดแถบชวนติดตั้งแล้วจำไว้", /localStorage\.setItem\(A2HS\.key, "no"\)/.test(app));
   ok("ทางลัด ?go= เปิดหน้าที่ต้องการได้", /\["fall", "test", "history", "meds", "video", "appts"\]\.indexOf\(goto\)/.test(app));
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
-  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-16/.test(sw));
+  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-17/.test(sw));
 }
 
 /* ใบส่งต่อแบบเอกสารทางการ: ทุกสัญญาณต้องมีเกณฑ์ เหตุผล และเอกสารอ้างอิง */
@@ -242,7 +242,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("กล้องไม่บันทึกภาพ ไม่มีสั่งงานด้วยเสียง/ยกมือ", !/MediaRecorder|SpeechRecognition|webkitSpeechRecognition|handsUp|gestureTick/.test(cam) && /ไม่อัปโหลดภาพหรือวิดีโอ/.test(cam));
   ok("เริ่มด้วยกล้องหลัง (ลูกหลานถือมือถือ) และสลับกล้องได้", /FACING = "environment"/.test(cam) && /csFlip/.test(cam));
   ok("ระบบกลางรับวิธีวัดต่อท่า และผลทรงตัวที่คนยืนยัน", /methods: \{ ftsst:/.test(cl) && /!\(rec\.balFail && rec\.balFail\[i\]\)/.test(cl));
-  ok("เอนจินกล้องรุ่น 2: มุมเข่า 3 มิติ + One-Euro + เวลาเฟรมจริง + ทดสอบความเร็วเครื่อง + ล็อกคน", K.ENGINE === "cam-2.0" && /worldLandmarks/.test(cam) && /requestVideoFrameCallback/.test(cam) && /captureTime/.test(cam) && /async function tuneModel/.test(cam) && /function pickPerson/.test(cam));
+  ok("เอนจินกล้องรุ่น 3: นาฬิกาเดียวเดินหน้า + ไม่ต้องเห็นเท้า + ไม่มีขั้นสอบเทียบ + แถบนั่ง/ยืนสด + สลับ CPU", K.ENGINE === "cam-3.0" && /worldLandmarks/.test(cam) && /requestVideoFrameCallback/.test(cam) && !/captureTime/.test(cam.replace(/\/\*[\s\S]*?\*\//g, "")) && /detectForVideo\(video, t\)/.test(cam) && /async function tuneModel/.test(cam) && !/function runCalib/.test(cam) && /id="csMeter"/.test(cam) && /async function toCpu/.test(cam) && /numPoses: 1/.test(cam));
   ok("ลุกนั่งจับเวลาถึงนั่งลงครั้งที่ 5 ตรงกับวิธีกดเอง", /if \(this\.reps >= this\.target\) return this\._fin\(td, false\)/.test(cam) && /กดหยุดตอนก้นแตะเก้าอี้ครั้งที่ 5/.test(app));
   const B = new K.BalanceEngine(0);
   ok("BalanceEngine จำแนกท่าจากเท้า: ซ้อน=ชิด · เหลื่อมครึ่ง=กึ่งต่อ · เต็มเท้า=ต่อเท้า · ยก=ขาเดียว", B._stance({ gap: 0.2, lift: 0.1 }) === 0 && B._stance({ gap: 0.6, lift: 0.1 }) === 1 && B._stance({ gap: 1.2, lift: 0.1 }) === 2 && B._stance({ gap: 0.2, lift: 0.9 }) === 3);
