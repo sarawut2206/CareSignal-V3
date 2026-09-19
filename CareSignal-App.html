@@ -865,8 +865,8 @@ function renderStopwatch(v, k, prog) {
     (cam && sw.val == null && !running
       ? '<div class="card" style="border:2px solid var(--brand)"><h3>📷 กล้องช่วยนับและจับเวลา</h3><p class="sub" style="margin:0 0 10px">' + camHint + '</p>' +
         (CSCam.supported() ? '<button class="btn" style="margin:0" onclick="camStart(\'' + k + '\')">เปิดกล้อง</button>' : '<div class="warn">เครื่องนี้เปิดกล้องจากเบราว์เซอร์ไม่ได้ ใช้การกดจับเวลาแทน</div>') +
-        '<p class="sub" style="font-size:12.5px;margin:8px 0 0">ภาพประมวลผลในเครื่อง ไม่อัปโหลด เก็บเฉพาะตัวเลข · ยกมาจาก CareSignal V2</p></div>'
-      : '<div class="card"><div class="big" id="clock">' + shown.toFixed(1) + '<small> วินาที</small>' + (sw.cam && !running ? '<br><span class="camtag">📷 วัดด้วยกล้อง</span>' : '') + '</div>' +
+        '<p class="sub" style="font-size:12.5px;margin:8px 0 0">ภาพประมวลผลในเครื่อง ไม่อัปโหลด เก็บเฉพาะตัวเลข · เอนจินรุ่น 2: มุมเข่า 3 มิติ</p></div>'
+      : '<div class="card"><div class="big" id="clock">' + shown.toFixed(1) + '<small> วินาที</small>' + (sw.cam && !running ? '<br><span class="camtag">📷 วัดด้วยกล้อง' + (sw.cam.quality ? ' · ความน่าเชื่อถือ' + sw.cam.quality.level : '') + '</span>' + (sw.cam.quality && sw.cam.quality.level === "ต่ำ" ? '<br><small style="font-size:13px;color:var(--c2);font-weight:500;letter-spacing:0">ภาพไม่ชัดหรือเครื่องช้า ควรวัดซ้ำ หรือกดจับเวลาเอง</small>' : '') : '') + '</div>' +
         '<button class="sw ' + (running ? "stop" : "") + '" onclick="swToggle()">' + (running ? "■ หยุด" : (sw.val != null ? "↻ จับใหม่" : "▶ เริ่ม")) + '</button>' +
         (cam && !running ? '<button class="btn ghost" style="margin:8px 0 0" onclick="camStart(\'' + k + '\')">📷 วัดด้วยกล้องอีกครั้ง</button>' : '') + '</div>') +
     (sw.val != null && !running ? (k !== "balance" ? '<button class="btn" onclick="swSave()">บันทึก ' + sw.val.toFixed(1) + ' วินาที</button>'

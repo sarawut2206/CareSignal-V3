@@ -81,9 +81,10 @@
       testQuality: { measured_by: "carer", ended_by: ct ? "camera" : "carer", alone: false, alone_skip: false, distance_ok: rec.tug != null ? (ct ? ct.distanceOk : true) : null },
       detail: {
         method: anyCam ? "camera-pose" : "manual", measured_by: "carer", carer_name: carerName || null, app: "v3",
+        cam_engine: anyCam ? ((cf || ct || {}).quality || {}).engine || "cam-2.0" : null, ftsst_quality: cf ? cf.quality || null : null,
         methods: { ftsst: cf ? "camera-pose" : "manual", tug: ct ? "camera-pose" : "manual", balance: rec.balCam && rec.balCam.some(Boolean) ? "camera-pose" : "manual" },
         steadi: { fell: rec.fallsCount != null && rec.fallsCount >= 1 && rec.fallsCount !== 9, worried: !!rec.worried, unsteady: null },
-        tug: ct ? { out: ct.out, back: ct.back, distance_ok: ct.distanceOk, turn_by: "camera", back_by: "camera", ended_by: "camera", mark_turn: false, reach: ct.reaction, drift: ct.drift, gait: ct.gait || null }
+        tug: ct ? { out: ct.out, back: ct.back, distance_ok: ct.distanceOk, turn_by: "camera", back_by: "camera", ended_by: "camera", mark_turn: false, reach: ct.reaction, drift: ct.drift, gait: ct.gait || null, meters: ct.meters == null ? null : ct.meters, quality: ct.quality || null }
                 : { out: null, back: null, distance_ok: rec.tug != null ? true : null, turn_by: null, back_by: null, ended_by: "carer", mark_turn: false, reach: null, drift: null },
         balance: { passed: balPassed, seconds: rec.balance,
                    label: balPassed == null ? null : "ทรงตัวผ่าน " + balPassed + " จาก 4 ท่า" + (rec.balance != null ? " · ยืนต่อเท้า " + rec.balance + " วินาที" : ""),
