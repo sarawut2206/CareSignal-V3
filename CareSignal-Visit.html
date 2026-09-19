@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ห้องตรวจวิดีโอ · CareSignal</title>
+<meta name="theme-color" content="#0E1726">
+<meta name="robots" content="noindex">
+<link rel="icon" href="./favicon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&family=Noto+Sans+Thai:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+/* ห้องเดียวใช้ได้ทั้งสองฝั่ง: ?as=staff (ผู้เชี่ยวชาญ จากคอนโซล) · ?as=member (ครอบครัว จากแอป)
+   เลือกช่อง session ให้ตรงกับแอปที่เปิดมา ไม่ให้ token ของสองแอปทับกัน */
+(function () { var q = new URLSearchParams(location.search); window.CS_AUTH_SCOPE = q.get("as") === "staff" ? "staff" : "member"; })();
+</script>
+<style>
+:root{--bg:#0E1726;--panel:#172235;--ink:#F3F6FA;--ink2:#A9B6C8;--brand:#17B3A1;--red:#E5484D;--line:#27354C}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Noto Sans Thai","Prompt",system-ui,sans-serif}
+button{font:inherit}
+.gate,.room{position:fixed;inset:0;top:var(--cs-demo-h,0px);display:flex;flex-direction:column}
+.gate{align-items:center;justify-content:center;padding:24px;text-align:center;gap:14px;overflow:auto}
+.gate .card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:22px 20px;max-width:440px;width:100%}
+.gate h1{font-family:Prompt,sans-serif;font-size:22px;margin:6px 0 4px}
+.gate p{color:var(--ink2);font-size:14.5px;line-height:1.6;margin:6px 0}
+.gate .pv{width:100%;aspect-ratio:4/3;border-radius:16px;background:#0A111D;object-fit:cover;transform:scaleX(-1);margin:10px 0}
+.gate .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;font-size:13px;color:var(--ink2)}
+.gate .row span{background:#0A111D;border:1px solid var(--line);border-radius:99px;padding:4px 10px}
+.bigbtn{width:100%;border:0;border-radius:999px;background:var(--brand);color:#fff;font-weight:600;font-size:17px;padding:14px;cursor:pointer;margin-top:8px}
+.bigbtn:disabled{opacity:.5}
+.link{color:var(--ink2);font-size:14px}
+.err{color:#FFB4B0;font-size:14px;line-height:1.55}
+.room{display:none}
+.top{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;gap:10px}
+.top b{font-family:Prompt,sans-serif;font-size:15px}.top small{display:block;color:var(--ink2);font-size:12px}
+.pill{background:#0A111D;border:1px solid var(--line);border-radius:99px;padding:5px 12px;font-variant-numeric:tabular-nums;font-size:14px}
+.pill.live{border-color:#1F7A55;color:#6EE7B7}
+.stage{position:relative;flex:1;margin:0 10px;border-radius:22px;overflow:hidden;background:#0A111D}
+.stage video{width:100%;height:100%;object-fit:cover;background:#0A111D}
+#rv{object-fit:contain}
+.ph{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:20px}
+.ph .av{width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#34C3B0,#0B766A);display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:600}
+.ph b{font-size:18px}.ph span{color:var(--ink2);font-size:14px;line-height:1.55;max-width:320px}
+.self{position:absolute;right:12px;top:12px;width:28%;max-width:170px;aspect-ratio:3/4;border-radius:14px;overflow:hidden;border:2px solid rgba(255,255,255,.25);background:#000}
+.self video{transform:scaleX(-1)}.self.back video{transform:none}
+.self .ph{font-size:12px;color:var(--ink2)}
+.msg{margin:8px 12px 0;background:#3A2A12;border:1px solid #7A5A22;color:#FFE2A8;border-radius:12px;padding:9px 12px;font-size:13.5px;line-height:1.55}
+.ctl{display:flex;justify-content:center;gap:14px;padding:14px 10px calc(env(safe-area-inset-bottom) + 10px)}
+.ctl button{width:64px;border:0;background:none;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;font-size:12px}
+.ctl button i{width:56px;height:56px;border-radius:50%;background:#26344B;display:flex;align-items:center;justify-content:center}
+.ctl button[aria-pressed="false"] i{background:#F3F6FA;color:#0E1726}
+.ctl button.end i{background:var(--red)}
+.ctl svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.privacy{text-align:center;color:var(--ink2);font-size:11.5px;margin:0 0 calc(env(safe-area-inset-bottom) + 8px)}
+</style>
+</head>
+<body>
+
+<div class="gate" id="gate">
+  <div class="card">
+    <div style="font-size:13px;color:var(--ink2)">CareSignal · ห้องตรวจวิดีโอ</div>
+    <h1 id="gTitle">กำลังเตรียมห้องตรวจ…</h1>
+    <p id="gSub">ตรวจสอบนัดและสิทธิ์เข้าห้อง</p>
+    <video class="pv" id="gPv" autoplay playsinline muted hidden></video>
+    <div class="row" id="gTips" hidden><span>📶 ใช้ Wi-Fi ถ้ามี</span><span>💡 นั่งหันหน้าเข้าหาแสง</span><span>🔊 เปิดเสียงลำโพง</span></div>
+    <div class="err" id="gErr" hidden></div>
+    <button class="bigbtn" id="gGo" hidden>เข้าห้องตรวจ</button>
+    <p style="margin-top:12px"><a class="link" id="gBack" href="#">‹ กลับ</a></p>
+  </div>
+  <p class="link" style="max-width:440px;font-size:12.5px">การตรวจทางวิดีโอต่อตรงระหว่างเครื่องของท่านกับผู้เชี่ยวชาญ CareSignal ไม่บันทึกภาพหรือเสียง · ถ้าฉุกเฉิน โทร 1669 ทันที</p>
+</div>
+
+<div class="room" id="room">
+  <div class="top"><div><b id="rTitle">ห้องตรวจวิดีโอ</b><small id="rSub"></small></div><div class="pill" id="timer">00:00</div></div>
+  <div class="stage">
+    <video id="rv" autoplay playsinline></video>
+    <div class="ph" id="rph"><div class="av" id="rAv">?</div><b id="rName">กำลังรอ…</b><span id="rStat">รออีกฝ่ายเข้าห้อง</span></div>
+    <div class="self" id="self"><video id="lv" autoplay playsinline muted></video><div class="ph" id="lph" hidden>ปิดกล้อง</div></div>
+  </div>
+  <div class="msg" id="msg" hidden></div>
+  <nav class="ctl">
+    <button id="bMic" aria-pressed="true"><i><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></i><span>ไมค์</span></button>
+    <button id="bCam" aria-pressed="true"><i><svg viewBox="0 0 24 24"><rect x="3" y="6.5" width="12.5" height="11" rx="2.2"/><path d="M15.5 10.5l5-3v9l-5-3z"/></svg></i><span>กล้อง</span></button>
+    <button id="bFlip"><i><svg viewBox="0 0 24 24"><path d="M4 8h12l-3-3M20 16H8l3 3"/></svg></i><span>สลับกล้อง</span></button>
+    <button id="bEnd" class="end"><i><svg viewBox="0 0 24 24"><path d="M3.5 14.5c5-5 12-5 17 0l-2.5 2.5-3-1.5v-2.5a9 9 0 0 0-6 0v2.5l-3 1.5z"/></svg></i><span>วางสาย</span></button>
+  </nav>
+  <p class="privacy">ต่อตรงระหว่างเครื่อง · ไม่บันทึกภาพหรือเสียง · ฉุกเฉินโทร 1669</p>
+</div>
+
+<script src="./cs-backend.js?v=5"></script>
+<script src="./cs-demo.js?v=2"></script>
+<script src="./cs-teleconsult.js?v=1"></script>
+<script>
+/* ============================================================
+   ห้องตรวจวิดีโอ — WebRTC ต่อตรงระหว่างสองเครื่อง
+   ------------------------------------------------------------
+   · สิทธิ์เข้าห้องตรวจที่ฐานข้อมูล (appt_join): เฉพาะคู่สนทนา ก่อนนัด 15 นาทีถึงหลังหมดเวลา 60 นาที
+     รหัสห้องได้จาก appt_join เท่านั้น ตาราง appointments ไม่เปิดคอลัมน์นี้ให้อ่าน
+   · ส่งสัญญาณเชื่อมต่อ (offer/answer/ICE) ผ่าน Supabase Realtime broadcast ชื่อช่อง = รหัสห้อง
+     ภาพและเสียงวิ่งตรงระหว่างเครื่อง ไม่ผ่านเซิร์ฟเวอร์ของ CareSignal และไม่มีการบันทึก
+   · ผู้เชี่ยวชาญเป็นฝ่ายเริ่มเชื่อมต่อ ครอบครัวเป็นฝ่ายตอบ — เข้าห้องก่อนหลังได้ทั้งสองแบบ
+   · ใช้ STUN สาธารณะ ไม่มี TURN: เครือข่ายที่บล็อกการต่อตรง (องค์กรบางแห่ง) จะต่อไม่ติด
+     หน้าจอจะบอกให้เปลี่ยนเครือข่ายหรือโทรศัพท์คุยแทน — ก่อนใช้งานจริงควรเพิ่ม TURN
+   ============================================================ */
+var q = new URLSearchParams(location.search), APPT = q.get("a"), AS = q.get("as") === "staff" ? "staff" : "member", DEMO = q.get("demo");
+var ICE = [{ urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302"] }];
+var info = null, local = null, pc = null, ch = null, me = Math.random().toString(36).slice(2), pend = [];
+var t0 = null, tick = null, facing = "user", connected = false, failT = null, ended = false;
+function $(i) { return document.getElementById(i); }
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+function backURL(done) {
+  if (AS === "staff") return "./CareSignal-Staff.html" + (DEMO ? "?demo=" + encodeURIComponent(DEMO) : "") + (done ? "#tele=" + encodeURIComponent(APPT) : "");
+  return "./CareSignal-App.html?go=appts";
+}
+$("gBack").href = backURL(false);
+function gateErr(m) { $("gErr").innerHTML = m; $("gErr").hidden = false; }
+function say(m) { var el = $("msg"); if (!m) { el.hidden = true; return; } el.innerHTML = m; el.hidden = false; }
+
+(async function boot() {
+  if (!APPT) { $("gTitle").textContent = "ลิงก์ไม่ครบ"; gateErr("ลิงก์นี้ไม่มีรหัสนัด เปิดห้องจากแอปหรือคอนโซลอีกครั้ง"); return; }
+  try { await CSBackend.init(); } catch (e) {}
+  var u = null; try { u = await CSBackend.currentUser(); } catch (e) {}
+  if (!u) {
+    $("gTitle").textContent = "ต้องเข้าสู่ระบบก่อน";
+    gateErr(AS === "staff" ? "เข้าสู่ระบบในคอนโซลเจ้าหน้าที่ แล้วกดเข้าห้องจากเมนู นัดตรวจทางวิดีโอ" : "เปิดแอป CareSignal และเชื่อมบัญชีระบบกลาง แล้วกดเข้าห้องจากหน้านัดหมาย");
+    return;
+  }
+  $("gTitle").textContent = AS === "staff" ? "พร้อมเข้าห้องตรวจ" : "พร้อมพบผู้เชี่ยวชาญ";
+  $("gSub").textContent = "กดปุ่มด้านล่าง เบราว์เซอร์จะขออนุญาตใช้กล้องและไมค์ — กด อนุญาต";
+  $("gTips").hidden = false; $("gGo").hidden = false;
+})();
+
+$("gGo").addEventListener("click", async function () {
+  var b = this; b.disabled = true; b.textContent = "กำลังเข้าห้อง…"; $("gErr").hidden = true;
+  try { info = await CSBackend.joinAppointment(APPT); }
+  catch (e) { b.disabled = false; b.textContent = "เข้าห้องตรวจ"; gateErr(esc(e.message || e)); return; }
+  await openMedia();
+  $("gate").style.display = "none"; $("room").style.display = "flex";
+  var dn = (window.CSTele && CSTele.DEST[info.destination]) || "ผู้เชี่ยวชาญ";
+  $("rTitle").textContent = info.as === "clinician" ? "ตรวจทางวิดีโอ · " + dn : "พบ" + dn;
+  $("rSub").textContent = "นัด " + (window.CSTele ? CSTele.when(info.slot_at) : "") + " · " + (info.minutes || 20) + " นาที";
+  $("rName").textContent = info.other || (info.as === "clinician" ? "ผู้เอาประกัน" : dn);
+  $("rAv").textContent = String(info.other || "?").replace(/^สาธิต\s*/, "").charAt(0) || "?";
+  if (info.demo) return demoCall();
+  signal();
+});
+
+async function openMedia() {
+  var tries = [{ video: { facingMode: facing, width: { ideal: 960 }, height: { ideal: 720 } }, audio: { echoCancellation: true, noiseSuppression: true } }, { audio: true }];
+  for (var i = 0; i < tries.length; i++) {
+    try { local = await navigator.mediaDevices.getUserMedia(tries[i]); break; } catch (e) { local = null; }
+  }
+  if (!local) say("เปิดกล้องและไมค์ไม่ได้ — กดรูปแม่กุญแจที่แถบที่อยู่ แล้วอนุญาตกล้องและไมค์ จากนั้นรีเฟรชหน้า · ยังเห็นและได้ยินอีกฝ่ายได้");
+  else if (!local.getVideoTracks().length) say("ใช้เสียงอย่างเดียว เพราะเปิดกล้องไม่ได้");
+  $("lv").srcObject = local; $("lph").hidden = !!(local && local.getVideoTracks().length);
+}
+function startTimer() {
+  if (t0) return; t0 = Date.now(); $("timer").classList.add("live");
+  tick = setInterval(function () { var s = Math.floor((Date.now() - t0) / 1000); $("timer").textContent = String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0"); }, 1000);
+}
+
+/* ---------- โหมดสาธิต: ไม่มีอีกฝ่ายจริง ---------- */
+function demoCall() {
+  $("rStat").innerHTML = "โหมดสาธิต — ฝั่งครอบครัวจำลอง ไม่มีการเชื่อมต่อจริง<br>ลองกดไมค์ กล้อง และวางสายเพื่อไปกรอกแบบยืนยันผล";
+  startTimer();
+}
+
+/* ---------- ส่งสัญญาณผ่าน Supabase Realtime ---------- */
+function send(m) { if (!ch) return; m.from = me; ch.send({ type: "broadcast", event: "sig", payload: m }); }
+function signal() {
+  var sb = CSBackend.client();
+  if (!sb || !sb.channel) { say("เชื่อมต่อระบบกลางไม่ได้ — ตรวจอินเทอร์เน็ตแล้วรีเฟรช"); return; }
+  ch = sb.channel("visit-" + info.room, { config: { broadcast: { self: false, ack: false } } });
+  ch.on("broadcast", { event: "sig" }, function (e) { onSig(e.payload || {}); });
+  ch.subscribe(function (st) {
+    if (st === "SUBSCRIBED") { send({ t: "hello" }); $("rStat").textContent = "รออีกฝ่ายเข้าห้อง — ห้องเปิดอยู่"; }
+    else if (st === "CHANNEL_ERROR" || st === "TIMED_OUT") say("ช่องสัญญาณขัดข้อง กำลังลองใหม่…");
+  });
+}
+function newPC() {
+  if (pc) { try { pc.close(); } catch (e) {} }
+  pend = []; connected = false;
+  pc = new RTCPeerConnection({ iceServers: ICE });
+  if (local) local.getTracks().forEach(function (t) { pc.addTrack(t, local); });
+  else { pc.addTransceiver("audio", { direction: "recvonly" }); pc.addTransceiver("video", { direction: "recvonly" }); }
+  pc.ontrack = function (e) { var v = $("rv"); if (v.srcObject !== e.streams[0]) { v.srcObject = e.streams[0]; v.play().catch(function () {}); } };
+  pc.onicecandidate = function (e) { if (e.candidate) send({ t: "ice", c: e.candidate.toJSON ? e.candidate.toJSON() : e.candidate }); };
+  pc.onconnectionstatechange = function () {
+    var s = pc.connectionState;
+    if (s === "connected") { connected = true; clearTimeout(failT); $("rph").style.display = "none"; say(""); startTimer(); }
+    else if (s === "disconnected") { $("rph").style.display = ""; $("rStat").textContent = "สัญญาณหลุด กำลังเชื่อมใหม่…"; }
+    else if (s === "failed") failMsg();
+  };
+  clearTimeout(failT); failT = setTimeout(function () { if (!connected) failMsg(); }, 25000);
+}
+function failMsg() {
+  say("เชื่อมต่อวิดีโอไม่ได้ — เครือข่ายบางแห่งบล็อกการต่อตรง ลองสลับเป็น Wi-Fi หรือ 4G แล้วกดวางสายและเข้าห้องใหม่ · ถ้ายังไม่ได้ ให้คุยทางโทรศัพท์แทน");
+}
+async function flush() { var l = pend; pend = []; for (var i = 0; i < l.length; i++) { try { await pc.addIceCandidate(l[i]); } catch (e) {} } }
+async function onSig(m) {
+  if (!m || m.from === me || ended) return;
+  try {
+    if (m.t === "hello") {
+      $("rStat").textContent = "อีกฝ่ายเข้าห้องแล้ว กำลังเชื่อมต่อ…";
+      if (info.as === "clinician") {
+        newPC();
+        var o = await pc.createOffer(); await pc.setLocalDescription(o);
+        send({ t: "offer", sdp: { type: pc.localDescription.type, sdp: pc.localDescription.sdp } });
+      } else if (!m.reply) send({ t: "hello", reply: true });
+    } else if (m.t === "offer" && info.as === "member") {
+      newPC();
+      await pc.setRemoteDescription(m.sdp);
+      var a = await pc.createAnswer(); await pc.setLocalDescription(a);
+      send({ t: "answer", sdp: { type: pc.localDescription.type, sdp: pc.localDescription.sdp } });
+      await flush();
+    } else if (m.t === "answer" && info.as === "clinician" && pc) {
+      await pc.setRemoteDescription(m.sdp); await flush();
+    } else if (m.t === "ice" && m.c) {
+      if (pc && pc.remoteDescription) await pc.addIceCandidate(m.c).catch(function () {}); else pend.push(m.c);
+    } else if (m.t === "bye") {
+      $("rph").style.display = ""; $("rStat").textContent = "อีกฝ่ายวางสายแล้ว"; $("rv").srcObject = null;
+      if (pc) { try { pc.close(); } catch (e) {} pc = null; }
+    }
+  } catch (e) { console.warn("signal", e); }
+}
+
+/* ---------- ปุ่มควบคุม ---------- */
+$("bMic").addEventListener("click", function () {
+  var t = local && local.getAudioTracks()[0]; if (!t) return;
+  t.enabled = !t.enabled; this.setAttribute("aria-pressed", t.enabled); this.querySelector("span").textContent = t.enabled ? "ไมค์" : "ปิดไมค์อยู่";
+});
+$("bCam").addEventListener("click", function () {
+  var t = local && local.getVideoTracks()[0]; if (!t) return;
+  t.enabled = !t.enabled; this.setAttribute("aria-pressed", t.enabled); $("lph").hidden = t.enabled;
+});
+$("bFlip").addEventListener("click", async function () {
+  if (!local || !local.getVideoTracks().length) return;
+  facing = facing === "user" ? "environment" : "user";
+  try {
+    var ns = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing } }), nt = ns.getVideoTracks()[0], old = local.getVideoTracks()[0];
+    if (pc) { var snd = pc.getSenders().filter(function (s) { return s.track && s.track.kind === "video"; })[0]; if (snd) await snd.replaceTrack(nt); }
+    local.removeTrack(old); old.stop(); local.addTrack(nt); $("lv").srcObject = local;
+    $("self").classList.toggle("back", facing === "environment");
+  } catch (e) { facing = facing === "user" ? "environment" : "user"; say("เครื่องนี้สลับกล้องไม่ได้"); }
+});
+function hangup() {
+  ended = true;
+  try { send({ t: "bye" }); } catch (e) {}
+  if (pc) { try { pc.close(); } catch (e) {} }
+  if (local) local.getTracks().forEach(function (t) { t.stop(); });
+  if (ch) { try { ch.unsubscribe(); } catch (e) {} }
+  clearInterval(tick); clearTimeout(failT);
+}
+$("bEnd").addEventListener("click", async function () {
+  if (info && info.as === "clinician") {
+    if (!confirm("จบการตรวจ แล้วไปกรอกแบบยืนยันผลครั้งสุดท้าย?")) return;
+    hangup();
+    try { await CSBackend.finishAppointment(APPT, false); } catch (e) {}
+    location.href = backURL(true);
+  } else {
+    if (!confirm("วางสาย?")) return;
+    hangup(); location.href = backURL(false);
+  }
+});
+window.addEventListener("pagehide", function () { if (!ended && info) { try { send({ t: "bye" }); } catch (e) {} } });
+</script>
+</body>
+</html>

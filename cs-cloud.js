@@ -155,12 +155,16 @@
     return B.reportEvent("fall", { where: f.where, injury: f.injury, getup: f.getup, app: "v3", reported_by: "carer" }, fallSeverity(f));
   }
   async function careStatus() {
-    if (!connected()) return { cases: [], referrals: [], followUps: [] };
+    if (!connected()) return { cases: [], referrals: [], followUps: [], appts: [], prev: [] };
     var cases = await B.myCases(5), refs = [], fu = [];
     try { refs = await B.myReferrals(); } catch (e) {}
     /* นัดติดตามที่เจ้าหน้าที่ตั้งไว้ — แสดงในหน้านัดหมายของครอบครัว */
     try { fu = await B.listFollowUps(null, 30); } catch (e) {}
-    return { cases: cases, referrals: refs, followUps: fu };
+    /* นัดวิดีโอคอลกับผู้เชี่ยวชาญ ผลยืนยันครั้งสุดท้าย และผลพิจารณาบริการป้องกัน (27_teleconsult.sql) */
+    var appts = [], prev = [];
+    try { if (B.myAppointments) appts = await B.myAppointments(); } catch (e) {}
+    try { if (B.myPrevention) prev = await B.myPrevention(); } catch (e) {}
+    return { cases: cases, referrals: refs, followUps: fu, appts: appts, prev: prev };
   }
   async function pullAssessments() {
     if (!connected()) return [];

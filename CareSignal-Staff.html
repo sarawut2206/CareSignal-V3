@@ -392,6 +392,21 @@ td.num{font-family:var(--mono);white-space:nowrap}
 .hdmeta .clk{font-family:var(--mono);color:var(--ink)}
 
 /* ---------- แถวตัวเลขสรุป ---------- */
+/* เมนูที่บทบาทนี้ไม่มีสิทธิ์ต้องหายจริง — display:flex ของปุ่มเคยทับแอตทริบิวต์ hidden */
+.side [hidden],.tabs [hidden],.side .sgrp[hidden]{display:none!important}
+.tflow{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+.tflow span{flex:1;min-width:120px;background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.4;color:var(--ink2)}
+.tflow b{display:block;color:var(--ink);font-size:12.5px}
+.tsec{margin:16px 0 8px;font-size:15px}
+.tchip{display:inline-block;border-radius:99px;padding:2px 9px;font-size:11.5px;font-weight:600;background:var(--surf2);color:var(--ink2)}
+.tchip.ok{background:#E3F4EA;color:#0A7A3E}.tchip.warn{background:#FFF1DB;color:#8A5300}.tchip.bad{background:#FDECEC;color:#B3261E}
+.tact{display:flex;gap:6px;flex-wrap:wrap}
+.tact a,.tact button{font:inherit;font-size:13px;border-radius:9px;padding:8px 12px;cursor:pointer;border:1px solid var(--line);background:var(--surf);color:var(--ink);text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.tact .go{background:var(--brand);color:#fff;border-color:var(--brand);font-weight:600}
+.tact .go[aria-disabled="true"]{opacity:.45;pointer-events:none}
+.tlock{border:1.5px solid #E7B7B3;background:#FDF2F1;border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.55;margin-bottom:12px}
+.tlock b{color:#9B1C12}
+.tpreview{border:1px dashed var(--line);border-radius:10px;padding:10px 12px;background:var(--surf2);font-size:13px;line-height:1.6}
 .calls{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(330px,100%),1fr));gap:12px}
 .callc{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:10px;border-left:5px solid var(--line)}
 .callc[data-late="1"]{border-left-color:var(--c1)}.callc[data-late="0"]{border-left-color:var(--c2)}.callc[data-late="-1"]{border-left-color:var(--line)}
@@ -491,10 +506,12 @@ td.num{font-family:var(--mono);white-space:nowrap}
     <button data-go="mine"><svg viewBox="0 0 24 24"><path d="M9 11l2 2 4-4"/><rect x="4" y="4" width="16" height="16" rx="3"/></svg><span>งานของฉัน</span><span class="cnt" data-cnt="mine" hidden></span></button>
     <button data-go="queue"><svg viewBox="0 0 24 24"><path d="M5 4h14v16l-7-3-7 3z"/></svg><span>คิวงาน</span><span class="cnt" data-cnt="queue" hidden></span></button>
     <button data-go="call"><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><span>โทรติดตามวันนี้</span><span class="cnt" data-cnt="call" hidden></span></button>
+    <button data-go="appt"><svg viewBox="0 0 24 24"><rect x="3" y="6.5" width="12.5" height="11" rx="2.2"/><path d="M15.5 10.5l5-3v9l-5-3z"/></svg><span>นัดตรวจทางวิดีโอ</span><span class="cnt" data-cnt="appt" hidden></span></button>
     <button data-go="refer"><svg viewBox="0 0 24 24"><path d="M4 12h13"/><path d="M13 7l5 5-5 5"/><circle cx="20" cy="12" r="1.6"/></svg><span>ติดตามการส่งต่อ</span><span class="cnt" data-cnt="refer" hidden></span></button>
     <button data-go="meds"><svg viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="10" rx="2"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/><path d="M12 12v4"/></svg><span>ทบทวนยา</span><span class="cnt" data-cnt="meds" hidden></span></button>
     <div class="sgrp">ภาพรวมและรายงาน</div>
     <button data-go="port"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span>พอร์ตความเสี่ยง</span><span class="cnt" data-cnt="port" hidden></span></button>
+    <button data-go="prev"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12.5l2 2 4-4.5"/><path d="M12 7v2"/></svg><span>คำขอบริการป้องกัน</span><span class="cnt" data-cnt="prev" hidden></span></button>
     <button data-go="reports"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg><span>รายงาน</span><span class="cnt" data-cnt="reports" hidden></span></button>
     <button data-go="audit"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg><span>บันทึกตรวจสอบ</span><span class="cnt" data-cnt="audit" hidden></span></button>
     <div class="sgrp">ระบบ</div>
@@ -511,18 +528,21 @@ td.num{font-family:var(--mono);white-space:nowrap}
     <button data-go="mine" aria-selected="true"><svg viewBox="0 0 24 24"><path d="M9 11l2 2 4-4"/><rect x="4" y="4" width="16" height="16" rx="3"/></svg><b>งานของฉัน</b></button>
     <button data-go="queue"><svg viewBox="0 0 24 24"><path d="M5 4h14v16l-7-3-7 3z"/></svg><b>คิวเคส</b></button>
     <button data-go="call"><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><b>โทรติดตาม</b></button>
+    <button data-go="appt"><svg viewBox="0 0 24 24"><rect x="3" y="6.5" width="12.5" height="11" rx="2.2"/><path d="M15.5 10.5l5-3v9l-5-3z"/></svg><b>นัดวิดีโอ</b></button>
     <button data-go="refer"><svg viewBox="0 0 24 24"><path d="M4 12h13"/><path d="M13 7l5 5-5 5"/><circle cx="20" cy="12" r="1.6"/></svg><b>ส่งต่อ</b></button>
     <button data-go="meds"><svg viewBox="0 0 24 24"><rect x="4" y="9" width="16" height="10" rx="2"/><path d="M8 9V6a4 4 0 0 1 8 0v3"/><path d="M12 12v4"/></svg><b>ทบทวนยา</b></button>
     <button data-go="port"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg><b>พอร์ต</b></button>
+    <button data-go="prev"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12.5l2 2 4-4.5"/><path d="M12 7v2"/></svg><b>คำขอป้องกัน</b></button>
     <button data-go="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.4-3.4 4-5 7-5s5.6 1.6 7 5"/></svg><b>ฉัน</b></button>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </div>
 
 <script>window.CS_AUTH_SCOPE="staff";/* แอปเจ้าหน้าที่ใช้ช่อง session แยกจากแอปสมาชิกเสมอ */</script>
-<script src="./cs-backend.js?v=4"></script>
-<script src="./cs-demo.js?v=1"></script>
+<script src="./cs-backend.js?v=5"></script>
+<script src="./cs-demo.js?v=2"></script>
 <script src="./cs-referral-forms.js?v=1"></script>
+<script src="./cs-teleconsult.js?v=1"></script>
 <script src="./cs-meds.js?v=4"></script>
 <script src="./cs-hospitals.js?v=2"></script>
 <script>
@@ -553,14 +573,14 @@ var BOARD={
          "อาการเตือน เช่น เจ็บหน้าอก หน้ามืด อ่อนแรงเฉียบพลัน","โรคประจำตัวและรายการยา",
          "ผลลุกเดิน (TUG) ลุกนั่ง 5 ครั้ง การทรงตัว และกิจวัตรประจำวันแบบสรุป",
          "ข้อเสนอจากเภสัชกรและนักกายภาพบำบัด","ประวัติการส่งต่อและผลติดตาม"],
-    act:["ยืนยันความเสี่ยง","ขอข้อมูลเพิ่ม","นัดพบแพทย์","ส่งต่อเภสัชกร นักกายภาพบำบัด หรือพยาบาล",
+    act:["นัดตรวจทางวิดีโอคอล แล้วกรอกแบบยืนยันผลครั้งสุดท้าย","ยืนยันความเสี่ยง","ขอข้อมูลเพิ่ม","นัดพบแพทย์","ส่งต่อเภสัชกร นักกายภาพบำบัด หรือพยาบาล",
          "ให้คำแนะนำ","ปิดเคสพร้อมเหตุผล"]},
   pharmacist:{ic:"💊",nm:"กระดานทบทวนยา",en:"Pharmacy Review Board",
     tag:"เคสที่รอทบทวนยา",
     see:["คิวรอทบทวนยา","รูปฉลากยาที่ผู้เอาประกันยินยอมให้เปิดดู","ชื่อยา ขนาดยา และเวลาที่รับประทาน",
          "อาการเวียนศีรษะ ง่วงซึม หรือหน้ามืด","ประวัติหกล้มที่สัมพันธ์กับช่วงเริ่มยาหรือเปลี่ยนยา",
          "โรคประจำตัวที่เกี่ยวข้อง","ข้อเสนอจากแพทย์และพยาบาล"],
-    act:["ยืนยันว่าควรทบทวนยา","ระบุยาหรือกลุ่มยาที่ควรประเมินเพิ่ม",
+    act:["นัดวิดีโอคอลดูซองยาจริง แล้วกรอกแบบยืนยันผลครั้งสุดท้าย","ยืนยันว่าควรทบทวนยา","ระบุยาหรือกลุ่มยาที่ควรประเมินเพิ่ม",
          "เสนอให้แพทย์ผู้สั่งยาทบทวน","ขอข้อมูลเพิ่ม","ส่งต่อแพทย์","นัดติดตามอาการ"],
     warn:"ระบบไม่มีปุ่มสั่งหยุดยาหรือเปลี่ยนยา การปรับยาเป็นของผู้สั่งใช้ยาเท่านั้น ใช้ถ้อยคำว่า “เสนอให้ผู้สั่งยาทบทวน”"},
   physio:{ic:"🦵",nm:"กระดานประเมินการเคลื่อนไหว",en:"Physical Therapy Board",
@@ -569,7 +589,7 @@ var BOARD={
          "ผลการทรงตัวทั้ง 4 ท่า","ใช้ไม้เท้าหรือวอล์กเกอร์ และต้องมีคนพยุงหรือไม่",
          "ข้อสังเกตการเดิน 8 ข้อตาม STEADI","อาการปวดเข่า สะโพก หรือหลัง",
          "กิจวัตรที่เกี่ยวกับการเดินและการย้ายตัว","ผลครั้งก่อนเพื่อดูแนวโน้ม"],
-    act:["ยืนยันว่าควรประเมินกายภาพ","ขอข้อมูลหรือวิดีโอเพิ่ม","นัดประเมิน",
+    act:["นัดวิดีโอคอลดูท่าลุกนั่งและการเดินในบ้าน แล้วกรอกแบบยืนยันผลครั้งสุดท้าย","ยืนยันว่าควรประเมินกายภาพ","ขอข้อมูลหรือวิดีโอเพิ่ม","นัดประเมิน",
          "สร้างโปรแกรมฝึก พร้อมเป้าหมาย ท่า จำนวนครั้ง และข้อควรระวัง",
          "แนะนำอุปกรณ์ช่วยเดิน","ส่งต่อแพทย์","นัดประเมินซ้ำ 7 · 30 · 90 วัน"]},
   nurse:{ic:"🧑‍⚕️",nm:"กระดานประสานการดูแล",en:"Nursing Coordination Board",
@@ -585,7 +605,7 @@ var BOARD={
     tag:"ทั้งพอร์ต — จัดคิวและส่งต่อ",
     see:["คิวเคสทั้งพอร์ตเรียงตามความเร่งด่วน","เคสที่เกินกำหนดติดต่อ",
          "สัญญาณเสี่ยงของแต่ละเคส","สถานะการส่งต่อและผลที่กลับมา","ภาพรวมการทำงานของทีม"],
-    act:["รับเคสและมอบหมายงาน","บันทึกการติดต่อ","ส่งต่อให้วิชาชีพที่ตรงปัญหา",
+    act:["รับเคสและมอบหมายงาน","บันทึกการติดต่อ","ส่งต่อให้วิชาชีพที่ตรงปัญหา","ส่งคำขอบริการป้องกันแบบไม่ระบุชื่อให้บริษัทประกัน เมื่อผู้เชี่ยวชาญยืนยันว่าเสี่ยงจริงและครอบครัวยินยอม",
          "รวมผลเป็นแผนดูแล","กำหนดวันติดตามและปิดเคส"]}
 };
 BOARD.admin=BOARD.care_manager;
@@ -1176,6 +1196,253 @@ async function callV(){
       toast(f&&f.status==="missed"?"ไม่รับสายครบ 3 ครั้ง — บันทึกว่าขาดการติดตาม":r==="no_answer"?"เลื่อนไปโทรใหม่พรุ่งนี้":r==="callback"?"เลื่อนนัดโทรอีก 2 วัน":"บันทึกผลแล้ว");
       callV(); navCounts&&navCounts() }
     catch(e){ toast("บันทึกไม่สำเร็จ: "+(e.message||e)); b.disabled=false }
+  })});
+}
+/* ============================================================
+   นัดตรวจทางวิดีโอคอล — เสนอเวลา · เข้าห้อง · แบบยืนยันผลครั้งสุดท้าย
+   ------------------------------------------------------------
+   ผู้เชี่ยวชาญเสนอเวลา 1–3 ช่วงจากใบส่งต่อ → ครอบครัวเลือกในแอป (ผู้ประสานงานเลือกแทนได้เมื่อแจ้งทางโทรศัพท์)
+   → เข้าห้องวิดีโอคอล (ต่อตรงระหว่างเครื่อง ไม่บันทึกภาพหรือเสียง) → ผู้เชี่ยวชาญกรอกแบบยืนยันผลครั้งสุดท้าย
+   → ผลกลับ CareSignal และใบส่งต่อเดิม → ผู้ประสานงานส่งคำขอบริการป้องกันแบบไม่ระบุชื่อให้บริษัทประกัน
+   กฎทั้งหมดบังคับซ้ำที่ฐานข้อมูล (27_teleconsult.sql) หน้าจอเป็นเพียงชั้นการใช้งาน
+   ============================================================ */
+var TELE_PREP={pharmacist:"เตรียมซองยาและยาทุกตัวที่ใช้อยู่ไว้ข้างตัว",physio:"เตรียมเก้าอี้มีพนักพิง พื้นที่เดิน 3 เมตร และใส่รองเท้าที่ใช้ประจำ",
+  doctor:"เตรียมรายการยาและผลตรวจล่าสุด (ถ้ามี) ให้ลูกหลานอยู่ด้วย",nurse:"ให้ผู้ดูแลหลักอยู่ด้วย และพาดูห้องน้ำกับทางเดินในบ้าน"};
+function apptFR(a){ var f=a&&a.final_reports; return Array.isArray(f)?(f[0]||null):(f||null) }
+function teleFlowHTML(){
+  return '<div class="tflow">'+[["1 เสนอเวลา","ผู้เชี่ยวชาญเสนอ 1–3 ช่วง"],["2 ครอบครัวเลือก","ในแอป พร้อมเลือกความยินยอม"],["3 วิดีโอคอล","ผ่านแอป ไม่บันทึกภาพ"],
+    ["4 ยืนยันผลครั้งสุดท้าย","ลงชื่อ + เลขใบอนุญาต"],["5 ผู้ประสานงานส่ง","แบบไม่ระบุชื่อ"],["6 บริษัทประกัน","อนุมัติบริการป้องกัน"]]
+    .map(function(x){return '<span><b>'+x[0]+'</b>'+x[1]+'</span>'}).join("")+'</div>';
+}
+async function teleV(){
+  var TC=window.CSTele;
+  head("นัดตรวจทางวิดีโอคอล", isClinician()
+    ? "นัดของ"+(ROLE_NM[ST.role]||"")+" — เข้าห้องตรวจ แล้วกรอกแบบยืนยันผลครั้งสุดท้าย"
+    : "นัดทั้งหมด · ผลยืนยันจากผู้เชี่ยวชาญ · ส่งคำขอบริการป้องกันให้บริษัทประกัน");
+  if(ST.role==="insurer"){ V.innerHTML='<div class="warnbox"><b>หน้านี้เฉพาะทีมดูแล</b><br>บริษัทประกันดูคำขอที่ผ่านการยืนยันแล้วที่เมนู <b>คำขอบริการป้องกัน</b></div>'; return; }
+  if(!TC){ V.innerHTML='<div class="warnbox">โมดูลนัดตรวจทางไกลยังไม่โหลด ลองรีเฟรชหน้า</div>'; return; }
+  V.innerHTML='<div class="empty">กำลังโหลดนัด…</div>';
+  var res={rows:[]}, fr={rows:[]};
+  try{ res=await CSBackend.listAppointments() }catch(e){ res={rows:[],err:e} }
+  if(res.disabled){
+    V.innerHTML=roleBarHTML()+teleFlowHTML()+'<div class="warnbox"><b>ยังไม่ได้เปิดใช้ระบบนัดตรวจทางวิดีโอบนฐานข้อมูลนี้</b><br>'+
+      'ผู้ดูแลระบบต้องรัน <code>supabase/27_teleconsult.sql</code> ก่อน · ทดลองครบวงจรได้ในโหมดสาธิต (<code>?demo=1</code>)</div>';
+    return;
+  }
+  if(isCoordinator()){ try{ fr=await CSBackend.listFinalReports() }catch(e){} }
+  var rows=res.rows||[], now=Date.now();
+  rows.forEach(function(a){ a._fr=apptFR(a); a._w=TC.joinWindow(a,now);
+    a._t=a.slot_at?new Date(a.slot_at).getTime():(a.options&&a.options[0]?new Date(a.options[0]).getTime():0) });
+  var live=rows.filter(function(a){return a._w.open});
+  var needRep=rows.filter(function(a){return (a.status==="done"||(a.status==="in_call"&&!a._w.open))&&!a._fr});
+  var upcoming=rows.filter(function(a){return a.status==="confirmed"&&!a._w.open&&a._t>now}).sort(function(x,y){return x._t-y._t});
+  var proposed=rows.filter(function(a){return a.status==="proposed"});
+  var finished=rows.filter(function(a){return !!a._fr});
+  var reps=(fr.rows||[]), toSend=reps.filter(function(f){return f.cm_status==="new"});
+  head("นัดตรวจทางวิดีโอคอล", isClinician()?"นัดของ"+(ROLE_NM[ST.role]||""):"นัดทั้งหมดและผลยืนยัน", rows.length);
+
+  function who(a){ var p=a.profiles||{}; return esc(p.display_name||"—")+' <span class="sub" style="display:inline">'+esc(p.pseudonym||"")+'</span>' }
+  function card(a){
+    var p=a.profiles||{}, f=a._fr, st=TC.APPT_ST[a.status]||a.status;
+    var chip=a.status==="confirmed"?"ok":a.status==="proposed"?"warn":(a.status==="cancelled"||a.status==="no_show")?"bad":"";
+    var time=a.slot_at?'<b>'+esc(TC.when(a.slot_at))+'</b> · '+(a.minutes||20)+' นาที'
+      :'เสนอไว้: '+(a.options||[]).map(function(o){return esc(TC.when(o))}).join(" / ");
+    var acts=[];
+    if(isClinician()&&["confirmed","in_call"].indexOf(a.status)>=0)
+      acts.push('<a class="go" href="'+esc(TC.visitURL(a.id,"staff"))+'" aria-disabled="'+(!a._w.open)+'">📹 เข้าห้องตรวจ</a>'+(a._w.open?'':'<span class="sub" style="display:inline;margin-left:4px">'+esc(a._w.why)+'</span>'));
+    if(isClinician()&&!f&&(a.status==="done"||a.status==="in_call"))
+      acts.push('<button class="go" data-final="'+a.id+'">📝 กรอกแบบยืนยันผลครั้งสุดท้าย</button>');
+    if(isCoordinator()&&a.status==="proposed") acts.push('<button data-choose="'+a.id+'">เลือกเวลาแทนครอบครัว</button>');
+    if(["proposed","confirmed"].indexOf(a.status)>=0) acts.push('<button data-cancel="'+a.id+'">ยกเลิกนัด</button>');
+    if(f) acts.push('<button data-rep="'+a.id+'">ดูแบบยืนยันผล</button>');
+    if(isCoordinator()&&(p.carer_phone||p.phone)) acts.push('<a href="tel:'+esc(p.carer_phone||p.phone)+'">📞 '+(p.carer_phone?"ลูกหลาน":"ผู้เอาประกัน")+'</a>');
+    return '<div class="callc" data-late="'+(a._w.open?0:-1)+'">'+
+      '<div class="top"><div class="av">'+esc(String(p.display_name||"?").replace(/^สาธิต\s*/,"").charAt(0))+'</div>'+
+        '<div class="nm"><b>'+who(a)+'</b><small>'+esc(DEST_NM[a.destination]||a.destination)+' · วิดีโอคอล</small></div>'+
+        '<div class="due"><span class="tchip '+chip+'">'+esc(st)+'</span></div></div>'+
+      '<div class="kind"><em>📹</em><div>'+time+(a.note?'<br><span class="sub" style="display:inline">เตรียม: '+esc(a.note)+'</span>':'')+'</div></div>'+
+      (a.status!=="proposed"&&a.status!=="cancelled"?'<div class="meta"><span>'+(a.share_insurer?'✓ ครอบครัวยินยอมส่งสรุปผลแบบไม่ระบุชื่อให้บริษัทประกัน':'ครอบครัวไม่ยินยอมส่งสรุปผลให้บริษัทประกัน')+'</span></div>':'')+
+      (f?'<div class="meta"><span>ผล: <b style="color:'+(TC.RISK[f.risk]||["",""])[1]+'">'+esc((TC.RISK[f.risk]||[f.risk])[0])+'</b></span></div>':'')+
+      (acts.length?'<div class="tact">'+acts.join("")+'</div>':'')+'</div>';
+  }
+  function repCard(f){
+    var p=f.profiles||{}, pr=Array.isArray(f.prevention_requests)?f.prevention_requests[0]:f.prevention_requests, ap=Array.isArray(f.appointments)?f.appointments[0]:f.appointments;
+    var rk=TC.RISK[f.risk]||["—","#555"], acts=[];
+    if(f.cm_status==="new"){ acts.push('<button class="go" data-send="'+f.id+'">ส่งคำขอบริการป้องกันให้บริษัทประกัน</button>'); acts.push('<button data-skip="'+f.id+'">ไม่ต้องส่ง</button>') }
+    var dec=pr?'<div class="meta"><span>บริษัทประกัน ('+esc(pr.code)+'): <b>'+esc(TC.DECISION[pr.decision]||pr.decision)+'</b>'+
+      ((pr.approved||[]).length?' — '+pr.approved.map(function(k){return esc(TC.svcName(k))}).join(" · "):'')+(pr.decision_note?'<br>'+esc(pr.decision_note):'')+'</span></div>':'';
+    return '<div class="callc" data-late="'+(f.cm_status==="new"?0:-1)+'">'+
+      '<div class="top"><div class="av">'+esc(String(p.display_name||"?").replace(/^สาธิต\s*/,"").charAt(0))+'</div>'+
+        '<div class="nm"><b>'+esc(p.display_name||"—")+' <span class="sub" style="display:inline">'+esc(p.pseudonym||"")+'</span></b><small>ยืนยันโดย'+esc(DEST_NM[f.destination]||f.destination)+' · '+esc(TC.when(f.signed_at))+'</small></div>'+
+        '<div class="due"><span class="tchip" style="background:'+rk[1]+';color:#fff">'+esc(rk[0])+'</span></div></div>'+
+      '<div class="kind"><em>📝</em><div>'+(f.level&&f.risk!=="not_confirmed"?'ระดับ<b>'+esc(TC.LEVEL[f.level]||f.level)+'</b> · ':'')+esc(f.findings)+'</div></div>'+
+      '<div class="meta"><span>'+esc(TC.CM_ST[f.cm_status]||f.cm_status)+(ap&&ap.share_insurer?' · ครอบครัวยินยอมเมื่อ '+esc(thDate(ap.share_insurer_at)):'')+'</span><a href="#" data-rep2="'+f.id+'" style="color:var(--gold)">ดูแบบยืนยันผล ›</a></div>'+
+      dec+(acts.length?'<div class="tact">'+acts.join("")+'</div>':'')+'</div>';
+  }
+  var kp=[{id:"live",n:live.length,label:"เข้าห้องได้ตอนนี้",tone:"c4"},{id:"rep",n:needRep.length,label:"รอกรอกแบบยืนยันผล",tone:"c2"},
+          {id:"up",n:upcoming.length,label:"นัดที่ยืนยันแล้ว",tone:"brand"},{id:"prop",n:proposed.length,label:"รอครอบครัวเลือกเวลา",tone:"c3"}];
+  if(isCoordinator()) kp.push({id:"send",n:toSend.length,label:"รอส่งบริษัทประกัน",tone:"c1"});
+  function sec(t,list,fn,empty){ return '<h3 class="tsec">'+t+' ('+list.length+')</h3>'+(list.length?'<div class="calls">'+list.map(fn).join("")+'</div>':'<div class="card"><div class="empty">'+empty+'</div></div>') }
+  V.innerHTML=roleBarHTML()+kpiRow(kp)+teleFlowHTML()+
+    (live.length?sec("เข้าห้องได้ตอนนี้",live,card,""):"")+
+    (isClinician()||needRep.length?sec("รอกรอกแบบยืนยันผลครั้งสุดท้าย",needRep,card,"ไม่มีนัดที่ค้างกรอกผล"):"")+
+    sec("นัดที่ยืนยันแล้ว",upcoming,card,"ยังไม่มีนัดที่ครอบครัวยืนยัน")+
+    sec("รอครอบครัวเลือกเวลา",proposed,card,isClinician()?"เสนอเวลานัดได้จากเมนู ติดตามการส่งต่อ → 📹 นัดวิดีโอคอล":"ไม่มีนัดที่รอครอบครัว")+
+    (isCoordinator()?'<h3 class="tsec">ผลยืนยันจากผู้เชี่ยวชาญ → บริษัทประกัน ('+reps.length+')</h3>'+
+      '<div class="notice" style="margin-bottom:8px">ส่งได้เฉพาะเคสที่ผู้เชี่ยวชาญ<b>ยืนยันว่าเสี่ยงจริง</b>และ<b>ครอบครัวยินยอม</b> · บริษัทประกันเห็นแบบไม่ระบุชื่อ ใช้อนุมัติบริการป้องกันเท่านั้น</div>'+
+      (reps.length?'<div class="calls">'+reps.map(repCard).join("")+'</div>':'<div class="card"><div class="empty">ยังไม่มีแบบยืนยันผล</div></div>'):'')+
+    (finished.length&&isClinician()?'<details><summary class="tsec" style="cursor:pointer">ตรวจและยืนยันผลแล้ว ('+finished.length+')</summary><div class="calls">'+finished.map(card).join("")+'</div></details>':'')+
+    '<div class="notice">วิดีโอคอลต่อตรงระหว่างเครื่องของผู้เชี่ยวชาญกับครอบครัว CareSignal ไม่บันทึกภาพหรือเสียง · เข้าห้องได้ '+TC.EARLY_MIN+' นาทีก่อนนัด · '+
+      'แบบยืนยันผลลงชื่อและเลขใบอนุญาต แก้ไขไม่ได้หลังส่ง</div>';
+
+  var byId=function(id){return rows.filter(function(x){return x.id===id})[0]};
+  V.querySelectorAll("[data-final]").forEach(function(b){b.addEventListener("click",function(){var a=byId(b.dataset.final);if(a)finalSheet(a)})});
+  V.querySelectorAll("[data-choose]").forEach(function(b){b.addEventListener("click",function(){var a=byId(b.dataset.choose);if(a)chooseSheet(a)})});
+  V.querySelectorAll("[data-rep]").forEach(function(b){b.addEventListener("click",function(){var a=byId(b.dataset.rep);if(a&&a._fr)teleReportSheet(a._fr,(a.profiles||{}).display_name)})});
+  V.querySelectorAll("[data-rep2]").forEach(function(b){b.addEventListener("click",function(e){e.preventDefault();var f=reps.filter(function(x){return x.id===b.dataset.rep2})[0];if(f)teleReportSheet(f,(f.profiles||{}).display_name)})});
+  V.querySelectorAll("[data-cancel]").forEach(function(b){b.addEventListener("click",async function(){
+    var why=ask("เหตุผลที่ยกเลิก (ครอบครัวจะเห็น)",true); if(why===null)return;
+    b.disabled=true; try{ await CSBackend.cancelAppointment(b.dataset.cancel,why); toast("ยกเลิกนัดแล้ว"); teleV() }catch(e){ toast("ยกเลิกไม่สำเร็จ: "+(e.message||e)); b.disabled=false }
+  })});
+  V.querySelectorAll("[data-send]").forEach(function(b){b.addEventListener("click",function(){var f=reps.filter(function(x){return x.id===b.dataset.send})[0];if(f)preventionSheet(f)})});
+  V.querySelectorAll("[data-skip]").forEach(function(b){b.addEventListener("click",async function(){
+    var why=ask("เหตุผลที่ไม่ส่ง (เช่น ครอบครัวดูแลเองได้)",true); if(why===null)return;
+    try{ await CSBackend.closeReport(b.dataset.skip,"not_needed",why); toast("บันทึกแล้ว"); teleV() }catch(e){ toast("ไม่สำเร็จ: "+(e.message||e)) }
+  })});
+  if(ST.focusTele){
+    var fa=byId(ST.focusTele); ST.focusTele=null;
+    if(fa&&isClinician()&&!fa._fr&&(fa.status==="done"||fa.status==="in_call")) finalSheet(fa);
+  }
+}
+function teleSheet(html,wide){ var w=document.createElement("div"); w.className="sheet"+(wide?" wide":""); w.innerHTML='<div class="card">'+html+'</div>'; document.body.appendChild(w); return w }
+function proposeSheet(r){
+  var TC=window.CSTele; if(!TC){toast("โมดูลนัดยังไม่โหลด");return}
+  var pr=r.profiles||{}, opts=TC.defaultOptions();
+  var w=teleSheet('<div class="kick">นัดตรวจทางวิดีโอคอล · '+esc(DEST_NM[r.destination]||r.destination)+'</div>'+
+    '<h3 style="margin:2px 0 4px">'+esc(pr.display_name||"")+' <span class="sub" style="display:inline">'+esc(pr.pseudonym||"")+'</span></h3>'+
+    '<p class="sub" style="margin:0 0 10px">เสนอเวลา 1–3 ช่วง ครอบครัวเลือกในแอปและได้รับการแจ้งเตือน · เว้นช่องว่างได้</p>'+
+    opts.map(function(d,i){return '<div class="field"><label>เวลาที่ '+(i+1)+'</label><input type="datetime-local" class="tOpt" value="'+TC.localInput(d)+'"></div>'}).join("")+
+    '<div class="field"><label>ระยะเวลา</label><select id="tMin" style="width:100%;font:inherit;padding:10px;border:1.5px solid var(--line);border-radius:10px"><option value="15">15 นาที</option><option value="20" selected>20 นาที</option><option value="30">30 นาที</option></select></div>'+
+    '<div class="field"><label>ให้ครอบครัวเตรียม</label><input id="tNote" value="'+esc(TELE_PREP[r.destination]||"")+'"></div>'+
+    '<div class="notice">ครอบครัวเลือกได้ด้วยว่าจะยินยอมให้ส่งสรุปผลแบบไม่ระบุชื่อให้บริษัทประกันเพื่ออนุมัติบริการป้องกันหรือไม่ · ไม่ยินยอมก็ยังได้รับการตรวจตามปกติ</div>'+
+    '<div class="btnrow"><button class="no" id="tC">ยกเลิก</button><button class="ok" id="tS">ส่งเวลานัดให้ครอบครัว</button></div>');
+  w.querySelector("#tC").addEventListener("click",function(){w.remove()});
+  w.querySelector("#tS").addEventListener("click",async function(){
+    var o=[].slice.call(w.querySelectorAll(".tOpt")).map(function(x){return x.value}).filter(Boolean).map(function(v){return new Date(v).toISOString()});
+    if(!o.length){toast("ใส่เวลาอย่างน้อย 1 ช่วง");return}
+    var b=this; b.disabled=true;
+    try{ await CSBackend.proposeAppointment(r.id,o,+w.querySelector("#tMin").value,w.querySelector("#tNote").value.trim());
+      toast("ส่งเวลานัดแล้ว รอครอบครัวเลือก"); w.remove(); go("appt") }
+    catch(e){ toast("ส่งไม่สำเร็จ: "+(e.message||e)); b.disabled=false }
+  });
+}
+function chooseSheet(a){
+  var TC=window.CSTele, p=a.profiles||{};
+  var w=teleSheet('<div class="kick">เลือกเวลาแทนครอบครัว</div><h3 style="margin:2px 0 8px">'+esc(p.display_name||"")+' · '+esc(DEST_NM[a.destination]||"")+'</h3>'+
+    '<p class="sub" style="margin:0 0 8px">ใช้เมื่อครอบครัวแจ้งเวลาทางโทรศัพท์ · ระบบบันทึกว่าท่านเป็นผู้เลือก</p>'+
+    (a.options||[]).map(function(o,i){return '<label class="tc-chk" style="padding:8px 0"><input type="radio" name="tSlot" value="'+esc(o)+'"'+(i?'':' checked')+'> '+esc(TC.when(o))+'</label>'}).join("")+
+    '<label class="tc-att"><input type="checkbox" id="tShare"> ครอบครัวยินยอม (แจ้งทางโทรศัพท์) ให้ส่ง<b>สรุปผลยืนยันแบบไม่ระบุชื่อ</b>ให้บริษัทประกัน เพื่อพิจารณาอนุมัติบริการป้องกัน — ไม่ใช้ปรับเบี้ยหรือพิจารณาสินไหม</label>'+
+    '<div class="btnrow"><button class="no" id="tC">ยกเลิก</button><button class="ok" id="tS">ยืนยันเวลานัด</button></div>');
+  w.querySelector("#tC").addEventListener("click",function(){w.remove()});
+  w.querySelector("#tS").addEventListener("click",async function(){
+    var sl=(w.querySelector('input[name="tSlot"]:checked')||{}).value; if(!sl){toast("เลือกเวลา");return}
+    var b=this; b.disabled=true;
+    try{ await CSBackend.chooseAppointment(a.id,sl,w.querySelector("#tShare").checked); toast("ยืนยันนัดแล้ว"); w.remove(); teleV() }
+    catch(e){ toast("ไม่สำเร็จ: "+(e.message||e)); b.disabled=false }
+  });
+}
+async function finalSheet(a){
+  var TC=window.CSTele, p=a.profiles||{}, lic="";
+  try{ var cr=await CSBackend.myCredential(); lic=(cr&&(cr.license_no||(cr.row&&cr.row.license_no)))||"" }catch(e){}
+  var w=teleSheet(TC.formHTML(a,{who:(p.display_name||"")+" "+(p.pseudonym||""),signer:ST.name||"",license:lic})+
+    '<div class="btnrow"><button class="no" id="tC">ไว้ก่อน</button><button class="ok" id="tS">ยืนยันผลและส่งกลับ CareSignal</button></div>',true);
+  TC.bindForm(w);
+  w.querySelector("#tC").addEventListener("click",function(){w.remove()});
+  w.querySelector("#tS").addEventListener("click",async function(){
+    var res=TC.collect(w); if(!res.ok){toast(res.errors[0]);return}
+    if(!confirm("ยืนยันผลครั้งสุดท้าย? ส่งแล้วแก้ไขไม่ได้"))return;
+    var b=this; b.disabled=true;
+    try{
+      await CSBackend.submitFinalReport(a.id,res.data);
+      if(a.referral_id){ var rv=TC.toReview(res.data);
+        try{ await CSBackend.returnReview(a.referral_id,rv.finding,rv.recommend,rv.next_step,rv.note,rv.form) }catch(e){ console.warn("returnReview",e) } }
+      toast("ยืนยันผลแล้ว ส่งถึงผู้ประสานงานและครอบครัว"); w.remove(); teleV();
+    }catch(e){ toast("ส่งไม่สำเร็จ: "+(e.message||e)); b.disabled=false }
+  });
+}
+function teleReportSheet(f,name){
+  var TC=window.CSTele;
+  var w=teleSheet(TC.reportHTML(f,{who:name})+'<div class="btnrow rf-noprint"><button class="no" id="tP">🖨 พิมพ์</button><button class="ok" id="tC">ปิด</button></div>',true);
+  w.querySelector("#tC").addEventListener("click",function(){w.remove()});
+  w.querySelector("#tP").addEventListener("click",function(){ document.body.classList.add("printing"); window.print(); setTimeout(function(){document.body.classList.remove("printing")},800) });
+}
+function preventionSheet(f){
+  var TC=window.CSTele, p=f.profiles||{}, band=TC.ageBand(p.birth_year_be), ap=Array.isArray(f.appointments)?f.appointments[0]:f.appointments;
+  var w=teleSheet('<div class="kick">ส่งคำขอบริการป้องกันให้บริษัทประกัน</div><h3 style="margin:2px 0 8px">'+esc(p.display_name||"")+' <span class="sub" style="display:inline">(ชื่อนี้ไม่ถูกส่ง)</span></h3>'+
+    '<div class="tlock"><b>ขอบเขตการใช้ข้อมูล:</b> บริษัทประกันใช้อนุมัติบริการป้องกันเท่านั้น ห้ามนำไปปรับเบี้ย พิจารณารับประกัน หรือพิจารณาสินไหม · '+
+      'ครอบครัวยินยอมเมื่อ '+esc(thDate(ap&&ap.share_insurer_at))+'</div>'+
+    '<div class="tpreview"><b>สิ่งที่บริษัทประกันจะเห็น</b><br>รหัสคำขอ (สุ่มใหม่ ไม่ใช่รหัสสมาชิก) · อายุ '+esc(band||"—")+' · ระดับความเสี่ยง'+esc(TC.LEVEL[f.level]||"—")+
+      ' · ยืนยันโดย'+esc(DEST_NM[f.destination]||"")+' · ด้าน: '+((f.domains||[]).map(function(k){return esc(TC.domName(k))}).join(" ")||"—")+
+      '<br><span class="sub" style="display:inline">ไม่เห็น: ชื่อ รหัสสมาชิก เบอร์โทร ข้อค้นพบฉบับเต็ม และชื่อผู้เชี่ยวชาญ</span></div>'+
+    '<h4 style="margin:12px 0 4px">บริการป้องกันที่ขออนุมัติ</h4>'+
+    TC.SERVICES.map(function(x){return '<label class="tc-chk"><input type="checkbox" class="tSvc" value="'+x[0]+'"'+((f.services||[]).indexOf(x[0])>=0?' checked':'')+'> '+esc(x[1])+'</label>'}).join("")+
+    '<h4 style="margin:12px 0 4px">สรุปสำหรับบริษัทประกัน (ห้ามมีชื่อ รหัส หรือเบอร์โทร)</h4><textarea id="tSum" rows="4" style="width:100%;font:inherit;padding:10px;border:1.5px solid var(--line);border-radius:10px;box-sizing:border-box">'+esc(TC.summaryFor(f,band))+'</textarea>'+
+    '<div class="btnrow"><button class="no" id="tC">ยกเลิก</button><button class="ok" id="tS">ส่งให้บริษัทประกัน</button></div>',true);
+  w.querySelector("#tC").addEventListener("click",function(){w.remove()});
+  w.querySelector("#tS").addEventListener("click",async function(){
+    var sum=w.querySelector("#tSum").value.trim(), svc=[].slice.call(w.querySelectorAll(".tSvc:checked")).map(function(x){return x.value});
+    var leak=TC.leaksIdentity(sum,p); if(leak){toast("สรุป"+leak+" — ตัดออกก่อนส่ง");return}
+    if(!svc.length){toast("เลือกบริการอย่างน้อย 1 รายการ");return}
+    var b=this; b.disabled=true;
+    try{ var pr=await CSBackend.sendPrevention(f.id,sum,svc); toast("ส่งแล้ว รหัสคำขอ "+(pr&&pr.code||"")); w.remove(); teleV() }
+    catch(e){ toast("ส่งไม่สำเร็จ: "+(e.message||e)); b.disabled=false }
+  });
+}
+/* ============================================================
+   คำขอบริการป้องกัน — หน้าของบริษัทประกัน
+   ------------------------------------------------------------
+   เห็นเฉพาะคำขอที่ผู้เชี่ยวชาญยืนยันว่าเสี่ยงจริงและครอบครัวยินยอม
+   ไม่มีชื่อ รหัสสมาชิก หรือเบอร์โทร (insurer_prevention_list ตัดออกที่ฐานข้อมูล)
+   ใช้ตัดสินใจอนุมัติบริการป้องกันเท่านั้น
+   ============================================================ */
+async function prevV(){
+  var TC=window.CSTele;
+  head("คำขอบริการป้องกัน","ผู้เชี่ยวชาญยืนยันแล้วว่าเสี่ยงหกล้มจริง — พิจารณาอนุมัติบริการป้องกัน");
+  if(["insurer","admin"].indexOf(ST.role)<0){ V.innerHTML='<div class="warnbox">หน้านี้เฉพาะบริษัทประกัน · ผู้ประสานงานส่งคำขอได้ที่เมนู <b>นัดตรวจทางวิดีโอ</b></div>'; return; }
+  V.innerHTML='<div class="empty">กำลังโหลดคำขอ…</div>';
+  var res={rows:[]}; try{ res=await CSBackend.insurerPrevention() }catch(e){ res={rows:[],err:e} }
+  if(res.disabled){ V.innerHTML='<div class="warnbox"><b>ยังไม่ได้เปิดใช้บนฐานข้อมูลนี้</b><br>ผู้ดูแลระบบต้องรัน <code>supabase/27_teleconsult.sql</code> · ทดลองได้ในโหมดสาธิต</div>'; return; }
+  var rows=res.rows||[], n=function(k){return rows.filter(function(r){return r.decision===k}).length};
+  head("คำขอบริการป้องกัน","ผู้เชี่ยวชาญยืนยันแล้วว่าเสี่ยงหกล้มจริง — พิจารณาอนุมัติบริการป้องกัน",rows.length);
+  var LVC={high:"var(--c1)",moderate:"var(--c2)",low:"var(--c4)"};
+  function card(r){
+    var pend=r.decision==="pending";
+    return '<div class="callc" data-late="'+(pend?0:-1)+'" data-pr="'+r.id+'">'+
+      '<div class="top"><div class="av">🛡️</div><div class="nm"><b>'+esc(r.code)+'</b><small>ส่งเมื่อ '+esc(thDate(r.sent_at))+' · อายุ '+esc(r.age_band||"—")+'</small></div>'+
+        '<div class="due"><b style="color:'+(LVC[r.level]||"var(--ink2)")+'">เสี่ยง'+esc(TC.LEVEL[r.level]||"—")+'</b>ยืนยันโดย'+esc(DEST_NM[r.destination]||r.destination||"")+'</div></div>'+
+      '<div class="kind"><em>📋</em><div>'+esc(r.summary)+((r.domains||[]).length?'<br><span class="sub" style="display:inline">ด้าน: '+r.domains.map(function(k){return esc(TC.domName(k))}).join(" · ")+'</span>':'')+'</div></div>'+
+      '<div>'+(r.services||[]).map(function(k){var on=pend||(r.approved||[]).indexOf(k)>=0;
+        return '<label class="tc-chk"'+(pend?'':' style="opacity:'+(on?1:.45)+'"')+'><input type="checkbox" class="pSvc" value="'+k+'"'+(on?' checked':'')+(pend?'':' disabled')+'> '+esc(TC.svcName(k))+'</label>'}).join("")+'</div>'+
+      (pend?'<input class="pNote" placeholder="หมายเหตุถึงผู้ประสานงาน (จำเป็นเมื่อขอข้อมูลเพิ่มหรือไม่คุ้มครอง)" style="width:100%;font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;box-sizing:border-box">'+
+        '<div class="tact"><button class="go" data-dec="approved">อนุมัติทั้งหมด</button><button data-dec="partial">อนุมัติเฉพาะที่เลือก</button><button data-dec="need_info">ขอข้อมูลเพิ่ม</button><button data-dec="declined">ไม่อยู่ในความคุ้มครอง</button></div>'
+        :'<div class="meta"><span><b>'+esc(TC.DECISION[r.decision]||r.decision)+'</b> · '+esc(thDate(r.decided_at))+(r.decision_note?' · '+esc(r.decision_note):'')+'</span></div>')+
+    '</div>';
+  }
+  V.innerHTML='<div class="tlock"><b>ใช้ข้อมูลนี้อนุมัติบริการป้องกันเท่านั้น</b> — ห้ามนำไปปรับเบี้ย พิจารณารับประกัน หรือพิจารณาสินไหม · '+
+      'ไม่มีชื่อ รหัสสมาชิก หรือเบอร์โทร · ทุกคำขอผ่านการยืนยันโดยผู้มีใบอนุญาตและได้รับความยินยอมจากครอบครัว · ทุกการเปิดดูบันทึกในบันทึกตรวจสอบ</div>'+
+    kpiRow([{id:"p",n:n("pending"),label:"รอพิจารณา",tone:"c2"},{id:"a",n:n("approved")+n("partial"),label:"อนุมัติแล้ว",tone:"c4"},
+            {id:"i",n:n("need_info"),label:"ขอข้อมูลเพิ่ม",tone:"c3"},{id:"d",n:n("declined"),label:"ไม่อยู่ในความคุ้มครอง",tone:"brand"}])+
+    (rows.length?'<div class="calls">'+rows.map(card).join("")+'</div>':'<div class="card"><div class="empty">ยังไม่มีคำขอ</div></div>')+
+    '<div class="notice">วงจร: ครอบครัววัดที่บ้าน → ผู้ประสานงานส่งต่อ → ผู้เชี่ยวชาญตรวจทางวิดีโอคอลและยืนยันผลครั้งสุดท้าย → ผู้ประสานงานส่งคำขอนี้ → '+
+      'บริษัทอนุมัติ → ผู้ประสานงานจัดบริการและติดตามผล 30 วัน</div>';
+  V.querySelectorAll("[data-dec]").forEach(function(b){b.addEventListener("click",async function(){
+    var c=b.closest("[data-pr]"), dec=b.dataset.dec, note=c.querySelector(".pNote").value.trim();
+    var ap=[].slice.call(c.querySelectorAll(".pSvc:checked")).map(function(x){return x.value});
+    if(dec==="partial"&&!ap.length){toast("เลือกบริการที่อนุมัติ");return}
+    if((dec==="need_info"||dec==="declined")&&!note){toast("ระบุเหตุผลให้ผู้ประสานงาน");return}
+    b.disabled=true;
+    try{ await CSBackend.decidePrevention(c.dataset.pr,dec,ap,note); toast("บันทึกผลพิจารณาแล้ว"); prevV() }
+    catch(e){ toast("ไม่สำเร็จ: "+(e.message||e)); b.disabled=false }
   })});
 }
 /* ============================================================
@@ -2801,7 +3068,7 @@ async function referV(){
         {k:"_wait",label:"ค้างมาแล้ว",num:true,search:false,render:function(r){return (r._over?'<b style="color:var(--c1)">':'')+dayTxt(r._wait)+(r._over?' ⚠</b>':'')}},
         {k:"_next",label:"งานถัดไป",render:function(r){return esc(r._next)+(r.review?'<span class="sub" style="color:var(--c4)">✓ ส่งผลกลับแล้ว</span>':'')}},
         {k:"act",label:"การกระทำ",sort:false,search:false,cls:"act",render:function(r){
-          return (isClinician()&&!r.review?'<button class="pri claim" data-review="'+esc(r.id)+'">เปิดแบบฟอร์มและตอบ</button>':'')+
+          return (isClinician()&&!r.review?'<button class="pri claim" data-tele="'+esc(r.id)+'">📹 นัดวิดีโอคอล</button><button class="ghostb" data-review="'+esc(r.id)+'" style="width:auto;display:inline-block;margin-left:4px;padding:6px 10px;font-size:12px">ตอบโดยไม่ต้องนัด</button>':'')+
             '<button class="ghostb" data-doc="'+esc(r.id)+'" style="width:auto;display:inline-block;margin-left:4px;padding:6px 10px;font-size:12px">ดูใบส่งต่อ</button>'}}
       ]})+'</div>';
 
@@ -2845,6 +3112,12 @@ async function referV(){
       b.addEventListener("click",function(e){ e.stopPropagation();
         var r=rows.filter(function(x){return x.id===b.dataset.doc})[0];
         if(r) refDocSheet(r);
+      });
+    });
+    V.querySelectorAll("[data-tele]").forEach(function(b){
+      b.addEventListener("click",function(e){ e.stopPropagation();
+        var r=rows.filter(function(x){return x.id===b.dataset.tele})[0];
+        if(r) proposeSheet(r);
       });
     });
   }
@@ -2977,7 +3250,7 @@ async function auditV(){
   V.innerHTML=html; bindDash(null);
 }
 
-var FN={cred:credV,creds:credsV,login:loginV,ward:wardScreenV,mine:mineV,queue:queueV,call:callV,refer:referV,meds:medsV,port:portV,
+var FN={cred:credV,creds:credsV,login:loginV,ward:wardScreenV,mine:mineV,queue:queueV,call:callV,appt:teleV,prev:prevV,refer:referV,meds:medsV,port:portV,
         reports:reportsV,audit:auditV,users:usersV,data:dataV,me:meV};
 var SIDE=document.getElementById("side");
 
@@ -3251,16 +3524,16 @@ function deepLink(){
    ไม่ใช่แค่กันตอนกดเข้า เพื่อไม่ให้เข้าใจผิดว่ามีสิทธิ์ */
 var NAV_BY_ROLE={
   /* ผู้ประสานงานเห็นทั้งพอร์ตเพราะต้องจัดสรรงานและติดตามภาพรวม */
-  care_manager:["ward","mine","queue","call","refer","meds","port","reports","audit","me"],
-  admin:       ["ward","mine","queue","call","refer","meds","port","reports","audit","users","creds","data","me"],
+  care_manager:["ward","mine","queue","call","appt","refer","meds","port","reports","audit","me"],
+  admin:       ["ward","mine","queue","call","appt","refer","meds","port","prev","reports","audit","users","creds","data","me"],
   /* บริษัทประกันเห็นเฉพาะภาพรวมระดับกลุ่ม ไม่มีเมนูรายบุคคลเลย */
-  insurer:     ["port","me"],
+  insurer:     ["port","prev","me"],
   /* วิชาชีพเห็นเฉพาะงานที่ส่งมาถึงตน ไม่มีคิวรวมทั้งพอร์ต
      เภสัชกรได้หน้าทบทวนยาเพิ่ม เพราะเป็นเครื่องมือของวิชาชีพนั้นโดยตรง */
-  pharmacist:  ["mine","refer","meds","cred","me"],
-  physio:      ["mine","refer","cred","me"],
-  doctor:      ["mine","refer","cred","me"],
-  nurse:       ["mine","refer","cred","me"]
+  pharmacist:  ["mine","refer","appt","meds","cred","me"],
+  physio:      ["mine","refer","appt","cred","me"],
+  doctor:      ["mine","refer","appt","cred","me"],
+  nurse:       ["mine","refer","appt","cred","me"]
 };
 function navForRole(){
   var allow=NAV_BY_ROLE[ST.role]||["mine","me"];
@@ -3278,8 +3551,15 @@ function navForRole(){
 }
 /* ตัวเลขงานค้างข้างเมนู — เจ้าหน้าที่เห็นภาระงานโดยไม่ต้องกดเข้าไปดู */
 async function navCounts(){
-  if(ST.role==="insurer") return;
+  if(ST.role==="insurer"||ST.role==="admin"){
+    try{ var pv=await CSBackend.insurerPrevention(); var k=(pv.rows||[]).filter(function(x){return x.decision==="pending"}).length;
+         var el=SIDE.querySelector('[data-cnt="prev"]'); if(el){el.textContent=k;el.hidden=!k} }catch(e){}
+    if(ST.role==="insurer") return;
+  }
   var n={};
+  try{ var ap=await CSBackend.listAppointments(); var TCn=window.CSTele;
+       n.appt=(ap.rows||[]).filter(function(a){var f=Array.isArray(a.final_reports)?a.final_reports[0]:a.final_reports;
+         return (TCn&&TCn.joinWindow(a).open)||(isClinician()&&(a.status==="done"||a.status==="in_call")&&!f)}).length }catch(e){}
   try{ n.mine=(await CSBackend.myWork()).length }catch(e){}
   if(isCoordinator()){
     try{ var c=await CSBackend.caseQueue();
@@ -3330,9 +3610,10 @@ function resetIdle(){
       }else if(p&&p.id===u.id&&mayConsole(p.role)){
         /* ลิงก์เข้าตรงเคส — ถ้ามี #ref=... ให้ไปหน้าติดตามการส่งต่อทันที
            เทียบเคียงกับปุ่ม Health Link ในระบบ HIS ที่พาเข้าตรงหน้าประวัติคนไข้ */
-        var dl=deepLink();
+        var dl=deepLink(), tl=(location.hash||"").match(/tele=([0-9a-z-]{8,})/i);
         if(dl) ST.focusRef=dl;
-        await enterConsole(p.role, p.username||u.email, p.display_name, dl?"refer":null);
+        if(tl) ST.focusTele=tl[1];
+        await enterConsole(p.role, p.username||u.email, p.display_name, dl?"refer":tl?"appt":null);
       }else if(p&&p.id===u.id){
         /* บัญชีจริงที่ยังไม่ได้แลกรหัส — ให้กรอกรหัสต่อได้เลย ไม่ต้องล็อกอินใหม่ */
         ST.email=p.username||u.email; ST.name=p.display_name||ST.email; redeemV(ST.email);

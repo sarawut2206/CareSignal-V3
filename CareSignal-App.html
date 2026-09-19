@@ -164,6 +164,16 @@ textarea{min-height:70px}
 .ap .cd b{display:block;font-size:19px}.ap .cd.today{background:#FFF1DB;color:#A15C00}.ap .cd.late{background:#FDECEC;color:#C0392B}
 .ap .calb{border:0;background:none;color:var(--brand);font:inherit;font-size:12.5px;font-weight:600;padding:2px 0;cursor:pointer;display:inline-flex;gap:4px;align-items:center}
 .ap .calb svg{width:15px;height:15px}
+.ap .join{display:inline-flex;align-items:center;gap:6px;margin-top:6px;border:0;border-radius:999px;background:var(--brand);color:#fff;font:inherit;font-weight:600;font-size:14px;padding:8px 14px;cursor:pointer;text-decoration:none}
+.ap .join svg{width:18px;height:18px}.ap .join[aria-disabled="true"]{background:#C9D2DC;pointer-events:none}
+.ap .ib.vid{background:#EAF0FF;color:#3559C7}
+.vc{border:2px solid var(--brand);background:linear-gradient(180deg,#F1FBF9,#fff)}
+.vc h3{display:flex;gap:8px;align-items:center}.vc h3 svg{width:24px;height:24px;color:var(--brand)}
+.vopt{display:flex;gap:10px;align-items:center;border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin:8px 0;font-size:16px;font-weight:600;cursor:pointer;background:#fff}
+.vopt input{width:22px;height:22px;accent-color:var(--brand)}
+.vck{display:flex;gap:10px;align-items:flex-start;background:#F6F8FA;border-radius:12px;padding:10px 12px;margin:10px 0;font-size:14px;line-height:1.55;cursor:pointer}
+.vck input{width:20px;height:20px;flex:none;margin-top:2px;accent-color:var(--brand)}
+.okbox{background:#E3F4EA;border:1px solid #BFE3CC;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:14px;line-height:1.6}
 .flow{display:flex;justify-content:space-between;gap:4px;margin:4px 0 2px}.flow div{flex:1;text-align:center;font-size:12px;color:var(--ink2);line-height:1.35}
 .flow i{display:flex;margin:0 auto 5px;width:42px;height:42px;border-radius:50%;background:var(--brandt);color:var(--brand);align-items:center;justify-content:center;font-style:normal}
 .flow i svg{width:22px;height:22px}.flow b{display:block;color:var(--ink);font-size:13px}
@@ -249,6 +259,7 @@ body{font-size:18px}
 <script>window.CS_AUTH_SCOPE = "v3member";   /* V2 กับ V3 อยู่โดเมนเดียวกัน แยกช่องเก็บ session ไม่ให้บัญชีสองแอปปนกัน */</script>
 <script src="./cs-backend.js"></script>
 <script src="./cs-cloud.js"></script>
+<script src="./cs-teleconsult.js"></script>
 <script>
 /* ============================================================
    CareSignal V3 — ลูกหลานเป็นผู้วัด · ไม่ใช้กล้อง · ข้อมูลอยู่ในเครื่องนี้
@@ -368,6 +379,7 @@ var IC = {
   doc: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/>',
   team: '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c.8-3.5 3-5 6-5s5.2 1.5 6 5M15.5 15c2.8 0 4.7 1.4 5.5 4.5"/>',
   phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+  video: '<rect x="3" y="6.5" width="12.5" height="11" rx="2.2"/><path d="M15.5 10.5l5-3v9l-5-3z"/>',
   cal: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h2M14 14h2M8 17.5h2"/>',
   bell: '<path d="M6 16v-5a6 6 0 1 1 12 0v5l2 2H4z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
   cloud: '<path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 9.5a4.25 4.25 0 0 1-.5 8.5z"/>',
@@ -553,8 +565,10 @@ function renderHome(v) {
   if (last && due <= 0 && !pending(last)) bn.push(["⏱️", "ถึงกำหนดวัดซ้ำแล้ว", "วัดซ้ำตามรอบเพื่อดูว่าดีขึ้นหรือแย่ลง", "วัดเลย", "startTest()"]);
   bn.push(["▶️", "ดูวิดีโอสาธิตท่าที่ถูกต้อง", "ชุด \"สูงวัยไม่ล้ม\" · Siriraj Health Policy", "ดูวิดีโอ", "go('video')"]);
   apptsDue().filter(function (x) { return x.src === "team"; }).slice(0, 1).forEach(function (x) {
-    bn.unshift(["📞", x.dd < 0 ? "เลยนัดติดตามมา " + (-x.dd) + " วัน" : "วันนี้มีนัดติดตามจากทีมดูแล", x.nm + " · เปิดเสียงโทรศัพท์ไว้ เจ้าหน้าที่จะโทรหา", "ดูนัด", "go('appts')"]);
+    if (x.appt) bn.unshift(["📹", "วันนี้มี" + x.nm, new Date(x.at).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" }) + " น. · กดเข้าห้องตรวจได้ก่อนนัด 15 นาที", "ดูนัด", "go('appts')"]);
+    else bn.unshift(["📞", x.dd < 0 ? "เลยนัดติดตามมา " + (-x.dd) + " วัน" : "วันนี้มีนัดติดตามจากทีมดูแล", x.nm + " · เปิดเสียงโทรศัพท์ไว้ เจ้าหน้าที่จะโทรหา", "ดูนัด", "go('appts')"]);
   });
+  if (visitsProposed().length) bn.unshift(["📹", visitDest(visitsProposed()[0]) + "ขอนัดวิดีโอคอล", "เลือกเวลาที่สะดวก ไม่ต้องเดินทาง", "เลือกเวลา", "go('appts')"]);
   if (!meds) bn.push(["💊", "ถ่ายรูปซองยาให้เภสัชกรช่วยดู", "ยาบางกลุ่มทำให้เวียนหัวและเสี่ยงล้ม", "ถ่ายรูป", "go('meds')"]);
   if (!cloud) bn.push(["☁️", "เชื่อมระบบกลาง", "ให้ทีมดูแลและผู้เชี่ยวชาญเห็นผล และยืนยันผลให้", "เชื่อม", "go('cloud')"]);
   if (!installedApp() && !embedded()) bn.push(["📲", "ติดตั้งลงหน้าจอมือถือ", "เปิดง่ายเหมือนแอป ใช้วัดได้แม้ไม่มีเน็ต", "ติดตั้ง", "installApp()"]);
@@ -569,6 +583,7 @@ function renderHome(v) {
     '<div class="who"><div class="av">' + esc((e.name || "?").trim().charAt(0)) + '</div><div><b>' + esc(e.name) + '</b><small>อายุ ' + e.age + ' ปี' + (e.aid ? ' · ใช้' + (e.aid === "cane" ? "ไม้เท้า" : "วอล์กเกอร์") : '') + '</small></div>' + chip + '</div>' +
     hero +
     '<div class="bn">' + bn.map(function (b) { return '<div class="it"><span class="em">' + b[0] + '</span><div><b>' + b[1] + '</b><small>' + esc(b[2]) + '</small></div><button onclick="' + b[4] + '">' + b[3] + '</button></div>'; }).join("") + '</div>' +
+    visitsProposed().slice(0, 1).map(chooseCardHTML).join("") +
     apptSection() +
     '<div class="sec-h"><h2>บริการในแอป</h2><span>แตะเพื่อเริ่ม</span></div>' +
     '<div class="tiles">' + T.map(function (t) { return '<button class="tile' + (t[4] ? ' hot' : '') + '" onclick="' + t[2] + '"><span class="ti">' + ic(t[0]) + '</span><span>' + t[1] + '</span>' + (t[3] ? '<em>' + t[3] + '</em>' : '') + '</button>'; }).join("") + '</div>' +
@@ -585,8 +600,13 @@ var APPT = {
   reassess:       ["watch", "วัดซ้ำตามแผนดูแล", "ทีมดูแลขอให้วัดซ้ำเพื่อดูผลของแผน", "team"],
   checkin_7d:     ["phone", "เจ้าหน้าที่โทรติดตาม", "ถามอาการ การล้ม และการทำตามคำแนะนำ", "team"],
   review_30d:     ["doc", "ทบทวนแผนดูแล 30 วัน", "เจ้าหน้าที่ทบทวนแผนร่วมกับครอบครัวทางโทรศัพท์", "team"],
-  referral_check: ["team", "ถามผลการพบผู้เชี่ยวชาญ", "เจ้าหน้าที่โทรถามว่าได้ไปพบตามที่ส่งต่อแล้วหรือยัง", "team"]
+  referral_check: ["team", "ถามผลการพบผู้เชี่ยวชาญ", "เจ้าหน้าที่โทรถามว่าได้ไปพบตามที่ส่งต่อแล้วหรือยัง", "team"],
+  video:          ["video", "วิดีโอคอลกับผู้เชี่ยวชาญ", "ผู้เชี่ยวชาญโทรวิดีโอผ่านแอปนี้ ไม่ต้องเดินทาง", "team"]
 };
+/* นัดวิดีโอคอลจากระบบกลาง (27_teleconsult.sql) */
+function visits() { return (S.care && S.care.appts) || []; }
+function visitsProposed() { return visits().filter(function (a) { return a.status === "proposed"; }); }
+function visitDest(a) { return (window.CSTele && CSTele.DEST[a.destination]) || "ผู้เชี่ยวชาญ"; }
 function day0(d) { var x = new Date(d); x.setHours(0, 0, 0, 0); return x.getTime(); }
 function apptList() {
   var e = elder(); if (!e) return [];
@@ -598,8 +618,12 @@ function apptList() {
     if (!dup) out.push({ id: "retest-" + last.id, kind: "retest", at: at, src: "app" });
   }
   fu.forEach(function (f) { out.push({ id: f.id, kind: f.kind, at: new Date(f.due_at), src: "team" }); });
+  visits().filter(function (a) { return (a.status === "confirmed" || a.status === "in_call") && a.slot_at; }).forEach(function (a) {
+    out.push({ id: a.id, kind: "video", at: new Date(a.slot_at), src: "team", appt: a });
+  });
   return out.map(function (x) {
     var k = APPT[x.kind]; x.ic = k[0]; x.nm = k[1]; x.note = k[2];
+    if (x.appt) { x.nm = "วิดีโอคอลกับ" + visitDest(x.appt); if (x.appt.note) x.note = "เตรียม: " + x.appt.note; }
     x.dd = Math.round((day0(x.at) - day0(Date.now())) / 864e5); return x;
   }).sort(function (a, b) { return a.at - b.at; });
 }
@@ -607,9 +631,45 @@ function apptsDue() { return apptList().filter(function (x) { return x.dd <= 0; 
 function apptDate(d) { return new Date(d).toLocaleDateString("th-TH", { weekday: "short", day: "numeric", month: "short", year: "2-digit" }); }
 function apptRow(x) {
   var cd = x.dd < 0 ? '<div class="cd late">เลยมา<b>' + (-x.dd) + '</b>วัน</div>' : x.dd === 0 ? '<div class="cd today"><b>วันนี้</b>ถึงนัด</div>' : '<div class="cd">อีก<b>' + x.dd + '</b>วัน</div>';
-  return '<div class="r"><div class="ib' + (x.dd <= 0 ? ' due' : x.src === "team" ? ' team' : '') + '">' + ic(x.ic) + '</div>' +
-    '<div class="tx"><b>' + esc(x.nm) + '</b><small>' + apptDate(x.at) + ' · ' + (x.src === "team" ? "นัดจากทีมดูแล" : "รอบของแอป") + '</small>' +
-    '<button class="calb" onclick="event.stopPropagation();icsSave(\'' + x.id + '\')">' + ic("cal") + 'เพิ่มลงปฏิทิน</button></div>' + cd + '</div>';
+  var join = "";
+  if (x.appt && window.CSTele) {
+    var w = CSTele.joinWindow(x.appt);
+    join = '<a class="join" href="' + CSTele.visitURL(x.appt.id, "member") + '" aria-disabled="' + (!w.open) + '">' + ic("video") + (w.open ? 'เข้าห้องตรวจ' : esc(w.why)) + '</a>';
+  }
+  return '<div class="r"><div class="ib' + (x.dd <= 0 ? ' due' : x.appt ? ' vid' : x.src === "team" ? ' team' : '') + '">' + ic(x.ic) + '</div>' +
+    '<div class="tx"><b>' + esc(x.nm) + '</b><small>' + apptDate(x.at) + (x.appt ? ' · ' + new Date(x.at).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" }) + ' น.' : '') + ' · ' + (x.src === "team" ? "นัดจากทีมดูแล" : "รอบของแอป") + '</small>' +
+    (x.appt && x.appt.note ? '<small>เตรียม: ' + esc(x.appt.note) + '</small>' : '') +
+    '<button class="calb" onclick="event.stopPropagation();icsSave(\'' + x.id + '\')">' + ic("cal") + 'เพิ่มลงปฏิทิน</button>' + join + '</div>' + cd + '</div>';
+}
+/* ผู้เชี่ยวชาญเสนอเวลานัดวิดีโอคอล — ครอบครัวเลือกเวลา และเลือกเองว่าจะยินยอมส่งสรุปผลให้บริษัทประกันหรือไม่ */
+function chooseCardHTML(a) {
+  return '<div class="card vc"><h3>' + ic("video") + visitDest(a) + 'ขอนัดวิดีโอคอล</h3>' +
+    '<p class="sub" style="margin:0 0 4px">เลือกเวลาที่สะดวก ผู้เชี่ยวชาญจะโทรวิดีโอผ่านแอปนี้ ไม่ต้องเดินทาง' + (a.note ? ' · <b>เตรียม:</b> ' + esc(a.note) : '') + '</p>' +
+    (a.options || []).map(function (o, i) {
+      return '<label class="vopt"><input type="radio" name="vo_' + a.id + '" value="' + esc(o) + '"' + (i ? '' : ' checked') + '>' + esc(window.CSTele ? CSTele.when(o) : o) + '</label>';
+    }).join("") +
+    '<label class="vck"><input type="checkbox" id="vs_' + a.id + '"><span>ยินยอมให้ส่ง<b>สรุปผลแบบไม่ระบุชื่อ</b>ให้บริษัทประกัน เพื่อพิจารณาอนุมัติบริการป้องกัน เช่น กายภาพบำบัด ราวจับ ' +
+      '— ไม่ใช้ปรับเบี้ยหรือพิจารณาสินไหม · <b>ไม่ติ๊กก็ได้รับการตรวจตามปกติ</b></span></label>' +
+    '<button class="btn" style="margin-top:4px" onclick="chooseVisit(\'' + a.id + '\')">ยืนยันเวลานัด</button></div>';
+}
+async function chooseVisit(id) {
+  var r = document.querySelector('input[name="vo_' + id + '"]:checked'); if (!r) return toast("เลือกเวลา");
+  var share = !!(document.getElementById("vs_" + id) || {}).checked;
+  try { await CSBackend.chooseAppointment(id, r.value, share); toast("ยืนยันนัดแล้ว แอปจะเตือนก่อนถึงเวลา"); askNotify(); await cloudRefresh(); go("appts"); }
+  catch (e) { toast("ยืนยันไม่สำเร็จ: " + (e.message || e)); }
+}
+function visitResultsHTML() {
+  var done = visits().filter(function (a) { var f = Array.isArray(a.final_reports) ? a.final_reports[0] : a.final_reports; return !!f; });
+  if (!done.length || !window.CSTele) return "";
+  var prev = (S.care && S.care.prev) || [];
+  return '<div class="sec-h"><h2>ผลการตรวจทางวิดีโอ</h2><span>ยืนยันโดยผู้มีใบอนุญาต</span></div>' + done.slice(0, 3).map(function (a) {
+    var f = Array.isArray(a.final_reports) ? a.final_reports[0] : a.final_reports, p = prev.filter(function (x) { return x.report_id === f.id; })[0];
+    var ok = p && (p.decision === "approved" || p.decision === "partial");
+    return '<div class="card">' + CSTele.reportHTML(f) +
+      (ok ? '<div class="okbox">✅ <b>บริษัทประกันอนุมัติบริการป้องกัน</b><br>' + (p.approved || []).map(function (k) { return "• " + esc(CSTele.svcName(k)); }).join("<br>") +
+        '<br><span class="sub" style="font-size:13px">เจ้าหน้าที่จะโทรนัดบริการให้</span></div>'
+        : p ? '<p class="sub" style="margin:8px 0 0">คำขอบริการป้องกัน: ' + esc(CSTele.DECISION[p.decision] || p.decision) + '</p>' : '') + '</div>';
+  }).join("");
 }
 function apptSection() {
   var L = apptList(); if (!L.length) return "";
@@ -627,6 +687,7 @@ function renderAppts(v) {
       '<div><i>' + ic("team") + '</i><b>ผู้เชี่ยวชาญ</b>เมื่อมีสัญญาณ</div>' +
       '<div><i>' + ic("cal") + '</i><b>วัดซ้ำ</b>14 · 30 · 90 วัน</div></div>' +
       '<p class="sub" style="margin:8px 0 0;font-size:13px">รอบวัดซ้ำตามระดับผล: ส้มหรือแดง 14 วัน · เหลือง 30 วัน · เขียว 90 วัน</p></div>' +
+    visitsProposed().map(chooseCardHTML).join("") +
     (L.length ? '<div class="ap">' + L.map(apptRow).join("") + '</div>' +
       '<button class="btn sec" onclick="icsSave()">' + 'เพิ่มทุกนัดลงปฏิทินมือถือ' + '</button>' +
       '<p class="sub" style="font-size:12.5px;margin:6px 2px 0">ปฏิทินจะเตือนล่วงหน้า 1 วัน และเช้าวันนัด 9 โมง แม้ไม่ได้เปิดแอป</p>'
@@ -635,6 +696,7 @@ function renderAppts(v) {
       '<p class="sub" style="margin:0 0 8px">' + (perm === "granted" ? "เปิดอยู่ · แอปเตือนเมื่อถึงวันนัด และเมื่อผู้เชี่ยวชาญยืนยันผล" : perm === "denied" ? "ถูกปิดไว้ในการตั้งค่าเบราว์เซอร์ · ใช้ \"เพิ่มลงปฏิทิน\" แทนได้" : perm === "unsupported" ? "เครื่องนี้ไม่รองรับ · ใช้ \"เพิ่มลงปฏิทิน\" แทนได้" : "ยังไม่เปิด") + '</p>' +
       (perm === "default" ? '<button class="btn sec" style="margin:0" onclick="askNotify();setTimeout(render,1500)">เปิดการแจ้งเตือน</button>' : '') + '</div>' +
     (cloud ? '' : '<div class="card" style="border:1.5px dashed var(--line)"><h3>นัดจากทีมดูแลจะขึ้นเมื่อเชื่อมระบบกลาง</h3><p class="sub" style="margin:0 0 8px">ตอนนี้แสดงเฉพาะรอบวัดซ้ำของแอป</p><button class="btn sec" style="margin:0" onclick="go(\'cloud\')">เชื่อมระบบกลาง</button></div>') +
+    visitResultsHTML() +
     '<p class="sub" style="font-size:12.5px;text-align:center;margin:10px 0 0">เจ้าหน้าที่โทรจากเบอร์ของหน่วยบริการ ไม่ขอรหัส OTP หรือเลขบัญชี · ฉุกเฉินโทร 1669</p>';
 }
 /* ไฟล์ปฏิทิน .ics — เตือนก่อน 1 วัน และเวลา 9:00 ของวันนัด */
@@ -646,10 +708,12 @@ function icsSave(id) {
   var now = new Date(), stamp = now.toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
   var ev = L.map(function (x) {
     var d = x.dd < 0 ? new Date() : new Date(x.at), sum = x.nm + " · " + e.name;
-    return ["BEGIN:VEVENT", "UID:cs3-" + x.id + "@caresignal", "DTSTAMP:" + stamp, "DTSTART:" + dt(d, 9), "DTEND:" + dt(d, 10),
+    var st = x.appt ? d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()) + "T" + p2(d.getHours()) + p2(d.getMinutes()) + "00" : dt(d, 9);
+    var en = x.appt ? (function (z) { return z.getFullYear() + p2(z.getMonth() + 1) + p2(z.getDate()) + "T" + p2(z.getHours()) + p2(z.getMinutes()) + "00"; })(new Date(d.getTime() + (x.appt.minutes || 20) * 6e4)) : dt(d, 10);
+    return ["BEGIN:VEVENT", "UID:cs3-" + x.id + "@caresignal", "DTSTAMP:" + stamp, "DTSTART:" + st, "DTEND:" + en,
       "SUMMARY:" + sum, "DESCRIPTION:" + x.note + (x.src === "team" ? " (นัดจากทีมดูแล CareSignal)" : " (เปิดแอป CareSignal V3 แล้วกด วัดวันนี้)"),
       "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:พรุ่งนี้ " + sum, "TRIGGER:-P1D", "END:VALARM",
-      "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + sum, "TRIGGER:PT0M", "END:VALARM", "END:VEVENT"].join("\r\n");
+      "BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + sum, "TRIGGER:" + (x.appt ? "-PT15M" : "PT0M"), "END:VALARM", "END:VEVENT"].join("\r\n");
   });
   var ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//CareSignal//V3//TH", "CALSCALE:GREGORIAN"].concat(ev, ["END:VCALENDAR"]).join("\r\n");
   var a = document.createElement("a");
@@ -1409,12 +1473,12 @@ fitPhone();
     var a = D.assessments.filter(function (x) { return x.id === pid; })[0];
     if (a) { S.elder = a.elderId; S.last = a; S.screen = "doc"; render(); setTimeout(docPrint, 400); return; }
   }
-  if (goto && D.elders.length && ["fall", "test", "history", "meds", "video"].indexOf(goto) >= 0) { S.screen = goto; }
+  if (goto && D.elders.length && ["fall", "test", "history", "meds", "video", "appts"].indexOf(goto) >= 0) { S.screen = goto; }
   render();
 })();
 setTimeout(a2hsBar, 2500);   /* ให้ผู้ใช้เห็นแอปก่อน ค่อยชวนติดตั้ง */
 CSCloud.init().then(function () { if (S.screen === "home") render(); return cloudRefresh(); }).then(cloudRetry);
-setInterval(function () { if (CSCloud.connected() && D.assessments.some(pending)) cloudRefresh(); }, 60000);
+setInterval(function () { if (CSCloud.connected() && (D.assessments.some(pending) || visits().some(function (a) { return a.status === "proposed" || a.status === "confirmed"; }))) cloudRefresh(); }, 60000);
 document.addEventListener("visibilitychange", function () { if (!document.hidden && CSCloud.connected()) cloudRefresh(); });
 if ("serviceWorker" in navigator && location.protocol !== "file:") navigator.serviceWorker.register("./sw.js").catch(function () {});
 </script>

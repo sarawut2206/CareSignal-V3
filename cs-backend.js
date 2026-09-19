@@ -1391,6 +1391,63 @@ var CSBackend = (function () {
     if (r.error) throw r.error;
     return r.data;
   }
+  /* ---------- นัดตรวจทางวิดีโอคอล (migration 27) ----------
+     ไม่เลือกคอลัมน์ room — รหัสห้องได้จาก joinAppointment() เท่านั้น
+     ยังไม่รัน migration = คืน disabled ให้หน้าจอบอกตรง ๆ */
+  var APPT_COLS = "id,user_id,referral_id,case_id,destination,clinician_id,options,slot_at,minutes,status,note,share_insurer,share_insurer_at,created_at,confirmed_at,started_at,ended_at,cancel_reason";
+  function teleMissing(e) { return /appointments|final_reports|prevention_requests|appt_|final_submit|insurer_prevention|cm_send|schema cache|does not exist|42P01|42883/i.test(((e && e.message) || "") + ((e && e.code) || "")); }
+  async function listAppointments() {
+    if (!isCloud()) return { rows: [] };
+    var r = await sb.from("appointments")
+      .select(APPT_COLS + ",profiles!appointments_user_id_fkey(pseudonym,display_name,phone,carer_phone,birth_year_be),final_reports(*)")
+      .order("created_at", { ascending: false }).limit(300);
+    if (r.error) { if (teleMissing(r.error)) return { rows: [], disabled: true }; throw r.error; }
+    return { rows: r.data || [] };
+  }
+  async function myAppointments() {
+    if (!isCloud()) return [];
+    var u = await currentUser(); if (!u) return [];
+    var r = await sb.from("appointments").select(APPT_COLS + ",final_reports(*)")
+      .eq("user_id", u.id).order("created_at", { ascending: false }).limit(50);
+    if (r.error) { if (!teleMissing(r.error)) console.warn(r.error); return []; }
+    return r.data || [];
+  }
+  async function myPrevention() {
+    if (!isCloud()) return [];
+    var u = await currentUser(); if (!u) return [];
+    var r = await sb.from("prevention_requests").select("id,report_id,code,services,decision,approved,decision_note,decided_at,sent_at")
+      .eq("user_id", u.id).order("sent_at", { ascending: false }).limit(20);
+    return r.error ? [] : (r.data || []);
+  }
+  async function rpc(fn, args) {
+    if (!isCloud()) throw new Error("offline");
+    var r = await sb.rpc(fn, args);
+    if (r.error) { if (teleMissing(r.error) && /function|schema cache|42883/i.test(r.error.message + (r.error.code || ""))) throw new Error("ยังไม่ได้เปิดใช้ระบบนัดตรวจทางไกลบนฐานข้อมูลนี้ (27_teleconsult.sql)"); throw r.error; }
+    return r.data;
+  }
+  function proposeAppointment(refId, options, minutes, note) { return rpc("appt_propose", { p_referral: refId, p_options: options, p_minutes: minutes || 20, p_note: note || null }); }
+  function chooseAppointment(id, slot, share) { return rpc("appt_choose", { p_id: id, p_slot: slot, p_share: !!share }); }
+  function cancelAppointment(id, reason) { return rpc("appt_cancel", { p_id: id, p_reason: reason || null }); }
+  function joinAppointment(id) { return rpc("appt_join", { p_id: id }); }
+  function finishAppointment(id, noShow) { return rpc("appt_finish", { p_id: id, p_no_show: !!noShow }); }
+  function submitFinalReport(apptId, data) { return rpc("final_submit", { p_appt: apptId, p: data }); }
+  async function listFinalReports() {
+    if (!isCloud()) return { rows: [] };
+    var r = await sb.from("final_reports")
+      .select("*,profiles!final_reports_user_id_fkey(pseudonym,display_name,birth_year_be),prevention_requests(code,services,decision,approved,decision_note,decided_at,sent_at),appointments(share_insurer,share_insurer_at,slot_at)")
+      .order("signed_at", { ascending: false }).limit(300);
+    if (r.error) { if (teleMissing(r.error)) return { rows: [], disabled: true }; throw r.error; }
+    return { rows: r.data || [] };
+  }
+  function sendPrevention(reportId, summary, services) { return rpc("cm_send_prevention", { p_report: reportId, p_summary: summary, p_services: services || [] }); }
+  function closeReport(reportId, status, note) { return rpc("cm_close_report", { p_report: reportId, p_status: status, p_note: note || null }); }
+  async function insurerPrevention() {
+    if (!isCloud()) return { rows: [] };
+    var r = await sb.rpc("insurer_prevention_list");
+    if (r.error) { if (teleMissing(r.error)) return { rows: [], disabled: true }; throw r.error; }
+    return { rows: r.data || [] };
+  }
+  function decidePrevention(id, decision, approved, note) { return rpc("insurer_prevention_decide", { p_id: id, p_decision: decision, p_approved: approved || [], p_note: note || null }); }
   async function completeReferral(id, note) {
     if (!isCloud()) throw new Error("offline");
     var r = await sb.from("referrals")
@@ -1449,6 +1506,11 @@ var CSBackend = (function () {
     savePlan: savePlan, latestPlan: latestPlan, updatePlanItems: updatePlanItems,
     scheduleFollowUps: scheduleFollowUps, listFollowUps: listFollowUps,
     completeFollowUp: completeFollowUp, completeReferral: completeReferral, callList: callList, callResult: callResult,
+    listAppointments: listAppointments, myAppointments: myAppointments, myPrevention: myPrevention,
+    proposeAppointment: proposeAppointment, chooseAppointment: chooseAppointment, cancelAppointment: cancelAppointment,
+    joinAppointment: joinAppointment, finishAppointment: finishAppointment, submitFinalReport: submitFinalReport,
+    listFinalReports: listFinalReports, sendPrevention: sendPrevention, closeReport: closeReport,
+    insurerPrevention: insurerPrevention, decidePrevention: decidePrevention,
     updateNotifyTypes: updateNotifyTypes, getNotifyPrefs: getNotifyPrefs,
     saveNotifyPrefs: saveNotifyPrefs, addCheckin: addCheckin, listCheckins: listCheckins,
     saveTrial: saveTrial, listTrials: listTrials,

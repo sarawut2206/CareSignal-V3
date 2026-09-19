@@ -441,6 +441,59 @@
   function caseById(id) { for (var i = 0; i < S.cases.length; i++) if (S.cases[i].id === id) return S.cases[i]; return null; }
   function refById(id) { for (var i = 0; i < S.refs.length; i++) if (S.refs[i].id === id) return S.refs[i]; return null; }
   function withProfile(rows) { return rows.map(function (r) { var o = {}; for (var k in r) o[k] = r[k]; o.profiles = prof(memberOf(r.user_id)); return o; }); }
+  function apptById(id) { ensureTele(); for (var i = 0; i < S.appts.length; i++) if (S.appts[i].id === id) return S.appts[i]; return null; }
+  function teleAge(m) { if (!m) return null; var age = (new Date().getFullYear() + 543) - m.birth_year_be; return age < 70 ? "60–69 ปี" : age < 80 ? "70–79 ปี" : "80 ปีขึ้นไป"; }
+  /* ชุดนัดตรวจทางไกลสาธิต — สร้างครั้งแรกที่ถูกเรียก จึงไม่ต้องล้างข้อมูลเดโมที่เปิดค้างอยู่
+     ครบทุกสถานะ: รอครอบครัวเลือก · ถึงเวลาเข้าห้อง · รอกรอกแบบยืนยันผล · รอส่งบริษัทประกัน · รอบริษัทพิจารณา · อนุมัติแล้ว · ไม่พบความเสี่ยง */
+  function ensureTele() {
+    if (S.appts) return;
+    S.appts = []; S.freports = []; S.prev = [];
+    var now = Date.now(), M = 6e4;
+    function at(dayOff, hh) { var d = new Date(now); d.setDate(d.getDate() + dayOff); d.setHours(hh, 0, 0, 0); return iso(d.getTime()); }
+    function mk(n, ref, memberIx, dest, status, slotMs, share, extra) {
+      var r = ref ? refById(ref) : null, m = r ? memberOf(r.user_id) : S.members[memberIx - 1];
+      var a = { id: uuid(20, n), user_id: m.id, referral_id: r ? r.id : null, case_id: r ? r.case_id : null, destination: dest, clinician_id: staffOf(dest).id,
+        options: slotMs ? [iso(slotMs)] : [at(1, 10), at(1, 14), at(2, 10)], slot_at: slotMs ? iso(slotMs) : null, minutes: 20, status: status, note: null,
+        share_insurer: !!share, share_insurer_at: share ? iso(now - 30 * H) : null, created_by: staffOf(dest).id, created_at: iso((slotMs || now) - 50 * H),
+        confirmed_at: slotMs ? iso(now - 30 * H) : null, started_at: null, ended_at: null, cancel_reason: null, room: "demo-room-" + n };
+      for (var k in extra || {}) a[k] = extra[k];
+      S.appts.push(a); return a;
+    }
+    var LIC = { doctor: "ว. สาธิต-10234", pharmacist: "ภ. สาธิต-20417", physio: "ก. สาธิต-30988", nurse: "พย. สาธิต-41120" };
+    function rep(n, a, risk, level, dom, find, rec, svc, cm, signedAgoH) {
+      var f = { id: uuid(22, n), appointment_id: a.id, referral_id: a.referral_id, user_id: a.user_id, destination: a.destination, clinician_id: a.clinician_id,
+        risk: risk, level: level, domains: dom, findings: find, recommend: rec, services: svc, follow_days: 30, in_person: false,
+        signer_name: "สาธิต " + ROLE_NM[a.destination], license_no: LIC[a.destination], attested: true, signed_at: iso(now - signedAgoH * H),
+        cm_status: cm, cm_note: null, cm_by: cm === "sent" ? staffOf("care_manager").id : null, cm_at: cm === "sent" ? iso(now - (signedAgoH - 3) * H) : null };
+      a.status = "done"; a.started_at = iso(new Date(a.slot_at).getTime()); a.ended_at = iso(new Date(a.slot_at).getTime() + 22 * M);
+      S.freports.push(f); return f;
+    }
+    function prev(n, f, decision, approved, note, decidedAgoH) {
+      var m = memberOf(f.user_id);
+      S.prev.push({ id: uuid(23, n), report_id: f.id, user_id: f.user_id, code: "PR-DEMO" + n, age_band: teleAge(m), level: f.level, destination: f.destination,
+        domains: f.domains, services: f.services.slice(), summary: CSTeleSummary(f, teleAge(m)), consent_at: iso(now - 80 * H), sent_by: staffOf("care_manager").id,
+        sent_at: f.cm_at, decision: decision, approved: approved, decision_note: note, decided_by: decision === "pending" ? null : staffOf("insurer").id,
+        decided_at: decision === "pending" ? null : iso(now - decidedAgoH * H) });
+    }
+    mk(1, uuid(5, 1), 0, "pharmacist", "proposed", null, false, { note: "เตรียมซองยาทุกซองไว้ข้างตัวระหว่างวิดีโอคอล" });
+    mk(2, uuid(5, 2), 0, "physio", "confirmed", now + 10 * M, true, { note: "เตรียมเก้าอี้มีพนักพิงและพื้นที่เดิน 3 เมตร" });
+    mk(3, uuid(5, 3), 0, "doctor", "done", now - 90 * M, true, { started_at: iso(now - 90 * M), ended_at: iso(now - 66 * M) });
+    var a4 = mk(4, uuid(5, 4), 0, "physio", "done", now - 26 * H, true);
+    rep(4, a4, "confirmed", "high", ["strength", "balance", "gait"], "ลุกนั่ง 5 ครั้งต้องใช้มือดัน 2 ครั้ง · ยืนต่อเท้าได้ 4 วินาที · เดินในบ้านเซเมื่อหมุนตัว",
+      "เริ่มโปรแกรมฝึกกำลังขาและการทรงตัวสัปดาห์ละ 3 วัน มีลูกหลานอยู่ด้วยทุกครั้ง · ใช้ไม้เท้าเมื่อเดินนอกบ้าน", ["physio_program", "assistive", "home_mod"], "new", 24);
+    var a5 = mk(5, null, 5, "pharmacist", "done", now - 76 * H, true);
+    var f5 = rep(5, a5, "confirmed", "moderate", ["meds", "bp"], "ใช้ยานอนหลับกลุ่มเบนโซไดอะซีปีนร่วมกับยาลดความดัน 2 ตัว · หน้ามืดเมื่อลุกยืนตอนเช้า",
+      "เสนอให้แพทย์ผู้สั่งใช้ยาทบทวนยานอนหลับและเวลาให้ยาลดความดัน · ลุกจากเตียงช้า ๆ นั่งขอบเตียง 1 นาทีก่อนยืน", ["med_review", "doctor_followup"], "sent", 74);
+    prev(5, f5, "pending", [], null, 0);
+    var a6 = mk(6, uuid(5, 6), 0, "physio", "done", now - 8 * 24 * H, true);
+    var f6 = rep(6, a6, "confirmed", "moderate", ["strength", "home"], "กำลังขาซ้ายอ่อน ลุกนั่ง 5 ครั้ง 15.2 วินาที · ห้องน้ำไม่มีราวจับ พื้นลื่น",
+      "ฝึกกำลังขา 6 สัปดาห์ · ติดราวจับห้องน้ำและแผ่นกันลื่น", ["physio_program", "home_mod", "exercise_group"], "sent", 8 * 24 - 2);
+    prev(6, f6, "partial", ["physio_program", "home_mod"], "อนุมัติโปรแกรมกายภาพ 6 ครั้งและชุดราวจับ · กลุ่มออกกำลังกายยังไม่อยู่ในแผนความคุ้มครอง", 5 * 24);
+    var a7 = mk(7, null, 8, "doctor", "done", now - 5 * 24 * H, false);
+    rep(7, a7, "not_confirmed", "low", [], "ไม่มีประวัติล้มซ้ำ ลุกเดินคล่อง ความดันเมื่อลุกยืนปกติ ผลที่บ้านช้าเพราะวันนั้นปวดเข่าจากข้อเสื่อมกำเริบ",
+      "ติดตามตามรอบปกติ 90 วัน · ประคบอุ่นเมื่อปวดเข่า", [], "not_needed", 5 * 24 - 1);
+  }
+  function CSTeleSummary(f, band) { return (window.CSTele && CSTele.summaryFor) ? CSTele.summaryFor(f, band) : "ผู้เอาประกันอายุ " + (band || "—") + " ยืนยันความเสี่ยงหกล้มระดับ" + f.level; }
   function isClinician() { return ["pharmacist", "physio", "doctor", "nurse"].indexOf(ME.role) >= 0; }
   function isCareTeam() { return ME.role === "care_manager" || ME.role === "admin"; }
   var REPLY_H = { urgent: 24, decline: 72, watch: 168, stable: 168 };
@@ -545,6 +598,149 @@
         note: "นัดติดตาม: " + ({ checkin_7d: "โทรติดตาม 7 วัน", review_30d: "ทบทวนแผน 30 วัน", reassess: "ชวนวัดซ้ำ", referral_check: "ตามผลการส่งต่อ" }[f.kind] || f.kind) + (result === "callback" ? " · ขอให้โทรใหม่" : "") + (note ? " · " + note : ""), created_at: iso(now) });
       audit("followup.call", f.user_id, f.kind + ": " + result);
       return Promise.resolve(f);
+    },
+    /* ---------- นัดตรวจทางวิดีโอคอล · แบบยืนยันผล · คำขอบริการป้องกัน (กฎเดียวกับ 27_teleconsult.sql) ---------- */
+    listAppointments: function () {
+      ensureTele();
+      if (ME.role === "insurer") return Promise.resolve({ rows: [] });
+      var rows = S.appts.filter(function (a) { return isCareTeam() || (isClinician() && (a.clinician_id === ME.id || a.destination === ME.role)); });
+      return Promise.resolve({ rows: rows.map(function (a) {
+        var o = {}; for (var k in a) if (k !== "room") o[k] = a[k];
+        var m = memberOf(a.user_id); o.profiles = m ? { pseudonym: m.pseudonym, display_name: m.display_name, phone: m.phone, carer_phone: m.carer_phone, birth_year_be: m.birth_year_be } : null;
+        o.final_reports = S.freports.filter(function (f) { return f.appointment_id === a.id; })[0] || null;
+        return o;
+      }).sort(byTime("created_at", true)) });
+    },
+    myAppointments: function () { return Promise.resolve([]); },
+    myPrevention: function () { return Promise.resolve([]); },
+    proposeAppointment: function (refId, options, minutes, note) {
+      ensureTele();
+      var r = refById(refId); if (!r) return Promise.reject(new Error("ไม่พบใบส่งต่อ"));
+      if (!(isCareTeam() || (isClinician() && (r.destination === ME.role || r.assigned_to === ME.id)))) return Promise.reject(new Error("ใบส่งต่อนี้ไม่ได้ส่งถึงท่าน"));
+      if (!options || options.length < 1 || options.length > 3) return Promise.reject(new Error("เสนอเวลาได้ 1 ถึง 3 ช่วง"));
+      var now = Date.now();
+      for (var i = 0; i < options.length; i++) { var t = new Date(options[i]).getTime(); if (!(t >= now + 30 * 6e4 && t <= now + 30 * D)) return Promise.reject(new Error("เวลานัดต้องอยู่ระหว่าง 30 นาทีถึง 30 วันจากนี้")); }
+      S.appts.forEach(function (a) { if (a.referral_id === refId && a.status === "proposed") { a.status = "cancelled"; a.cancel_reason = "เสนอเวลาใหม่"; } });
+      var a = { id: nid(20), user_id: r.user_id, referral_id: r.id, case_id: r.case_id, destination: r.destination, clinician_id: isClinician() ? ME.id : (r.assigned_to || staffOf(r.destination).id),
+        options: options.map(function (x) { return iso(new Date(x).getTime()); }), slot_at: null, minutes: minutes || 20, status: "proposed", note: note || null,
+        share_insurer: false, share_insurer_at: null, created_by: ME.id, created_at: iso(now), confirmed_at: null, started_at: null, ended_at: null, cancel_reason: null, room: "demo-" + nid(21) };
+      S.appts.unshift(a);
+      audit("appt.propose", r.user_id, "เสนอเวลานัดวิดีโอคอล " + options.length + " ช่วง · " + r.destination);
+      return Promise.resolve(a.id);
+    },
+    chooseAppointment: function (id, slot, share) {
+      ensureTele();
+      var a = apptById(id); if (!a) return Promise.reject(new Error("ไม่พบนัด"));
+      if (!isCareTeam()) return Promise.reject(new Error("ไม่ใช่นัดของท่าน"));
+      if (a.status !== "proposed") return Promise.reject(new Error("นัดนี้ยืนยันหรือยกเลิกไปแล้ว"));
+      var t = new Date(slot).getTime();
+      if (!a.options.some(function (o) { return new Date(o).getTime() === t; })) return Promise.reject(new Error("เลือกได้เฉพาะเวลาที่ผู้เชี่ยวชาญเสนอ"));
+      a.status = "confirmed"; a.slot_at = iso(t); a.confirmed_at = iso(Date.now()); a.share_insurer = !!share; a.share_insurer_at = share ? iso(Date.now()) : null;
+      var r = a.referral_id ? refById(a.referral_id) : null;
+      if (r && ["pending", "approved", "acknowledged"].indexOf(r.status) >= 0) { r.status = "booked"; r.booked_at = iso(Date.now()); }
+      audit("appt.confirm", a.user_id, "ยืนยันเวลานัดวิดีโอคอล" + (share ? " · ยินยอมส่งสรุปผลแบบไม่ระบุชื่อให้บริษัทประกัน" : ""));
+      return Promise.resolve();
+    },
+    cancelAppointment: function (id, reason) {
+      ensureTele();
+      var a = apptById(id); if (!a) return Promise.reject(new Error("ไม่พบนัด"));
+      if (["proposed", "confirmed"].indexOf(a.status) < 0) return Promise.reject(new Error("ยกเลิกไม่ได้ในสถานะนี้"));
+      a.status = "cancelled"; a.cancel_reason = reason || null; audit("appt.cancel", a.user_id, reason || "ยกเลิกนัด");
+      return Promise.resolve();
+    },
+    joinAppointment: function (id) {
+      ensureTele();
+      var a = apptById(id); if (!a) return Promise.reject(new Error("ไม่พบนัด"));
+      if (!(isClinician() && (a.clinician_id === ME.id || a.destination === ME.role))) return Promise.reject(new Error("ท่านไม่ได้เป็นคู่สนทนาของนัดนี้ — ในโหมดสาธิตให้สลับบทบาทเป็น" + (ROLE_NM[a.destination] || a.destination)));
+      if (["confirmed", "in_call"].indexOf(a.status) < 0) return Promise.reject(new Error("นัดนี้ยังไม่ยืนยันหรือสิ้นสุดแล้ว"));
+      var t = new Date(a.slot_at).getTime(), now = Date.now();
+      if (now < t - 15 * 6e4) return Promise.reject(new Error("ยังไม่ถึงเวลา เข้าห้องได้ก่อนนัด 15 นาที"));
+      if (now > t + (a.minutes + 60) * 6e4) return Promise.reject(new Error("เลยเวลานัดแล้ว กรุณานัดใหม่"));
+      a.clinician_id = a.clinician_id || ME.id; a.status = "in_call"; a.started_at = a.started_at || iso(now);
+      var m = memberOf(a.user_id);
+      audit("appt.join", a.user_id, "เข้าห้องวิดีโอคอล");
+      return Promise.resolve({ room: a.room, as: "clinician", slot_at: a.slot_at, minutes: a.minutes, destination: a.destination, other: m ? m.display_name : "ผู้เอาประกัน", demo: true });
+    },
+    finishAppointment: function (id, noShow) {
+      ensureTele();
+      var a = apptById(id); if (!a) return Promise.reject(new Error("ไม่พบนัด"));
+      if (["confirmed", "in_call"].indexOf(a.status) >= 0) { a.status = noShow ? "no_show" : "done"; a.ended_at = iso(Date.now()); }
+      return Promise.resolve();
+    },
+    submitFinalReport: function (apptId, d) {
+      ensureTele();
+      var a = apptById(apptId); if (!a) return Promise.reject(new Error("ไม่พบนัด"));
+      if (!(isClinician() && (a.clinician_id === ME.id || a.destination === ME.role))) return Promise.reject(new Error("เฉพาะผู้เชี่ยวชาญที่ตรวจเป็นผู้ลงชื่อยืนยันผล"));
+      if (["in_call", "done"].indexOf(a.status) < 0) return Promise.reject(new Error("ต้องเข้าห้องตรวจก่อนจึงยืนยันผลได้"));
+      if (S.freports.some(function (f) { return f.appointment_id === apptId; })) return Promise.reject(new Error("ยืนยันผลนัดนี้ไปแล้ว แก้ไขไม่ได้"));
+      if (["confirmed", "not_confirmed", "uncertain"].indexOf(d.risk) < 0) return Promise.reject(new Error("เลือกผลการยืนยันความเสี่ยง"));
+      if (!d.attested) return Promise.reject(new Error("ต้องรับรองว่าตรวจด้วยตนเอง"));
+      if (!d.signer_name || !d.license_no) return Promise.reject(new Error("ต้องลงชื่อและเลขใบอนุญาต"));
+      if (/(ให้หยุดยา|หยุดยาทันที|เลิกยา)/.test(d.recommend || "")) return Promise.reject(new Error("คำแนะนำเรื่องยาให้ใช้ถ้อยคำว่า ทบทวนกับผู้สั่งใช้ — การปรับยาเป็นของผู้สั่งใช้"));
+      var fr = { id: nid(22), appointment_id: a.id, referral_id: a.referral_id, user_id: a.user_id, destination: a.destination, clinician_id: ME.id,
+        risk: d.risk, level: d.risk === "not_confirmed" ? "low" : d.level, domains: d.domains || [], findings: d.findings, recommend: d.recommend,
+        services: d.services || [], follow_days: d.follow_days || null, in_person: !!d.in_person, signer_name: d.signer_name, license_no: d.license_no,
+        attested: true, signed_at: iso(Date.now()), cm_status: d.risk === "not_confirmed" ? "not_needed" : (a.share_insurer ? "new" : "no_consent"), cm_note: null, cm_by: null, cm_at: null };
+      S.freports.unshift(fr); a.status = "done"; a.ended_at = a.ended_at || iso(Date.now()); a.clinician_id = ME.id;
+      audit("final.submit", a.user_id, "ยืนยันผลครั้งสุดท้าย: " + fr.risk + " · " + fr.level);
+      return Promise.resolve(fr);
+    },
+    listFinalReports: function () {
+      ensureTele();
+      if (!isCareTeam()) return Promise.resolve({ rows: [] });
+      return Promise.resolve({ rows: S.freports.map(function (f) {
+        var o = {}; for (var k in f) o[k] = f[k];
+        var m = memberOf(f.user_id), a = apptById(f.appointment_id), p = S.prev.filter(function (x) { return x.report_id === f.id; })[0];
+        o.profiles = m ? { pseudonym: m.pseudonym, display_name: m.display_name, birth_year_be: m.birth_year_be } : null;
+        o.appointments = a ? { share_insurer: a.share_insurer, share_insurer_at: a.share_insurer_at, slot_at: a.slot_at } : null;
+        o.prevention_requests = p ? { code: p.code, services: p.services, decision: p.decision, approved: p.approved, decision_note: p.decision_note, decided_at: p.decided_at, sent_at: p.sent_at } : null;
+        return o;
+      }).sort(byTime("signed_at", true)) });
+    },
+    sendPrevention: function (reportId, summary, services) {
+      ensureTele();
+      if (!isCareTeam()) return Promise.reject(new Error("เฉพาะผู้ประสานงาน"));
+      var f = S.freports.filter(function (x) { return x.id === reportId; })[0]; if (!f) return Promise.reject(new Error("ไม่พบแบบยืนยันผล"));
+      if (f.risk !== "confirmed") return Promise.reject(new Error("ส่งได้เฉพาะเคสที่ผู้เชี่ยวชาญยืนยันว่าเสี่ยงจริง"));
+      if (f.cm_status === "sent") return Promise.reject(new Error("ส่งไปแล้ว"));
+      var a = apptById(f.appointment_id); if (!a || !a.share_insurer) return Promise.reject(new Error("ครอบครัวยังไม่ยินยอมให้ส่งสรุปผลให้บริษัทประกัน"));
+      var m = memberOf(f.user_id), text = String(summary || "").trim();
+      if (!text) return Promise.reject(new Error("ต้องมีสรุป"));
+      if ((m && text.indexOf(m.display_name) >= 0) || (m && text.indexOf(m.pseudonym) >= 0) || /0[0-9]{1,2}[- ]?[0-9]{3}[- ]?[0-9]{3,4}/.test(text)) return Promise.reject(new Error("สรุปมีชื่อ รหัสสมาชิก หรือเบอร์โทร — ตัดออกก่อนส่ง"));
+      var p = { id: nid(23), report_id: f.id, user_id: f.user_id, code: "PR-" + String(Math.floor(Math.random() * 1e6)).padStart(6, "0"), age_band: teleAge(m), level: f.level,
+        destination: f.destination, domains: f.domains, services: (services || []).slice(), summary: text, consent_at: a.share_insurer_at, sent_by: ME.id, sent_at: iso(Date.now()),
+        decision: "pending", approved: [], decision_note: null, decided_by: null, decided_at: null };
+      S.prev.unshift(p); f.cm_status = "sent"; f.cm_by = ME.id; f.cm_at = iso(Date.now());
+      audit("prevention.send", f.user_id, "ส่งคำขอบริการป้องกัน " + p.code + " ให้บริษัทประกัน (ไม่ระบุชื่อ)");
+      return Promise.resolve(p);
+    },
+    closeReport: function (reportId, status, note) {
+      ensureTele();
+      var f = S.freports.filter(function (x) { return x.id === reportId; })[0];
+      if (!f || f.cm_status === "sent") return Promise.reject(new Error("ไม่พบ หรือส่งไปแล้ว"));
+      f.cm_status = status; f.cm_note = note || null; f.cm_by = ME.id; f.cm_at = iso(Date.now());
+      return Promise.resolve(f);
+    },
+    insurerPrevention: function () {
+      ensureTele();
+      if (["insurer", "admin"].indexOf(ME.role) < 0) return Promise.reject(new Error("เฉพาะบริษัทประกัน"));
+      audit("prevention.list", null, "เปิดดูคำขอบริการป้องกัน (ไม่ระบุชื่อ)");
+      return Promise.resolve({ rows: S.prev.map(function (p) {
+        return { id: p.id, code: p.code, age_band: p.age_band, level: p.level, destination: p.destination, domains: p.domains, services: p.services,
+          summary: p.summary, sent_at: p.sent_at, decision: p.decision, approved: p.approved, decision_note: p.decision_note, decided_at: p.decided_at };
+      }).sort(function (x, y) { return (x.decision === "pending" ? 0 : 1) - (y.decision === "pending" ? 0 : 1) || (x.sent_at < y.sent_at ? 1 : -1); }) });
+    },
+    decidePrevention: function (id, decision, approved, note) {
+      ensureTele();
+      if (["insurer", "admin"].indexOf(ME.role) < 0) return Promise.reject(new Error("เฉพาะบริษัทประกัน"));
+      if (["approved", "partial", "need_info", "declined"].indexOf(decision) < 0) return Promise.reject(new Error("ผลพิจารณาไม่ถูกต้อง"));
+      var p = S.prev.filter(function (x) { return x.id === id; })[0]; if (!p) return Promise.reject(new Error("ไม่พบคำขอ"));
+      if (decision === "partial" && !(approved || []).length) return Promise.reject(new Error("เลือกบริการที่อนุมัติอย่างน้อย 1 รายการ"));
+      if ((decision === "need_info" || decision === "declined") && !String(note || "").trim()) return Promise.reject(new Error("ระบุเหตุผลให้ผู้ประสานงาน"));
+      p.decision = decision; p.approved = decision === "approved" ? p.services.slice() : decision === "partial" ? approved.filter(function (s) { return p.services.indexOf(s) >= 0; }) : [];
+      p.decision_note = note || null; p.decided_by = ME.id; p.decided_at = iso(Date.now());
+      audit("prevention.decide", null, p.code + ": " + decision);
+      return Promise.resolve();
     },
     logContact: function (c0, result, note, channel) {
       var c = caseById(c0.id); if (!c) return Promise.reject(new Error("ไม่พบเคส"));

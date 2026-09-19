@@ -51,7 +51,7 @@ ok("ไม่อ้างว่าป้องกันการล้มได�
 ok("ทุกหน้าบอกว่าไม่ใช่การวินิจฉัย", PAGES.every((f) => /ไม่ใช่การวินิจฉัย|ไม่วินิจฉัยโรค/.test(readFileSync(new URL("../" + f, import.meta.url), "utf8"))));
 ok("ฝังวิดีโอครบ 3 คลิปทั้งในหน้ารวมและในแอป", ["KQaDdX66OUM", "o_HM_3u0TZk", "AO88b5YLFg0"].every((id) => PAGES.slice(0, 2).every((f) => readFileSync(new URL("../" + f, import.meta.url), "utf8").includes(id))));
 ok("ให้เครดิตเจ้าของวิดีโอทั้งในหน้ารวมและในแอป", PAGES.slice(0, 2).every((f) => /Siriraj Health Policy/.test(readFileSync(new URL("../" + f, import.meta.url), "utf8")) && /สูงวัยไม่ล้ม BWSTT/.test(readFileSync(new URL("../" + f, import.meta.url), "utf8"))));
-ok("แอปลูกหลานไม่ขอใช้กล้อง", !/getUserMedia|mediapipe/i.test(readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8")));
+ok("แอปลูกหลานไม่ขอใช้กล้องในการวัด (วิดีโอคอลแยกไปหน้า CareSignal-Visit.html)", !/getUserMedia|mediapipe/i.test(readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8")));
 ok("โคลนระบบ V2 ครบ: คอนโซล แดชบอร์ด ใบส่งต่อ เดโม ฐานข้อมูล", ["CareSignal-Staff.html", "CareSignal-Portfolio-Dashboard.html", "CareSignal-Journey.html", "cs-referral-forms.js", "cs-demo.js", "cs-backend.js", "supabase/22_referral_forms.sql"].every((f) => { try { readFileSync(new URL("../" + f, import.meta.url)); return true; } catch (e) { return false; } }));
 const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
 ok("service worker ไม่ลบแคชของ V2 (โดเมนเดียวกัน)", /indexOf\(PREFIX\) === 0/.test(sw) && !/CareSignal-Vision|cs-aruco/.test(sw));
@@ -108,7 +108,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("หน้ารอผลไม่แสดงระดับสี", /function renderResult[\s\S]*?if \(pending\(r\)\)[\s\S]*?return;\s*\}/.test(app) && !/if \(pending\(r\)\) \{[^}]*T\.nm/.test(app));
   ok("ตรวจผลยืนยันจาก review ของใบส่งต่อ + ปิดเคส", /function applyConfirmations/.test(app) && /rv\.review\.form/.test(app) && /closed_at/.test(app));
   ok("แจ้งเตือนเมื่อยืนยัน (toast + Notification)", /function notifyConfirmed/.test(app) && /new Notification\(/.test(app));
-  ok("ตรวจผลซ้ำเป็นระยะ", /setInterval\(function \(\) \{ if \(CSCloud\.connected\(\) && D\.assessments\.some\(pending\)\)/.test(app));
+  ok("ตรวจผลซ้ำเป็นระยะ", /setInterval\(function \(\) \{ if \(CSCloud\.connected\(\) && \(D\.assessments\.some\(pending\)/.test(app));
   const ev = app.slice(app.indexOf("var EVID = {"), app.indexOf("function evidItem"));
   const keys = ev.match(/^\s{2}\w+:\s*\{ t:/gm) || [];
   ok("คำแนะนำทุกข้อมีแหล่งอ้างอิง (src)", keys.length >= 8 && (ev.match(/src: "/g) || []).length === keys.length, keys.length);
@@ -149,9 +149,9 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
      ["ติดตั้งบน iPhone / iPad", "ติดตั้งบน Android", "เปิดในเบราว์เซอร์ก่อน", "ติดตั้งบนคอมพิวเตอร์"].every((k) => app.includes(k)) && /FB_IAB|FBAN/.test(app));
   ok("ติดตั้งแล้วหรืออยู่ในกรอบเว็บ ไม่ชวนติดตั้งซ้ำ", /function installedApp/.test(app) && /if \(embedded\(\) \|\| installedApp\(\)/.test(app));
   ok("ปิดแถบชวนติดตั้งแล้วจำไว้", /localStorage\.setItem\(A2HS\.key, "no"\)/.test(app));
-  ok("ทางลัด ?go= เปิดหน้าที่ต้องการได้", /\["fall", "test", "history", "meds", "video"\]\.indexOf\(goto\)/.test(app));
+  ok("ทางลัด ?go= เปิดหน้าที่ต้องการได้", /\["fall", "test", "history", "meds", "video", "appts"\]\.indexOf\(goto\)/.test(app));
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
-  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-13/.test(sw));
+  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-14/.test(sw));
 }
 
 /* ใบส่งต่อแบบเอกสารทางการ: ทุกสัญญาณต้องมีเกณฑ์ เหตุผล และเอกสารอ้างอิง */
@@ -201,9 +201,33 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("ดึงนัดติดตามของเจ้าหน้าที่จากระบบกลาง", /B\.listFollowUps\(null, 30\)/.test(cl) && /followUps: fu/.test(cl));
   ok("นัดครบทุกชนิดของตาราง follow_ups", ["checkin_7d", "review_30d", "reassess", "referral_check"].every((k) => new RegExp("\\b" + k + ":\\s+\\[").test(app)));
   ok("รอบวัดซ้ำใช้ nextDueDays ของเครื่องคิดคะแนน", /CSScore\.nextDueDays\(last\.tier\) \* 864e5/.test(app));
-  ok("ไฟล์ปฏิทินมีเตือนก่อน 1 วันและวันนัด", /TRIGGER:-P1D/.test(app) && /TRIGGER:PT0M/.test(app) && /text\/calendar/.test(app));
+  ok("ไฟล์ปฏิทินมีเตือนก่อน 1 วันและวันนัด", /TRIGGER:-P1D/.test(app) && /"TRIGGER:" \+ \(x\.appt \? "-PT15M" : "PT0M"\)/.test(app) && /text\/calendar/.test(app));
   ok("เตือนถึงวันนัดวันละครั้ง", /cs3:duenote/.test(app) && /tag: "cs3-due"/.test(app));
   ok("กระดิ่งพาไปหน้านัดเมื่อมีนัดถึงกำหนด", /if \(apptsDue\(\)\.length\) return go\("appts"\)/.test(app));
+}
+
+/* นัดตรวจทางวิดีโอคอล (27_teleconsult.sql) */
+{
+  const app = readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8");
+  const vis = readFileSync(new URL("../CareSignal-Visit.html", import.meta.url), "utf8");
+  const sql = readFileSync(new URL("../supabase/27_teleconsult.sql", import.meta.url), "utf8");
+  const T = require("../cs-teleconsult.js");
+  ok("ครอบครัวเลือกเวลาและเลือกความยินยอมเอง (ไม่ติ๊กไว้ก่อน)", /id="vs_' \+ a\.id \+ '">/.test(app) && /ไม่ติ๊กก็ได้รับการตรวจตามปกติ/.test(app));
+  ok("นัดวิดีโอเข้าไปในรายการนัดและปฏิทิน", /kind: "video", at: new Date\(a\.slot_at\)/.test(app) && /x\.appt \? "-PT15M"/.test(app));
+  ok("ห้องวิดีโอขอสิทธิ์จาก appt_join ก่อนเปิดกล้อง", vis.indexOf("joinAppointment(APPT)") >= 0 && vis.indexOf("joinAppointment(APPT)") < vis.indexOf("await openMedia()"));
+  ok("ห้องวิดีโอไม่บันทึกภาพหรือเสียง", !/MediaRecorder/.test(vis) && /ไม่บันทึกภาพหรือเสียง/.test(vis));
+  ok("รหัสห้องไม่เปิดให้อ่านจากตาราง", /revoke select on public\.appointments from anon, authenticated/.test(sql) && !/grant select \([^)]*room/.test(sql));
+  ok("บริษัทประกันไม่ได้รับ user_id ชื่อ หรือรหัสสมาชิก", (() => { const m = sql.match(/function public\.insurer_prevention_list\(\)\s*returns table \(([^)]*)\)/); return m && !/user_id|display_name|pseudonym|phone/.test(m[1]); })());
+  ok("ส่งบริษัทได้เฉพาะยืนยันว่าเสี่ยงจริงและครอบครัวยินยอม", /fr\.risk <> 'confirmed'/.test(sql) && /not coalesce\(a\.share_insurer, false\)/.test(sql));
+  ok("แบบยืนยันผลต้องลงชื่อ ใบอนุญาต และรับรอง แก้ไขไม่ได้", /attested\s+boolean not null check \(attested\)/.test(sql) && /revoke insert, update, delete on public\.final_reports/.test(sql));
+  ok("ตรวจเบอร์โทรในสรุปได้ทุกรูปแบบ", ["081-234-5678", "0812345678", "02-123-4567"].every((x) => T.leaksIdentity(x, {})) && !T.leaksIdentity("อายุ 70–79 ปี ติดตาม 30 วัน", {}));
+  const now = Date.parse("2026-09-20T10:00:00Z");
+  ok("เข้าห้องได้ก่อนนัด 15 นาทีถึงหลังหมดเวลา 60 นาที",
+    !T.joinWindow({ status: "confirmed", slot_at: "2026-09-20T10:20:00Z", minutes: 20 }, now).open &&
+    T.joinWindow({ status: "confirmed", slot_at: "2026-09-20T10:15:00Z", minutes: 20 }, now).open &&
+    T.joinWindow({ status: "in_call", slot_at: "2026-09-20T08:45:00Z", minutes: 20 }, now).open &&
+    !T.joinWindow({ status: "confirmed", slot_at: "2026-09-20T08:30:00Z", minutes: 20 }, now).open);
+  ok("ผลยืนยันแปลงกลับใบส่งต่อเดิมได้", T.toReview({ risk: "confirmed", findings: "x", recommend: "y" }).form.verdict === "confirm" && T.toReview({ risk: "not_confirmed", findings: "x", recommend: "y" }).next_step === "sufficient");
 }
 
 console.log("  " + pass + " ผ่าน / " + fail + " ตก");
