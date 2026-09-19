@@ -842,7 +842,10 @@ function camStart(k) {
     onDone: function (res) {
       if (res.manual) { setMeasureMode("manual"); toast("สลับเป็นกดจับเวลาเอง"); return; }
       if (res.refs) d.camRefs = res.refs;
+      if (res.incomplete) { S.sw = { k: k, t: null, t0: 0, val: null }; toast("หยุดก่อนครบ 5 ครั้ง (นับได้ " + res.reps + " ครั้ง) · วัดใหม่ หรือกดข้ามท่านี้ (ทำไม่ได้)"); render(); return; }
       S.sw = { k: k, t: null, t0: 0, val: k === "balance" ? res.held : res.sec, cam: res };
+      /* ผู้สูงอายุยกมือข้างเดียว = บันทึก → ผ่าน swSave ตามปกติ (ตรวจค่าผิดปกติเหมือนกดปุ่ม) */
+      if (res.save) { toast("บันทึกด้วยสัญญาณมือ " + res.sec.toFixed(1) + " วินาที"); render(); swSave(); return; }
       toast(k === "balance" ? (res.pass ? "กล้องจับเวลาได้ " + res.held.toFixed(1) + " วิ · ยืนยันว่าผ่าน" : "บันทึก " + res.held.toFixed(1) + " วิ · ยืนยันว่าไม่ผ่าน") : "กล้องวัดได้ " + res.sec.toFixed(1) + " วินาที ตรวจแล้วกดบันทึก");
       render();
     },
@@ -857,7 +860,7 @@ function renderStopwatch(v, k, prog) {
   var sw = S.sw && S.sw.k === k ? S.sw : (S.sw = { k: k, t: null, t0: 0, val: null });
   var running = !!sw.t, shown = running ? (Date.now() - sw.t0) / 1000 : (sw.val || 0);
   var cam = measureMode() === "camera", passed = sw.val >= 10 && !(sw.cam && sw.cam.pass === false);
-  var camHint = { ftsst: "ถือมือถือให้เห็นผู้สูงอายุทั้งตัว กล้องนับครั้งและจับเวลาให้ · เริ่มด้วยการบันทึกท่านั่งและท่ายืน", tug: "ถือมือถือให้เห็นเก้าอี้และทางเดิน กล้องจับเวลาตั้งแต่สัญญาณเริ่มจนกลับมานั่ง", balance: "ให้ผู้สูงอายุยืนหันข้าง ห่าง 2–3 เมตร กล้องดูท่าเท้าและจับเวลา 10 วินาที · ลูกหลานยืนยันผลเอง" }[k];
+  var camHint = { ftsst: "ถือมือถือให้เห็นผู้สูงอายุทั้งตัว กล้องนับครั้งและจับเวลาให้ · ยกสองมือ = เริ่ม · กางแขนด้านข้าง = สิ้นสุด · ยกมือข้างเดียว = บันทึก", tug: "ถือมือถือให้เห็นเก้าอี้และทางเดิน กล้องจับเวลาตั้งแต่สัญญาณเริ่มจนกลับมานั่ง · ยกสองมือ = เริ่ม · กางแขนด้านข้าง = สิ้นสุด · ยกมือข้างเดียว = บันทึก", balance: "ให้ผู้สูงอายุยืนหันข้าง ห่าง 2–3 เมตร กล้องดูท่าเท้าและจับเวลา 10 วินาที · ลูกหลานยืนยันผลเอง" }[k];
   v.innerHTML =
     '<div class="mode"><button class="' + (cam ? "" : "on") + '" onclick="setMeasureMode(\'manual\')">⏱ กดจับเวลาเอง</button><button class="' + (cam ? "on" : "") + '" onclick="setMeasureMode(\'camera\')">📷 กล้องช่วยนับ</button></div>' +
     (k === "balance" ? '<div class="card" style="border:2px solid var(--brand)"><h3>' + (bi + 1) + '. ' + esc(bs.nm) + '</h3><p class="sub" style="margin:0">' + esc(bs.how) + '</p>' +
@@ -865,7 +868,7 @@ function renderStopwatch(v, k, prog) {
     (cam && sw.val == null && !running
       ? '<div class="card" style="border:2px solid var(--brand)"><h3>📷 กล้องช่วยนับและจับเวลา</h3><p class="sub" style="margin:0 0 10px">' + camHint + '</p>' +
         (CSCam.supported() ? '<button class="btn" style="margin:0" onclick="camStart(\'' + k + '\')">เปิดกล้อง</button>' : '<div class="warn">เครื่องนี้เปิดกล้องจากเบราว์เซอร์ไม่ได้ ใช้การกดจับเวลาแทน</div>') +
-        '<p class="sub" style="font-size:12.5px;margin:8px 0 0">ภาพประมวลผลในเครื่อง ไม่อัปโหลด เก็บเฉพาะตัวเลข · เอนจินรุ่น 2: มุมเข่า 3 มิติ</p></div>'
+        '<p class="sub" style="font-size:12.5px;margin:8px 0 0">ภาพประมวลผลในเครื่อง ไม่อัปโหลด เก็บเฉพาะตัวเลข · เอนจินรุ่น 3 · สั่งด้วยสัญญาณมือได้ (ลุกนั่ง · ลุกเดิน)</p></div>'
       : '<div class="card"><div class="big" id="clock">' + shown.toFixed(1) + '<small> วินาที</small>' + (sw.cam && !running ? '<br><span class="camtag">📷 วัดด้วยกล้อง' + (sw.cam.quality ? ' · ความน่าเชื่อถือ' + sw.cam.quality.level : '') + '</span>' + (sw.cam.quality && sw.cam.quality.level === "ต่ำ" ? '<br><small style="font-size:13px;color:var(--c2);font-weight:500;letter-spacing:0">ภาพไม่ชัดหรือเครื่องช้า ควรวัดซ้ำ หรือกดจับเวลาเอง</small>' : '') : '') + '</div>' +
         '<button class="sw ' + (running ? "stop" : "") + '" onclick="swToggle()">' + (running ? "■ หยุด" : (sw.val != null ? "↻ จับใหม่" : "▶ เริ่ม")) + '</button>' +
         (cam && !running ? '<button class="btn ghost" style="margin:8px 0 0" onclick="camStart(\'' + k + '\')">📷 วัดด้วยกล้องอีกครั้ง</button>' : '') + '</div>') +

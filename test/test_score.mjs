@@ -151,7 +151,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("ปิดแถบชวนติดตั้งแล้วจำไว้", /localStorage\.setItem\(A2HS\.key, "no"\)/.test(app));
   ok("ทางลัด ?go= เปิดหน้าที่ต้องการได้", /\["fall", "test", "history", "meds", "video", "appts"\]\.indexOf\(goto\)/.test(app));
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
-  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-17/.test(sw));
+  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-18/.test(sw));
 }
 
 /* ใบส่งต่อแบบเอกสารทางการ: ทุกสัญญาณต้องมีเกณฑ์ เหตุผล และเอกสารอ้างอิง */
@@ -239,7 +239,8 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("เลือกได้สองแบบและจำค่าไว้: กดจับเวลาเอง / กล้องช่วยนับ", /cs3:measure/.test(app) && /setMeasureMode\(\\'manual\\'\)/.test(app) && /setMeasureMode\(\\'camera\\'\)/.test(app));
   ok("ผลจากกล้องกลับมาที่หน้าจับเวลาเดิม ผู้วัดกดบันทึกเอง (ผ่านการตรวจค่าผิดปกติ)", /S\.sw = \{ k: k, t: null, t0: 0, val: k === "balance" \? res\.held : res\.sec, cam: res \}/.test(app));
   ok("ทรงตัว: ลูกหลานยืนยันผ่าน/ไม่ผ่านเอง กล้องไม่ตัดสิน", /d\.balFail\[d\.balStages\.length - 1\] = true/.test(app) && /!\(d\.balFail && d\.balFail\[n\]\)/.test(app) && /กล้องสังเกตเห็น<\/b> \(ข้อมูลประกอบ ไม่ใช่คำตัดสิน\)/.test(cam));
-  ok("กล้องไม่บันทึกภาพ ไม่มีสั่งงานด้วยเสียง/ยกมือ", !/MediaRecorder|SpeechRecognition|webkitSpeechRecognition|handsUp|gestureTick/.test(cam) && /ไม่อัปโหลดภาพหรือวิดีโอ/.test(cam));
+  ok("กล้องไม่บันทึกภาพ ไม่มีสั่งงานด้วยเสียง", !/MediaRecorder|SpeechRecognition|webkitSpeechRecognition/.test(cam) && /ไม่อัปโหลดภาพหรือวิดีโอ/.test(cam));
+  ok("สัญญาณมือ (ลุกนั่ง/ลุกเดิน): สองมือ=เริ่ม · กางแขน=สิ้นสุด · มือเดียว=บันทึก ผ่าน swSave · ทำไม่ครบไม่บันทึก", /gs\.fire === "both"/.test(cam) && /gs\.fire === "side"/.test(cam) && /gs\.fire === "one" && !result\.incomplete/.test(cam) && /if \(res\.save\) \{[^}]*swSave\(\)/.test(app) && /if \(res\.incomplete\)/.test(app) && !/gestBar\(\[/.test(cam.slice(cam.indexOf("function runBalance"))));
   ok("เริ่มด้วยกล้องหลัง (ลูกหลานถือมือถือ) และสลับกล้องได้", /FACING = "environment"/.test(cam) && /csFlip/.test(cam));
   ok("ระบบกลางรับวิธีวัดต่อท่า และผลทรงตัวที่คนยืนยัน", /methods: \{ ftsst:/.test(cl) && /!\(rec\.balFail && rec\.balFail\[i\]\)/.test(cl));
   ok("เอนจินกล้องรุ่น 3: นาฬิกาเดียวเดินหน้า + ไม่ต้องเห็นเท้า + ไม่มีขั้นสอบเทียบ + แถบนั่ง/ยืนสด + สลับ CPU", K.ENGINE === "cam-3.0" && /worldLandmarks/.test(cam) && /requestVideoFrameCallback/.test(cam) && !/captureTime/.test(cam.replace(/\/\*[\s\S]*?\*\//g, "")) && /detectForVideo\(video, t\)/.test(cam) && /async function tuneModel/.test(cam) && !/function runCalib/.test(cam) && /id="csMeter"/.test(cam) && /async function toCpu/.test(cam) && /numPoses: 1/.test(cam));

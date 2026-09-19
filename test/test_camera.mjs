@@ -90,6 +90,36 @@ for (const mode of ["depth", "lateral"]) for (const fps of [30, 12]) {
 { const r = simTug(30, "depth", 9, 0.3); ok("เดินไม่ถึง 3 เมตร (ราว 1 เมตร) ติดธงระยะไม่ครบ และประมาณระยะได้ใกล้เคียง", r.fin && r.fin.distanceOk === false && Math.abs(r.fin.meters - 0.9) < 0.3, r.fin); }
 { const r = simTug(30, "depth"); ok("ประมาณระยะเดิน 3 เมตรได้ 2.6–3.4 เมตร", r.fin && r.fin.meters >= 2.6 && r.fin.meters <= 3.4, r.fin && r.fin.meters); }
 
+/* สัญญาณมือ: ภาพ 2 มิติ (ไหล่ 11/12 · ศอก 13/14 · ข้อมือ 15/16 · สะโพก 23/24) */
+function armLm(L, R) {
+  const P = (x, y, v = 0.95) => ({ x, y, visibility: v }), lm = []; lm[11] = P(.42, .35); lm[12] = P(.58, .35); lm[23] = P(.44, .6); lm[24] = P(.56, .6);
+  const put = (s, e, w, sx, dir, pose) => { if (pose === "up") { lm[e] = P(sx, .24); lm[w] = P(sx, .12); } else if (pose === "side") { lm[e] = P(sx + dir * .11, .35); lm[w] = P(sx + dir * .22, .36); } else if (pose === "off") { lm[e] = P(sx, .2); lm[w] = P(sx, -0.05, .8); } else { lm[e] = P(sx, .47); lm[w] = P(sx, .58); } };
+  put(11, 13, 15, .42, -1, L); put(12, 14, 16, .58, 1, R); return lm;
+}
+{ const A = (L, R) => [K.armPose(armLm(L, R), null, "L", 1), K.armPose(armLm(L, R), null, "R", 1)];
+  ok("ท่าแขน 2 มิติ: ยก · กางข้าง · ลง · ข้อมือนอกกรอบไม่นับ", A("up", "down").join() === "up,down" && A("side", "down")[0] === "side" && A("down", "down").join() === "down,down" && A("off", "down")[0] === null, [A("up", "down"), A("side", "down"), A("off", "down")]);
+  const C = K.Gestures.classify;
+  ok("จำแนกสัญญาณ: สองมือ=เริ่ม · มือเดียว=บันทึก · กางแขน=สิ้นสุด · มือเดียวแต่มองไม่เห็นอีกข้าง=ไม่นับ", C("up", "up") === "both" && C("up", "down") === "one" && C("down", "side") === "side" && C("up", null) === null && C("down", "down") === null); }
+{ /* 3 มิติ (เมตร, y ชี้ลง): หันข้างให้กล้อง กางแขนชี้เข้าหากล้อง ก็ยังเป็น "กางแขน" */
+  const W = (x, y, z) => ({ x, y, z, visibility: .9 }), wl = []; wl[11] = W(-.18, -.45, 0); wl[13] = W(-.2, -.45, -.28); wl[15] = W(-.21, -.44, -.55); wl[23] = W(-.1, 0, 0);
+  const lm = armLm("down", "down"); ok("ท่าแขน 3 มิติ: แขนชี้เข้าหากล้อง (ภาพ 2 มิติดูสั้น) ยังเห็นว่ากางแขน", K.armPose(lm, wl, "L", 1) === "side"); }
+function runG(seq, fps = 15) { const G = new K.Gestures(), out = []; let t = 0; for (const [L, R, sec] of seq) for (let e = t + sec * 1000; t < e; t += 1000 / fps) { const r = G.push(L, R, t); if (r && r.fire) out.push(r.fire); } return out; }
+ok("ยกสองมือค้าง 0.6 วิ = เริ่ม ครั้งเดียว (ค้างนานไม่ยิงซ้ำ)", runG([["down", "down", 1], ["up", "up", 3]]).join() === "both");
+ok("ยกมือทีละข้างจนครบสองข้าง ไม่กลายเป็น 'บันทึก'", runG([["down", "down", 1], ["up", "down", 0.4], ["up", "up", 1]]).join() === "both");
+ok("กางแขนแวบเดียว (0.5 วิ) ไม่นับ · ค้าง 1 วิ = สิ้นสุด", runG([["side", "down", 0.5], ["down", "down", 1]]).length === 0 && runG([["side", "down", 1.2]]).join() === "side");
+ok("ท่าหายไปเฟรมเดียวไม่ทำให้เริ่มนับใหม่", runG([["up", "down", 0.5],[null, null, 0.1], ["up", "down", 0.5]]).join() === "one");
+{ /* กางแขนค้างไว้ตั้งแต่ก่อนเริ่ม (ขั้นนั้นรับแค่สองมือ) ต้องไม่ "กิน" สัญญาณ — พอเข้าขั้นวัด กางแขนค้าง 1 วิ ต้องสิ้นสุดได้ */
+  const G = new K.Gestures(); let t = 0, fired = null;
+  for (; t < 3000; t += 66) G.push("side", "side", t, ["both"]);
+  for (const e = t + 1500; t < e && !fired; t += 66) { const r = G.push("side", "side", t, ["side"]); if (r && r.fire) fired = r.fire; }
+  ok("ท่าที่ไม่ใช้ในขั้นนั้นไม่ถูกนับ และไม่บล็อกสัญญาณของขั้นถัดไป", fired === "side", fired); }
+ok("สั่งซ้ำได้หลังลดแขนลงก่อน", runG([["up", "up", 1], ["down", "down", 0.5], ["up", "up", 1]]).join() === "both,both");
+{ /* ลุกเดิน สั่งจบด้วยกางแขน: กล้องเห็นนั่งลงแล้ว → ใช้เวลาที่นั่งลง ไม่ใช่เวลาที่กางแขน */
+  const T = new K.TugTracker(); T.goAt = 0; let t = 0; const push = (p, s, sec) => { for (const e = t + sec * 1000; t < e; t += 66) T.pushFrame(p, s, 0.5, t); };
+  push(0.05, 0.4, 0.5); push(1, 0.4, 1.5); push(1, 0.25, 3); push(1, 0.4, 3); T.sitN = -1e9; push(0.1, 0.4, 0.3);
+  const sat = T.sitCross; push(0.1, 0.4, 2); const r = T.forceEnd(t);
+  ok("ลุกเดินสั่งจบด้วยสัญญาณมือ ใช้เวลาที่เห็นนั่งลง", r.forced && r.sawSit && Math.abs(r.elapsed * 1000 - sat) < 1, { r, sat }); }
+
 /* ทรงตัว: จำแนกท่า และจับการก้าวเท้า */
 const B = new K.BalanceEngine(0);
 ok("จำแนกท่าจากเท้า: ชิด · กึ่งต่อ · ต่อเท้า · ขาเดียว", B._stance({ gap: .2, lift: .1 }) === 0 && B._stance({ gap: .6, lift: .1 }) === 1 && B._stance({ gap: 1.2, lift: .1 }) === 2 && B._stance({ gap: .2, lift: .9 }) === 3);

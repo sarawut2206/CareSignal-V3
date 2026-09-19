@@ -26,7 +26,9 @@
       ซึ่งหดเองตอนหมุนตัว ทำให้จับจุดกลับผิด · ใช้ได้ทั้งเดินออกจากกล้องและเดินขวางกล้อง
    8. ทุกผลมีระดับความน่าเชื่อถือ (เฟรม/วินาที · ความชัดของตัว) ถ้าต่ำจะแนะนำให้วัดซ้ำหรือกดเอง
    หลักเดิมคงไว้: ภาพประมวลผลในเครื่อง ไม่อัปโหลด เก็บเฉพาะตัวเลข · ผลกลับเข้าหน้าจับเวลาให้คนกดบันทึก
-   ผลทรงตัวผ่าน/ไม่ผ่านให้คนยืนยันเสมอ · ไม่มีสั่งงานด้วยเสียงหรือยกมือ
+   ผลทรงตัวผ่าน/ไม่ผ่านให้คนยืนยันเสมอ · ไม่มีสั่งงานด้วยเสียง
+   สัญญาณมือ (ลุกนั่ง · ลุกเดิน): ยกสองมือ = เริ่ม · กางแขนด้านข้าง = สิ้นสุด · ยกมือข้างเดียว = บันทึก
+   ปุ่มบนจอยังใช้ได้ทุกขั้น · ทำไม่ครบ 5 ครั้ง หรือเดินไม่ครบระยะ บันทึกด้วยสัญญาณมือไม่ได้
    ============================================================ */
 (function (g) {
   var ENGINE = "cam-3.0";
@@ -111,6 +113,51 @@
     if (Math.min(la, ra) >= 0.5 && shV >= 0.5) f.h = hipRatio(lm);
     return f;
   }
+  /* ---------- สัญญาณมือ (ลุกนั่ง · ลุกเดิน) ----------
+     ยกสองมือ = เริ่ม · กางแขนออกด้านข้าง = สิ้นสุด · ยกมือข้างเดียว = บันทึก
+     ท่าแขนแต่ละข้าง: ใช้พิกัด 3 มิติ (เมตร) ก่อน — ไม่ขึ้นกับมุมกล้อง · ถ้าไม่มีใช้ภาพ 2 มิติ ÷ ความยาวลำตัว
+     ข้อมือต้องอยู่ในกรอบภาพและเห็นชัด ไม่เดาจากจุดที่โมเดลเดาให้ */
+  var ARM = { L: [LM.LSH, 13, 15, LM.LHIP], R: [LM.RSH, 14, 16, LM.RHIP] };
+  function armPose(lm, wl, side, aspect) {
+    if (!lm) return null; aspect = aspect || 1; var ix = ARM[side], S = lm[ix[0]], E = lm[ix[1]], W = lm[ix[2]];
+    function inF(p, th) { return p && vz(p) >= th && p.x > -0.01 && p.x < 1.01 && p.y > -0.01 && p.y < 1.01; }
+    if (!inF(S, 0.5) || !inF(W, 0.5)) return null;
+    if (wl && wl[ix[0]] && wl[ix[2]] && wl[ix[1]]) {
+      var Sw = wl[ix[0]], Ew = wl[ix[1]], Ww = wl[ix[2]], up = Sw.y - Ww.y, reach = Math.hypot(Ww.x - Sw.x, Ww.z - Sw.z);
+      var a = [Sw.x - Ew.x, Sw.y - Ew.y, Sw.z - Ew.z], b = [Ww.x - Ew.x, Ww.y - Ew.y, Ww.z - Ew.z], m = Math.hypot(a[0], a[1], a[2]) * Math.hypot(b[0], b[1], b[2]);
+      var elbow = m ? Math.acos(clamp((a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) / m, -1, 1)) * 180 / Math.PI : 0;
+      if (up > 0.20) return "up";
+      if (Math.abs(up) < 0.15 && reach > 0.40 && elbow > 140) return "side";
+      return "down";
+    }
+    var H = lm[ix[3]], T = H && vz(H) >= 0.3 ? Math.hypot((S.x - H.x) * aspect, S.y - H.y) : null; if (!T || T < 0.03) return null;
+    var dy = (S.y - W.y) / T, dx = Math.abs(W.x - S.x) * aspect / T;
+    if (dy > 0.5) return "up";
+    if (Math.abs(dy) < 0.35 && dx > 0.8) return "side";
+    return "down";
+  }
+  /* ต้องค้างท่าไว้ (สองมือ 0.6 วิ · ข้างเดียว 0.8 วิ · กางแขน 1 วิ) และต้องลดแขนลงก่อนสั่งครั้งถัดไป
+     ท่าหายไป 1–2 เฟรมไม่นับว่าเลิกทำ · ยกมือข้างเดียว ต้องเห็นแขนอีกข้างว่าไม่ได้ยก */
+  var HOLD = { both: 600, one: 800, side: 1000 };
+  function Gestures() { this.cand = null; this.since = 0; this.lastG = -1e9; this.needRelease = false; }
+  Gestures.classify = function (L, R) {
+    if (L === "up" && R === "up") return "both";
+    if ((L === "up" && (R === "down" || R === "side")) || (R === "up" && (L === "down" || L === "side"))) return "one";
+    if ((L === "side" && R !== "up") || (R === "side" && L !== "up")) return "side";
+    return null;
+  };
+  /* allowed: เฉพาะสัญญาณที่ใช้ได้ในขั้นนั้น — ท่าอื่นไม่ถูกนับและไม่ "กิน" สัญญาณที่ต้องการ */
+  Gestures.prototype.push = function (L, R, t, allowed) {
+    var g = Gestures.classify(L, R); if (allowed && allowed.indexOf(g) < 0) g = null;
+    if (g) this.lastG = t; else if (this.cand && t - this.lastG < 250) g = this.cand;
+    if (this.needRelease) { if (!g) this.needRelease = false; this.cand = null; return null; }
+    if (g !== this.cand) { this.cand = g; this.since = t; return g ? { g: g, progress: 0 } : null; }
+    if (!g) return null;
+    var pr = (t - this.since) / HOLD[g];
+    if (pr >= 1) { this.needRelease = true; this.cand = null; return { fire: g, at: this.since }; }
+    return { g: g, progress: pr };
+  };
+
   /* จุดอ้างอิงสัมบูรณ์ (ใช้ก่อนกดเริ่ม เพื่อแสดงแถบสด และดูว่านั่งอยู่หรือยัง) · ช่วงขั้นต่ำระหว่างนั่ง↔ยืน */
   var ABS = { v: [0.30, 0.82], k: [100, 165], h: [0.30, 0.48] }, PRIOR = { v: 0.40, k: 55, h: 0.15 }, WT = { v: 1.0, k: 1.0, h: 0.6 }, KEYS = ["v", "k", "h"];
   function fuse(f, map) {
@@ -201,7 +248,7 @@
   /* ---------- ลุกเดิน 3 เมตร: ระยะจากความสูงลำตัวในภาพ + การเคลื่อนด้านข้าง ---------- */
   function TugTracker() {
     this.goAt = null; this.state = "waiting"; this.t0 = null; this.tTurn = null; this.fp = new OneEuro(2.0, 0.6); this.fs = new OneEuro(1.0, 0.3); this.fx = new OneEuro(1.0, 0.3);
-    this.pp = null; this.pt = null; this.s0 = null; this.s0buf = []; this.cx0 = null; this.E = 0; this.Epk = 0; this.depthPk = 0; this.latPk = 0; this.driftMax = 0; this.sitN = 0;
+    this.pp = null; this.pt = null; this.s0 = null; this.s0buf = []; this.cx0 = null; this.E = 0; this.Epk = 0; this.depthPk = 0; this.latPk = 0; this.driftMax = 0; this.sitN = 0; this.sitCross = null;
   }
   TugTracker.prototype.pushFrame = function (pRaw, size, cx, t) {
     var p = pRaw == null ? this.pp : this.fp.filter(pRaw, t), p0 = this.pp, t0 = this.pt; this.pp = p; this.pt = t;
@@ -222,16 +269,22 @@
       if (this.E > this.Epk) this.Epk = this.E; if (eD > this.depthPk) this.depthPk = eD; if (eL > this.latPk) this.latPk = eL;
       if (eD >= eL && eL / 1.25 > this.driftMax) this.driftMax = eL / 1.25;   /* เดินแนวลึก: การเบี่ยงซ้ายขวา = ความไม่ตรงของแนวเดิน */
       if (this.state === "walkOut" && this.Epk >= 0.45 && this.E <= this.Epk * 0.85) { this.state = "walkBack"; this.tTurn = t; return { event: "turn" }; }
+      if (p0 != null && p0 > 0.30 && p <= 0.30) this.sitCross = crossT(p0, t0, p, t, 0.30);
       if (p <= 0.30 && (t - this.t0) > 4000) this.sitN++; else this.sitN = 0;
-      if (this.sitN >= 3 && (this.state === "walkBack" || this.E < Math.max(0.2, this.Epk * 0.4))) {
-        this.state = "done"; var base = this.goAt != null ? this.goAt : this.t0, tEnd = t - 2 * (t - t0);   /* ถอยกลับ 2 เฟรมที่ใช้ยืนยันว่านั่งแล้ว */
-        var depthWalk = this.depthPk >= this.latPk;
-        return { event: "finish", elapsed: (tEnd - base) / 1000, reaction: this.goAt != null ? (this.t0 - this.goAt) / 1000 : null,
-          out: this.tTurn ? (this.tTurn - base) / 1000 : null, back: this.tTurn ? (tEnd - this.tTurn) / 1000 : null,
-          distanceOk: this.Epk >= 0.75, meters: Math.round(this.Epk * 30) / 10, turnSeen: this.tTurn != null, axis: depthWalk ? "depth" : "lateral", drift: depthWalk ? { max: this.driftMax } : null };
-      }
+      if (this.sitN >= 3 && (this.state === "walkBack" || this.E < Math.max(0.2, this.Epk * 0.4))) return this._fin(t - 2 * (t - t0));   /* ถอยกลับ 2 เฟรมที่ใช้ยืนยันว่านั่งแล้ว */
     }
     return null;
+  };
+  TugTracker.prototype._fin = function (tEnd) {
+    this.state = "done"; var base = this.goAt != null ? this.goAt : this.t0 != null ? this.t0 : tEnd, depthWalk = this.depthPk >= this.latPk;
+    return { event: "finish", elapsed: (tEnd - base) / 1000, reaction: this.goAt != null && this.t0 != null ? (this.t0 - this.goAt) / 1000 : null,
+      out: this.tTurn ? (this.tTurn - base) / 1000 : null, back: this.tTurn ? (tEnd - this.tTurn) / 1000 : null,
+      distanceOk: this.Epk >= 0.75, meters: Math.round(this.Epk * 30) / 10, turnSeen: this.tTurn != null, axis: depthWalk ? "depth" : "lateral", drift: depthWalk ? { max: this.driftMax } : null };
+  };
+  /* สั่งจบด้วยสัญญาณมือ/ปุ่ม: ถ้ากล้องเห็นว่านั่งลงแล้ว (หลังจุดกลับ ภายใน 8 วิ) ใช้เวลานั่งลงนั้น ไม่ใช่เวลาที่ยกแขน */
+  TugTracker.prototype.forceEnd = function (tAt) {
+    var sc = this.sitCross, useSit = sc != null && tAt - sc < 8000 && tAt >= sc && (this.tTurn == null || sc > this.tTurn);
+    var r = this._fin(useSit ? sc : tAt); r.forced = true; r.sawSit = useSit; return r;
   };
   /* หน่วย: เท่าของความสูงลำตัว (ไหล่→ข้อเท้า ≈ 1.3 ม.) */
   function gaitLabel(d) { if (!d) return "วัดแนวเดินไม่ได้ในมุมนี้"; return d.max < 0.25 ? "เดินตรงดี" : d.max < 0.5 ? "เบี่ยงเล็กน้อย" : "เบี่ยงมาก ควรเฝ้าระวัง"; }
@@ -319,7 +372,7 @@
   function qualityText(q) { return "ความน่าเชื่อถือ" + q.level + " (" + (q.fps == null ? "–" : q.fps) + " เฟรม/วิ · เห็นตัว " + q.vis + "%)"; }
 
   /* ---------- โมเดล: เริ่มที่รุ่นที่เหมาะกับเครื่อง แล้วทดสอบความเร็วจริงก่อนวัด ---------- */
-  var POSE = null, MOD = null, FILESET = null, POSE_COUNT = 0, DERR = 0, SWAPPING = false;
+  var LASTD = null, POSE = null, MOD = null, FILESET = null, POSE_COUNT = 0, DERR = 0, SWAPPING = false;
   var LEVELS = [
     { k: "heavy", nm: "ละเอียดสูงสุด", u: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/1/pose_landmarker_heavy.task" },
     { k: "full", nm: "ละเอียดสูง", u: "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task" },
@@ -379,7 +432,7 @@
     try { r = POSE.detectForVideo(video, t); DERR = 0; }
     catch (e) { POSE_COUNT = 0; if (++DERR === 12) toCpu(); return null; }
     var L = r && r.landmarks ? r.landmarks : []; POSE_COUNT = L.length; if (!L.length) return null;
-    return { lm: L[0], wl: r.worldLandmarks ? r.worldLandmarks[0] : null };
+    LASTD = { lm: L[0], wl: r.worldLandmarks ? r.worldLandmarks[0] : null }; return LASTD;
   }
   function drawPose(ctx, canvas, video, lm) {
     if (canvas.width !== video.videoWidth) { canvas.width = video.videoWidth; canvas.height = video.videoHeight; }
@@ -387,7 +440,7 @@
     var pairs = [[11, 12], [11, 23], [12, 24], [23, 24], [23, 25], [24, 26], [25, 27], [26, 28], [27, 31], [28, 32], [11, 13], [13, 15], [12, 14], [14, 16]];
     ctx.lineWidth = Math.max(3, canvas.width / 150); ctx.strokeStyle = "rgba(23,179,161,.9)"; ctx.lineCap = "round";
     pairs.forEach(function (p) { var a = lm[p[0]], b = lm[p[1]]; if (!a || !b || vz(a) < 0.4 || vz(b) < 0.4) return; ctx.beginPath(); ctx.moveTo(a.x * canvas.width, a.y * canvas.height); ctx.lineTo(b.x * canvas.width, b.y * canvas.height); ctx.stroke(); });
-    [11, 12, 23, 24, 25, 26, 27, 28].forEach(function (i) { var p = lm[i]; if (!p) return; ctx.beginPath(); ctx.arc(p.x * canvas.width, p.y * canvas.height, Math.max(4, canvas.width / 110), 0, 6.3); ctx.fillStyle = vz(p) < 0.5 ? "#F87171" : (i === 25 || i === 26) ? "#FCD34D" : "#DBEAFE"; ctx.fill(); });
+    [11, 12, 15, 16, 23, 24, 25, 26, 27, 28].forEach(function (i) { var p = lm[i]; if (!p) return; ctx.beginPath(); ctx.arc(p.x * canvas.width, p.y * canvas.height, Math.max(4, canvas.width / 110), 0, 6.3); ctx.fillStyle = vz(p) < 0.5 ? "#F87171" : (i === 25 || i === 26) ? "#FCD34D" : (i === 15 || i === 16) ? "#F9A8D4" : "#DBEAFE"; ctx.fill(); });
   }
 
   /* ---------- เสียงบอกขั้นตอน (ปิดได้) ---------- */
@@ -417,6 +470,7 @@
     ".cscam .btns{display:flex;flex-direction:column;gap:6px}.cscam .btns button{border:0;border-radius:14px;padding:13px;font:inherit;font-size:16px;font-weight:700;cursor:pointer;background:#17B3A1;color:#fff}.cscam .btns button.sec{background:rgba(255,255,255,.12)}.cscam .btns button.no{background:rgba(220,38,38,.85)}.cscam .btns button:disabled{opacity:.45}",
     ".cscam .row{display:flex;gap:6px}.cscam .row button{flex:1}",
     ".cscam .foot{font-size:11.5px;color:rgba(255,255,255,.6);text-align:center;line-height:1.45}.cscam .foot a{color:#9FE3DA;cursor:pointer;text-decoration:underline}",
+    ".cscam .gest{display:flex;gap:5px}.cscam .gest[hidden]{display:none}.cscam .gest span{flex:1;text-align:center;font-size:11px;font-weight:700;padding:5px 2px;border-radius:9px;line-height:1.3;background:linear-gradient(90deg,#17B3A1 var(--p,0%),rgba(255,255,255,.14) var(--p,0%))}.cscam .gest span.act{outline:2px solid #FCD34D}.cscam .gest span.dim{opacity:.35}",
     ".cscam .meter{display:flex;align-items:center;gap:10px;font-size:12.5px;font-weight:700;color:rgba(255,255,255,.75)}.cscam .meter[hidden]{display:none}",
     ".cscam .mb{position:relative;flex:1;height:12px;border-radius:99px;background:linear-gradient(90deg,rgba(96,165,250,.45),rgba(252,211,77,.45))}.cscam .mb .th{position:absolute;top:-3px;bottom:-3px;width:2px;background:rgba(255,255,255,.55)}",
     ".cscam .mb b{position:absolute;top:50%;left:0;width:20px;height:20px;margin:-10px 0 0 -10px;border-radius:50%;background:#fff;box-shadow:0 0 0 3px rgba(23,179,161,.9);transition:left .08s linear}.cscam .mb b.off{background:#64748B;box-shadow:none;left:50%!important}"
@@ -495,7 +549,7 @@
       '<div class="top"><span class="tag" id="csTag">กำลังเปิดกล้อง…</span><button id="csFlip">🔄 สลับกล้อง</button></div></div>' +
       '<div class="dock"><div class="cnt" id="csCnt"><b id="csN">0</b><span id="csOf"></span><span class="clk" id="csClk"></span></div>' +
       '<div class="meter" id="csMeter" hidden><span>นั่ง</span><div class="mb"><i class="th" style="left:30%"></i><i class="th" style="left:72%"></i><b id="csPB" class="off"></b></div><span>ยืน</span></div>' +
-      '<div class="trk" id="csTrkW" hidden><i id="csTrk"></i></div><div class="chips" id="csChips" hidden></div>' +
+      '<div class="gest" id="csG" hidden></div><div class="trk" id="csTrkW" hidden><i id="csTrk"></i></div><div class="chips" id="csChips" hidden></div>' +
       '<div class="coach" id="csC">' + esc(KIND_NM[opts.kind]) + '</div><div class="stat"><i id="csL"></i><span id="csT">กำลังเตรียมระบบ…</span></div>' +
       '<div class="obs" id="csObs" hidden></div><div class="btns" id="csB"></div>' +
       '<div class="foot">ภาพประมวลผลในเครื่องนี้ ไม่อัปโหลดภาพหรือวิดีโอ · <a id="csMan">จับเวลาเองแทน</a> · <a id="csX">ยกเลิก</a></div></div>';
@@ -527,78 +581,141 @@
     if (opts.kind === "ftsst") runFtsst(video, canvas, ctx, prior, fin); else runTug(video, canvas, ctx, prior, fin);
   }
 
+  /* แถบสัญญาณมือ: ไฮไลต์ท่าที่ใช้ได้ในขั้นนี้ และเติมแถบตามเวลาที่ค้างท่า */
+  var G_ICON = { both: "🙌 สองมือ = เริ่ม", side: "🫲 กางแขน = สิ้นสุด", one: "✋ มือเดียว = บันทึก" };
+  function gestBar(allowed, gs) {
+    var el = $("csG"); if (!el) return; el.hidden = false;
+    if (!el.firstChild) el.innerHTML = ["both", "side", "one"].map(function (k) { return '<span data-g="' + k + '">' + G_ICON[k] + "</span>"; }).join("");
+    Array.prototype.forEach.call(el.children, function (s) {
+      var k = s.getAttribute("data-g"), ok = allowed.indexOf(k) >= 0, act = ok && gs && gs.g === k;
+      s.className = ok ? (act ? "act" : "") : "dim"; s.style.setProperty("--p", act ? Math.round(Math.min(1, gs.progress) * 100) + "%" : "0%");
+    });
+  }
+  function gestOf(G, d, asp, t, allow) { var lm = d && d.lm, wl = d && d.wl; return G.push(armPose(lm, wl, "L", asp), armPose(lm, wl, "R", asp), t, allow); }
+  function resetDock() { var o = $("csObs"); if (o) { o.hidden = true; o.innerHTML = ""; } $("csN").textContent = "0"; $("csClk").textContent = ""; $("csTrk").style.width = "0%"; }
+
   function runFtsst(video, canvas, ctx, prior, done) {
-    var PO = new Posture(prior), DET = new RepDetector({ target: 5 }), Q = new Quality(), running = false, tGo = 0, lastEvt = 0, readySince = null, arming = false, stall = false;
-    $("csOf").textContent = "/ 5 ครั้ง"; $("csTrkW").hidden = false; meter(true);
-    coach("ถือมือถือให้นิ่ง (หรือพิงของ) ห่าง 2–3 เมตร มุมเฉียงด้านข้างดีที่สุด ให้เห็น<b>ไหล่ สะโพก และเข่า</b> (ไม่ต้องเห็นเท้า)<br>ผู้สูงอายุ<b>นั่ง กอดอก</b> — จุดขาวบนแถบต้องอยู่ฝั่ง “นั่ง” แล้วกด <b>เริ่ม</b>");
-    speak("ทดสอบลุกนั่ง ห้าครั้ง ถือมือถือให้นิ่ง ให้เห็นไหล่ สะโพก และเข่า ให้ผู้สูงอายุนั่ง กอดอก เมื่อพร้อม กดเริ่ม");
-    function btns() { buttons(running ? [{ t: "นับไม่ขึ้น · หยุดแล้วจับเวลาเอง", cls: "sec", fn: function () { close(); done({ kind: "ftsst", manual: true }); } }] : [{ t: "▶ เริ่ม (นับ 3-2-1)", fn: arm, dis: arming }]); }
-    function arm() { if (running || arming) return; arming = true; btns(); countdown("พร้อมแล้ว", begin); }
-    function begin() {
-      arming = false; running = true; var seated = PO.arm(); tGo = mono(); lastEvt = tGo; DET.start(tGo);
-      status("green", seated === false ? "เริ่ม — (กล้องเห็นว่ายังไม่นั่งเต็มที่ นั่งให้สุดก่อนลุก)" : "เริ่ม — ลุกนั่งต่อเนื่อง 5 ครั้ง");
-      coach("ลุกยืนให้ตัวตรง แล้วนั่งลงให้ก้นแตะเก้าอี้ ทำต่อเนื่อง · จุดขาวต้องข้ามเส้นขวาเมื่อยืน และข้ามเส้นซ้ายเมื่อนั่ง"); btns();
+    var PO = new Posture(prior), DET = new RepDetector({ target: 5 }), Q = new Quality(), G = new Gestures(), phase = "idle", tGo = 0, lastEvt = 0, stall = false, result = null;
+    resetDock(); $("csOf").textContent = "/ 5 ครั้ง"; $("csTrkW").hidden = false; meter(true);
+    coach("ถือมือถือให้นิ่ง ห่าง 2–3 เมตร มุมเฉียงด้านข้าง ให้เห็น<b>ไหล่ สะโพก เข่า และมือ</b><br>ผู้สูงอายุนั่ง แล้ว<b>ยกสองมือ</b>เพื่อเริ่ม · ได้ยิน 3-2-1 ให้กอดอก ลุกนั่ง 5 ครั้ง · <b>กางแขนออกด้านข้าง</b> = สิ้นสุด");
+    speak("ทดสอบลุกนั่ง ห้าครั้ง ให้ผู้สูงอายุนั่ง แล้วยกสองมือเพื่อเริ่ม");
+    function manual() { close(); done({ kind: "ftsst", manual: true }); }
+    function btns() {
+      if (phase === "idle") buttons([{ t: "▶ เริ่ม (นับ 3-2-1)", fn: arm }]);
+      else if (phase === "arming") buttons([]);
+      else if (phase === "running") buttons([{ t: "■ สิ้นสุดการปฏิบัติ", cls: "no", fn: function () { endNow(mono(), "human"); } }, { t: "นับไม่ขึ้น · จับเวลาเองแทน", cls: "sec", fn: manual }]);
+      else buttons((result.incomplete ? [] : [{ t: "✓ บันทึก " + result.sec.toFixed(1) + " วินาที", fn: save }]).concat([{ t: "↺ วัดใหม่", cls: "sec", fn: redo }, { t: "กลับไปตรวจในแอปก่อน", cls: "sec", fn: function () { stopLoop(); done(result); } }]));
     }
+    function arm() { if (phase !== "idle") return; phase = "arming"; btns(); countdown("พร้อมแล้ว กอดอก", begin); }
+    function begin() {
+      phase = "running"; var seated = PO.arm(); tGo = mono(); lastEvt = tGo; DET.start(tGo);
+      status("green", seated === false ? "เริ่ม — (กล้องเห็นว่ายังไม่นั่งเต็มที่ นั่งให้สุดก่อนลุก)" : "เริ่ม — ลุกนั่งต่อเนื่อง 5 ครั้ง");
+      coach("ลุกยืนให้ตัวตรง แล้วนั่งลงให้ก้นแตะเก้าอี้ ทำต่อเนื่อง · ระบบหยุดเองเมื่อนั่งลงครั้งที่ 5 · ต้องการหยุดก่อน: <b>กางแขนออกด้านข้าง</b>"); btns();
+    }
+    /* สั่งจบ: ครบ 5 ครั้งแล้วแต่กล้องไม่เห็นตอนนั่ง → ใช้เวลาตอนเริ่มยกแขน · ยังไม่ครบ → ทำไม่ครบ (ไม่ให้บันทึกเป็นเวลา) */
+    function endNow(tAt, by) {
+      if (phase !== "running") return;
+      var ev = DET.reps >= 5 ? DET._fin(tAt, false) : { event: "finish", reps: DET.reps, elapsed: (tAt - tGo) / 1000, reaction: null, endedStanding: false, incomplete: true };
+      speak(by === "gesture" ? "สิ้นสุดการปฏิบัติ" : ""); finish(ev, by);
+    }
+    function save() { if (!result || result.incomplete) return; stopLoop(); speak("บันทึกผลแล้ว"); done(Object.assign({}, result, { save: true })); }
+    function redo() { runFtsst(video, canvas, ctx, PO.learned(), done); }
     btns();
     startLoop(video, function (t) {
-      var d = detectPose(video, t), lm = d && d.lm; drawPose(ctx, canvas, video, lm);
-      var f = lm ? features(lm, d.wl, aspectOf(video)) : null, p = PO.push(f, t); live(lm, f, p);
-      if (running) {
+      var d = detectPose(video, t), lm = d && d.lm, asp = aspectOf(video); drawPose(ctx, canvas, video, lm);
+      var allow = phase === "idle" ? ["both"] : phase === "running" ? ["side"] : phase === "result" && !result.incomplete ? ["one"] : [];
+      var f = lm ? features(lm, d.wl, asp) : null, p = PO.push(f, t), gs = gestOf(G, d, asp, t, allow); live(lm, f, p); gestBar(allow, gs);
+      if (phase === "idle") {
+        if (gs && gs.fire === "both") { speak("เห็นสัญญาณเริ่ม"); return arm(); }
+        if (gs && gs.g === "both") status("green", "เห็นยกสองมือ… ค้างไว้");
+        else if (p == null) status("yellow", lm ? "เห็นตัวไม่พอ — ให้เห็นไหล่ สะโพก และเข่า" : "ยังไม่พบคนในภาพ — หันกล้องไปที่ผู้สูงอายุ");
+        else if (p < 0.35) status("green", "เห็นท่านั่งแล้ว — ยกสองมือเพื่อเริ่ม หรือกดปุ่มเริ่ม");
+        else status("yellow", "ให้ผู้สูงอายุนั่งลงบนเก้าอี้ก่อน (หรือกดเริ่มถ้านั่งอยู่แล้ว)");
+      } else if (phase === "running") {
+        if (gs && gs.fire === "side") return endNow(gs.at, "gesture");
         Q.add(t, lm ? visCore(lm) : null); var ev = DET.push(p, t);
         $("csN").textContent = DET.reps; $("csTrk").style.width = (Math.min(DET.reps, 5) / 5 * 100) + "%"; $("csClk").textContent = ((t - tGo) / 1000).toFixed(1) + " วิ";
         if (ev && (ev.event === "rep" || ev.event === "down")) { lastEvt = t; stall = false; }
         if (ev && ev.event === "rep") { status("green", ev.reps >= 5 ? "ยืนครบ 5 ครั้ง — นั่งลงให้เรียบร้อย" : "นับได้ " + ev.reps + " จาก 5 ครั้ง"); speak(["", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า นั่งลง"][ev.reps]); }
-        if (ev && ev.event === "finish") { stopLoop(); return finish(ev); }
-        if (t - lastEvt > 15000 && !stall) { stall = true; status("red", p == null ? "กล้องมองไม่เห็นสะโพก/เข่า ขยับมือถือให้เห็นช่วงล่าง หรือกดจับเวลาเอง" : "ระบบนับไม่ขึ้น ลุกให้ตัวตรง นั่งให้สุด หรือกดปุ่มจับเวลาเอง"); }
-      } else if (!arming) {
-        if (p == null) { readySince = null; status("yellow", lm ? "เห็นตัวไม่พอ — ให้เห็นไหล่ สะโพก และเข่า" : "ยังไม่พบคนในภาพ — หันกล้องไปที่ผู้สูงอายุ ถอยให้เห็นครึ่งตัวล่าง"); }
-        else if (p < 0.35) { if (readySince == null) readySince = t; status("green", "เห็นท่านั่งแล้ว กดเริ่มเมื่อพร้อม"); if (t - readySince > 3000) arm(); }
-        else { readySince = null; status("yellow", "ให้ผู้สูงอายุนั่งลงบนเก้าอี้ก่อน (หรือกดเริ่มถ้านั่งอยู่แล้ว)"); }
+        if (ev && ev.event === "finish") return finish(ev, "camera");
+        if (gs && gs.g === "side") status("yellow", "เห็นกางแขน… ค้างไว้เพื่อสิ้นสุด");
+        else if (t - lastEvt > 15000 && !stall) { stall = true; status("red", p == null ? "กล้องมองไม่เห็นสะโพก/เข่า ขยับมือถือให้เห็นช่วงล่าง หรือกดจับเวลาเอง" : "ระบบนับไม่ขึ้น ลุกให้ตัวตรง นั่งให้สุด หรือกางแขนเพื่อสิ้นสุด"); }
+      } else if (phase === "result") {
+        if (gs && gs.fire === "one" && !result.incomplete) return save();
       }
     });
-    function finish(ev) {
+    function finish(ev, by) {
       var gaps = []; for (var i = 1; i < DET.stamps.length; i++) gaps.push(Math.round((DET.stamps[i] - DET.stamps[i - 1]) / 100) / 10);
       var cv = null; if (gaps.length > 1) { var m = gaps.reduce(function (a, b) { return a + b; }, 0) / gaps.length, sd = Math.sqrt(gaps.reduce(function (a, b) { return a + (b - m) * (b - m); }, 0) / gaps.length); cv = m > 0 ? Math.round(sd / m * 100) / 100 : null; }
       var sec = Math.round(ev.elapsed * 10) / 10, ql = Q.report();
-      status(ql.level === "ต่ำ" ? "yellow" : "green", "ครบ 5 ครั้ง " + sec.toFixed(1) + " วินาที · " + qualityText(ql) + (ev.endedStanding ? " · ไม่เห็นตอนนั่งลงครั้งสุดท้าย" : ""));
-      speak("ครบห้าครั้ง ใช้เวลา " + Math.round(sec) + " วินาที");
-      setTimeout(function () { done({ kind: "ftsst", sec: sec, reps: DET.reps, gaps: gaps, cv: cv, reaction: ev.reaction != null ? Math.round(ev.reaction * 10) / 10 : null, endedStanding: ev.endedStanding, quality: ql, refs: PO.learned() }); }, 1600);
+      result = { kind: "ftsst", sec: sec, reps: DET.reps, gaps: gaps, cv: cv, reaction: ev.reaction != null ? Math.round(ev.reaction * 10) / 10 : null, endedStanding: ev.endedStanding, endedBy: by, incomplete: !!ev.incomplete, quality: ql, refs: PO.learned() };
+      phase = "result"; $("csClk").textContent = sec.toFixed(1) + " วิ"; $("csN").textContent = DET.reps;
+      if (result.incomplete) {
+        status("yellow", "หยุดก่อนครบ 5 ครั้ง (นับได้ " + DET.reps + " ครั้ง)"); speak("หยุดก่อนครบห้าครั้ง");
+        coach("ตามเกณฑ์ ถ้าลุกนั่งไม่ครบ 5 ครั้ง ถือว่า<b>ทำไม่ครบ</b> ไม่บันทึกเป็นเวลา · วัดใหม่ หรือกลับไปแอปแล้วเลือก “ข้ามท่านี้ (ทำไม่ได้)”");
+      } else {
+        status(ql.level === "ต่ำ" ? "yellow" : "green", "ครบ 5 ครั้ง " + sec.toFixed(1) + " วินาที · " + qualityText(ql) + (ev.endedStanding ? " · ไม่เห็นตอนนั่งลงครั้งสุดท้าย" : "") + (by === "gesture" ? " · สิ้นสุดด้วยสัญญาณมือ" : ""));
+        speak("ครบห้าครั้ง ใช้เวลา " + Math.round(sec) + " วินาที ยกมือข้างเดียวเพื่อบันทึก");
+        coach("<b>ยกมือข้างเดียว</b>ค้างไว้เพื่อบันทึก หรือกดปุ่มด้านล่าง");
+      }
+      btns();
     }
   }
 
   function runTug(video, canvas, ctx, prior, done) {
-    var PO = new Posture(prior), phase = "waitSit", TUG = null, Q = new Quality(), seatedSince = null;
-    $("csOf").textContent = "วินาที"; $("csN").textContent = "0.0"; meter(true);
-    coach("<b>เตรียม:</b> ทำจุดหมายห่างเก้าอี้ 3 เมตร · ถือมือถือให้นิ่ง เห็นทั้งเก้าอี้และทางเดิน (เดินออกจากกล้องหรือเดินขวางกล้องก็ได้)<br>ได้ยิน “เริ่ม” → ลุก เดินไปจุดหมาย หมุนกลับ มานั่งลง");
-    speak("ลุกเดินสามเมตร ให้ผู้สูงอายุนั่งพิงพนักเก้าอี้ ถือมือถือให้เห็นทั้งเก้าอี้และทางเดิน เมื่อพร้อม กดเริ่ม");
-    function btns() { buttons(phase === "waitSit" ? [{ t: "▶ เริ่ม (นับ 3-2-1)", fn: arm }] : phase === "active" ? [{ t: "ระบบไม่หยุด · จับเวลาเองแทน", cls: "sec", fn: function () { close(); done({ kind: "tug", manual: true }); } }] : []); }
-    function arm() { if (phase !== "waitSit") return; phase = "arming"; btns(); countdown("พร้อมทดสอบ", begin); }
-    function begin() { phase = "active"; PO.arm(); TUG = new TugTracker(); TUG.goAt = mono(); status("green", "เริ่ม — ลุกขึ้น เดินไปจุดหมาย หมุนกลับ มานั่งลง"); coach("ลุกขึ้น → เดินไปจุดหมาย → หมุนกลับ → นั่งลงพิงพนัก"); btns(); }
+    var PO = new Posture(prior), G = new Gestures(), phase = "idle", TUG = null, Q = new Quality(), result = null;
+    resetDock(); $("csOf").textContent = "วินาที"; $("csN").textContent = "0.0"; meter(true);
+    coach("<b>เตรียม:</b> ทำจุดหมายห่างเก้าอี้ 3 เมตร · ถือมือถือให้นิ่ง เห็นทั้งเก้าอี้และทางเดิน<br>ผู้สูงอายุนั่งพิงพนัก <b>ยกสองมือ</b>เพื่อเริ่ม → ได้ยิน “เริ่ม” ลุก เดินไปจุดหมาย หมุนกลับ มานั่งลง · <b>กางแขนออกด้านข้าง</b> = สิ้นสุด");
+    speak("ลุกเดินสามเมตร ให้ผู้สูงอายุนั่งพิงพนัก แล้วยกสองมือเพื่อเริ่ม");
+    function btns() {
+      if (phase === "idle") buttons([{ t: "▶ เริ่ม (นับ 3-2-1)", fn: arm }]);
+      else if (phase === "arming") buttons([]);
+      else if (phase === "active") buttons([{ t: "■ สิ้นสุดการปฏิบัติ", cls: "no", fn: function () { endNow(mono(), "human"); } }, { t: "ระบบไม่หยุด · จับเวลาเองแทน", cls: "sec", fn: function () { close(); done({ kind: "tug", manual: true }); } }]);
+      else buttons([{ t: "✓ บันทึก " + result.sec.toFixed(1) + " วินาที", fn: save }, { t: "↺ วัดใหม่", cls: "sec", fn: redo }, { t: "กลับไปตรวจในแอปก่อน", cls: "sec", fn: function () { stopLoop(); done(result); } }]);
+    }
+    function arm() { if (phase !== "idle") return; phase = "arming"; btns(); countdown("พร้อมทดสอบ", begin); }
+    function begin() { phase = "active"; PO.arm(); TUG = new TugTracker(); TUG.goAt = mono(); status("green", "เริ่ม — ลุกขึ้น เดินไปจุดหมาย หมุนกลับ มานั่งลง"); coach("ลุกขึ้น → เดินไปจุดหมาย → หมุนกลับ → นั่งลงพิงพนัก · ระบบหยุดเองเมื่อนั่งลง หรือ<b>กางแขนออกด้านข้าง</b>เพื่อสิ้นสุด"); btns(); }
+    function endNow(tAt, by) { if (phase !== "active") return; if (by === "gesture") speak("สิ้นสุดการปฏิบัติ"); finish(TUG.forceEnd(tAt), by); }
+    /* ระยะเดินอาจไม่ครบ: ไม่รับการบันทึกด้วยสัญญาณมือ ให้ลูกหลานดูแล้วกดเอง */
+    function gestSaveOk() { return result && result.distanceOk; }
+    function save() { if (!result) return; stopLoop(); speak("บันทึกผลแล้ว"); done(Object.assign({}, result, { save: true })); }
+    function redo() { runTug(video, canvas, ctx, PO.learned(), done); }
     btns();
     startLoop(video, function (t) {
       var d = detectPose(video, t), lm = d && d.lm; drawPose(ctx, canvas, video, lm);
-      var asp = aspectOf(video), f = lm ? features(lm, d.wl, asp) : null, p = PO.push(f, t);
-      if (phase === "waitSit") {
+      var allow = phase === "idle" ? ["both"] : phase === "active" ? ["side"] : phase === "result" && gestSaveOk() ? ["one"] : [];
+      var asp = aspectOf(video), f = lm ? features(lm, d.wl, asp) : null, p = PO.push(f, t), gs = gestOf(G, d, asp, t, allow); gestBar(allow, gs);
+      if (phase === "idle") {
         live(lm, f, p);
-        if (p != null && p < 0.35) { if (seatedSince == null) seatedSince = t; status("green", "เห็นว่านั่งอยู่แล้ว กดเริ่มเมื่อพร้อม"); if (t - seatedSince > 3000) arm(); }
-        else { seatedSince = null; status("yellow", p == null ? (lm ? "เห็นตัวไม่พอ — ให้เห็นไหล่ สะโพก และเข่า" : "ยังไม่พบคนในภาพ — ให้เห็นทั้งตัวและเก้าอี้") : "ให้ผู้สูงอายุนั่งพิงพนักก่อน (หรือกดเริ่มถ้านั่งอยู่แล้ว)"); }
+        if (gs && gs.fire === "both") { speak("เห็นสัญญาณเริ่ม"); return arm(); }
+        if (gs && gs.g === "both") status("green", "เห็นยกสองมือ… ค้างไว้");
+        else if (p != null && p < 0.35) status("green", "เห็นว่านั่งอยู่แล้ว — ยกสองมือเพื่อเริ่ม หรือกดปุ่มเริ่ม");
+        else status("yellow", p == null ? (lm ? "เห็นตัวไม่พอ — ให้เห็นไหล่ สะโพก และเข่า" : "ยังไม่พบคนในภาพ — ให้เห็นทั้งตัวและเก้าอี้") : "ให้ผู้สูงอายุนั่งพิงพนักก่อน (หรือกดเริ่มถ้านั่งอยู่แล้ว)");
       } else if (phase === "arming") { live(lm, f, p); }
       else if (phase === "active") {
+        if (gs && gs.fire === "side") return endNow(gs.at, "gesture");
         Q.add(t, lm ? visCore(lm) : null);
         var ev = TUG.pushFrame(p, f ? bodyLen(lm, asp) : null, f ? (lm[LM.LHIP].x + lm[LM.RHIP].x) / 2 * asp : null, t);
         var PH = { waiting: "รอลุก", rising: "กำลังลุก", standing: "ยืนแล้ว", walkOut: "ขาไป " + Math.round(Math.min(1, TUG.E) * 100) + "%", walkBack: "ขากลับ" }; live(lm, f, p, PH[TUG.state] || "");
         if (ev && ev.event === "walk") { coach("เดินไปให้ถึงจุดหมาย 3 เมตร"); speak("เดินไปที่จุดหมายได้เลย"); }
         if (ev && ev.event === "turn") { coach("ถึงจุดกลับแล้ว เดินกลับมานั่งลง"); speak("เดินกลับมานั่งลงได้เลย"); }
-        if (ev && ev.event === "finish") { stopLoop(); return finish(ev); }
-        var el = (t - TUG.goAt) / 1000; $("csN").textContent = el.toFixed(1); if (el > 75) coach("นั่งลงแล้วระบบไม่หยุด? กดปุ่มด้านล่างเพื่อจับเวลาเอง");
+        if (ev && ev.event === "finish") return finish(ev, "camera");
+        if (gs && gs.g === "side") status("yellow", "เห็นกางแขน… ค้างไว้เพื่อสิ้นสุด");
+        var el = (t - TUG.goAt) / 1000; $("csN").textContent = el.toFixed(1); if (el > 75) coach("นั่งลงแล้วระบบไม่หยุด? กางแขนออกด้านข้าง หรือกดสิ้นสุด");
+      } else if (phase === "result") {
+        live(lm, f, p);
+        if (gs && gs.fire === "one" && gestSaveOk()) return save();
       }
     });
-    function finish(ev) {
+    function finish(ev, by) {
       var sec = Math.round(ev.elapsed * 10) / 10, ql = Q.report();
-      status(sec >= 12 || ql.level === "ต่ำ" || !ev.distanceOk ? "yellow" : "green", "เสร็จสิ้น " + sec.toFixed(1) + " วินาที · " + (ev.distanceOk ? "เดินครบระยะ" : "ระยะอาจไม่ครบ 3 เมตร") + " (ประมาณ " + ev.meters + " ม.) · " + qualityText(ql));
-      speak("เสร็จสิ้น ใช้เวลา " + Math.round(sec) + " วินาที");
-      setTimeout(function () { done({ kind: "tug", sec: sec, out: ev.out != null ? Math.round(ev.out * 10) / 10 : null, back: ev.back != null ? Math.round(ev.back * 10) / 10 : null, distanceOk: !!ev.distanceOk, meters: ev.meters, turnSeen: ev.turnSeen, axis: ev.axis,
-        drift: ev.drift ? Math.round(ev.drift.max * 100) / 100 : null, gait: gaitLabel(ev.drift), reaction: ev.reaction != null ? Math.round(ev.reaction * 10) / 10 : null, quality: ql, refs: PO.learned() }); }, 1600);
+      result = { kind: "tug", sec: sec, out: ev.out != null ? Math.round(ev.out * 10) / 10 : null, back: ev.back != null ? Math.round(ev.back * 10) / 10 : null, distanceOk: !!ev.distanceOk, meters: ev.meters, turnSeen: ev.turnSeen, axis: ev.axis,
+        drift: ev.drift ? Math.round(ev.drift.max * 100) / 100 : null, gait: gaitLabel(ev.drift), reaction: ev.reaction != null ? Math.round(ev.reaction * 10) / 10 : null, endedBy: by, quality: ql, refs: PO.learned() };
+      phase = "result"; $("csN").textContent = sec.toFixed(1);
+      status(sec >= 12 || ql.level === "ต่ำ" || !ev.distanceOk ? "yellow" : "green", "เสร็จสิ้น " + sec.toFixed(1) + " วินาที · " + (ev.distanceOk ? "เดินครบระยะ" : "ระยะอาจไม่ครบ 3 เมตร") + " (ประมาณ " + ev.meters + " ม.) · " + qualityText(ql) + (by === "gesture" ? " · สิ้นสุดด้วยสัญญาณมือ" + (ev.sawSit ? " (ใช้เวลาที่เห็นนั่งลง)" : "") : ""));
+      if (ev.distanceOk) { speak("เสร็จสิ้น ใช้เวลา " + Math.round(sec) + " วินาที ยกมือข้างเดียวเพื่อบันทึก"); coach("<b>ยกมือข้างเดียว</b>ค้างไว้เพื่อบันทึก หรือกดปุ่มด้านล่าง"); }
+      else { speak("เสร็จสิ้น ระยะเดินอาจไม่ครบ ให้ลูกหลานตรวจแล้วกดบันทึก"); coach("กล้องประมาณว่าเดินไม่ถึง 3 เมตร — <b>ลูกหลานตรวจแล้วกดบันทึกเอง</b> (ไม่รับการบันทึกด้วยสัญญาณมือ) หรือวัดใหม่"); }
+      btns();
     }
   }
 
@@ -647,8 +764,8 @@
     });
   }
 
-  var PURE = { ENGINE: ENGINE, OneEuro: OneEuro, RepDetector: RepDetector, TugTracker: TugTracker, BalanceEngine: BalanceEngine, Quality: Quality, Posture: Posture, features: features, absPosture: absPosture, makeClock: makeClock, visCore: visCore, bodyLen: bodyLen, kneeAngle3D: kneeAngle3D, hipRatio: hipRatio, visOK: visOK, gaitLabel: gaitLabel, crossT: crossT, LM: LM };
-  g.CSCam = Object.assign({ open: open, close: close, isOpen: function () { return !!UI; }, supported: function () { return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia); },
+  var PURE = { ENGINE: ENGINE, OneEuro: OneEuro, RepDetector: RepDetector, TugTracker: TugTracker, BalanceEngine: BalanceEngine, Quality: Quality, Posture: Posture, features: features, armPose: armPose, Gestures: Gestures, absPosture: absPosture, makeClock: makeClock, visCore: visCore, bodyLen: bodyLen, kneeAngle3D: kneeAngle3D, hipRatio: hipRatio, visOK: visOK, gaitLabel: gaitLabel, crossT: crossT, LM: LM };
+  g.CSCam = Object.assign({ lastPose: function () { return LASTD; }, open: open, close: close, isOpen: function () { return !!UI; }, supported: function () { return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia); },
     ttsOn: ttsOn, setTts: function (on) { try { localStorage.setItem("cs3:tts", on ? "on" : "off"); } catch (e) {} } }, PURE);
   if (typeof module !== "undefined" && module.exports) module.exports = PURE;
 })(typeof window !== "undefined" ? window : this);
