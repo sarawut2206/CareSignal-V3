@@ -51,7 +51,7 @@ ok("ไม่อ้างว่าป้องกันการล้มได�
 ok("ทุกหน้าบอกว่าไม่ใช่การวินิจฉัย", PAGES.every((f) => /ไม่ใช่การวินิจฉัย|ไม่วินิจฉัยโรค/.test(readFileSync(new URL("../" + f, import.meta.url), "utf8"))));
 ok("ฝังวิดีโอครบ 3 คลิปทั้งในหน้ารวมและในแอป", ["KQaDdX66OUM", "o_HM_3u0TZk", "AO88b5YLFg0"].every((id) => PAGES.slice(0, 2).every((f) => readFileSync(new URL("../" + f, import.meta.url), "utf8").includes(id))));
 ok("ให้เครดิตเจ้าของวิดีโอทั้งในหน้ารวมและในแอป", PAGES.slice(0, 2).every((f) => /Siriraj Health Policy/.test(readFileSync(new URL("../" + f, import.meta.url), "utf8")) && /สูงวัยไม่ล้ม BWSTT/.test(readFileSync(new URL("../" + f, import.meta.url), "utf8"))));
-ok("แอปลูกหลานไม่ขอใช้กล้องในการวัด (วิดีโอคอลแยกไปหน้า CareSignal-Visit.html)", !/getUserMedia|mediapipe/i.test(readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8")));
+ok("การวัดกดเองได้โดยไม่ต้องใช้กล้อง — โค้ดกล้องแยกอยู่ใน cs-camera.js ไม่ปนในแอปหลัก", !/getUserMedia|mediapipe/i.test(readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8")) && /cs-camera\.js/.test(readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8")));
 ok("โคลนระบบ V2 ครบ: คอนโซล แดชบอร์ด ใบส่งต่อ เดโม ฐานข้อมูล", ["CareSignal-Staff.html", "CareSignal-Portfolio-Dashboard.html", "CareSignal-Journey.html", "cs-referral-forms.js", "cs-demo.js", "cs-backend.js", "supabase/22_referral_forms.sql"].every((f) => { try { readFileSync(new URL("../" + f, import.meta.url)); return true; } catch (e) { return false; } }));
 const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
 ok("service worker ไม่ลบแคชของ V2 (โดเมนเดียวกัน)", /indexOf\(PREFIX\) === 0/.test(sw) && !/CareSignal-Vision|cs-aruco/.test(sw));
@@ -115,7 +115,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("อ้าง CDC STEADI · WHO 2020 · Cochrane 2019 · World Guidelines 2022 · STOPPFall · 1669", ["CDC STEADI", "WHO Guidelines on Physical Activity", "Cochrane", "World Guidelines for Falls Prevention", "STOPPFall", "1669"].every((k) => ev.includes(k)));
   ok("ลบคำแนะนำที่ไม่มีที่มาออกแล้ว", !/ลุกนั่ง 10 ครั้ง วันละ|ไม่ปล่อยอยู่คนเดียว|ไม่ปล่อยให้อยู่คนเดียว/.test(app));
   ok("ขั้นตอนถ่ายรูปยาอยู่ใน FLOW หลังทรงตัว", /var FLOW = \["safety", "ftsst", "tug", "balance", "meds", "q", "confirm"\]/.test(app));
-  ok("ถ่ายรูปด้วย input file (ไม่เปิดกล้องสด) + OCR + ส่งเภสัชกร", /capture="environment"/.test(app) && /tesseract\.js@5/.test(app) && /uploadMedPhoto/.test(app) && /saveMed\(/.test(app) && !/getUserMedia/.test(app));
+  ok("ถ่ายรูปยาด้วย input file (ไม่เปิดกล้องสด) + OCR + ส่งเภสัชกร", /capture="environment"/.test(app) && /tesseract\.js@5/.test(app) && /uploadMedPhoto/.test(app) && /saveMed\(/.test(app) && !/getUserMedia/.test(app));
   ok("ไม่มีคำสั่งหยุดยา", !/ให้หยุดยา|หยุดยาทันที/.test(app));
   ok("ใบสรุปแพทย์เป็นหน้าในแอป + พิมพ์จากแท็บใหม่เมื่อฝังในกรอบ", /function renderDoc/.test(app) && /window\.top !== window/.test(app) && /\?print=/.test(app));
   ok("แอปโหลด cs-meds.js", /<script src="\.\/cs-meds\.js"><\/script>/.test(app));
@@ -151,7 +151,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("ปิดแถบชวนติดตั้งแล้วจำไว้", /localStorage\.setItem\(A2HS\.key, "no"\)/.test(app));
   ok("ทางลัด ?go= เปิดหน้าที่ต้องการได้", /\["fall", "test", "history", "meds", "video", "appts"\]\.indexOf\(goto\)/.test(app));
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
-  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-14/.test(sw));
+  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-15/.test(sw));
 }
 
 /* ใบส่งต่อแบบเอกสารทางการ: ทุกสัญญาณต้องมีเกณฑ์ เหตุผล และเอกสารอ้างอิง */
@@ -183,9 +183,9 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
 {
   const app = readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8");
   ok("ท่าไม่ครบ 10 วิ มีปุ่มไปท่าถัดไป และปุ่มหยุดตาม CDC", /onclick="balNext\(true\)">บันทึก ' \+ sw\.val\.toFixed\(1\) \+ ' วินาที · ไปท่าที่/.test(app) && /หยุดการทรงตัว \(ตามแนวทาง CDC\)/.test(app));
-  ok("ไปท่าที่ยากกว่าหลังไม่ผ่าน ต้องยืนยันว่ามีคนประคอง", /v < 10 && cont && d\.balStages\.length < 3 &&\s*!confirm\("ท่าถัดไปยากกว่า/.test(app));
+  ok("ไปท่าที่ยากกว่าหลังไม่ผ่าน ต้องยืนยันว่ามีคนประคอง", /!ok && cont && d\.balStages\.length < 3 &&\s*!confirm\("ท่าถัดไปยากกว่า/.test(app));
   ok("ข้ามท่าเก็บเป็น null ไม่ใช่ 0 วินาที", /function balSkip/.test(app) && /d\.balStages\.push\(null\)/.test(app));
-  ok("ระดับที่ผ่านนับแบบ CDC (ผ่านต่อเนื่องจากท่าแรก)", /while \(n < st\.length && st\[n\] != null && st\[n\] >= 10\) n\+\+/.test(app));
+  ok("ระดับที่ผ่านนับแบบ CDC (ผ่านต่อเนื่องจากท่าแรก)", /while \(n < st\.length && st\[n\] != null && st\[n\] >= 10 && !\(d\.balFail && d\.balFail\[n\]\)\) n\+\+/.test(app));
   ok("แสดงผลรายท่าในหน้าผลและใบส่งต่อ", (app.match(/balDetail\(r\.balStages\)/g) || []).length >= 2);
   const C3 = require("../cs-cloud.js");
   const pay = C3.payloadOf({ date: "2026-09-19", ftsst: 10, tier: 3, balStages: [10, 7.2, 3.1, null], balPassed: 1, balance: 3.1, flags: { reds: [], yellows: [] }, trend: [] }, { name: "x", age: 69 }, "y");
@@ -228,6 +228,28 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
     T.joinWindow({ status: "in_call", slot_at: "2026-09-20T08:45:00Z", minutes: 20 }, now).open &&
     !T.joinWindow({ status: "confirmed", slot_at: "2026-09-20T08:30:00Z", minutes: 20 }, now).open);
   ok("ผลยืนยันแปลงกลับใบส่งต่อเดิมได้", T.toReview({ risk: "confirmed", findings: "x", recommend: "y" }).form.verdict === "confirm" && T.toReview({ risk: "not_confirmed", findings: "x", recommend: "y" }).next_step === "sufficient");
+}
+
+/* วัดด้วยกล้อง (ทางเลือก) — ตัวตรวจจับยกจาก V2 ทั้งชุด */
+{
+  const app = readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8");
+  const cam = readFileSync(new URL("../cs-camera.js", import.meta.url), "utf8");
+  const cl = readFileSync(new URL("../cs-cloud.js", import.meta.url), "utf8");
+  const K = require("../cs-camera.js");
+  ok("เลือกได้สองแบบและจำค่าไว้: กดจับเวลาเอง / กล้องช่วยนับ", /cs3:measure/.test(app) && /setMeasureMode\(\\'manual\\'\)/.test(app) && /setMeasureMode\(\\'camera\\'\)/.test(app));
+  ok("ผลจากกล้องกลับมาที่หน้าจับเวลาเดิม ผู้วัดกดบันทึกเอง (ผ่านการตรวจค่าผิดปกติ)", /S\.sw = \{ k: k, t: null, t0: 0, val: k === "balance" \? res\.held : res\.sec, cam: res \}/.test(app));
+  ok("ทรงตัว: ลูกหลานยืนยันผ่าน/ไม่ผ่านเอง กล้องไม่ตัดสิน", /d\.balFail\[d\.balStages\.length - 1\] = true/.test(app) && /!\(d\.balFail && d\.balFail\[n\]\)/.test(app) && /กล้องสังเกตเห็น<\/b> \(ข้อมูลประกอบ ไม่ใช่คำตัดสิน\)/.test(cam));
+  ok("กล้องไม่บันทึกภาพ ไม่มีสั่งงานด้วยเสียง/ยกมือ", !/MediaRecorder|SpeechRecognition|webkitSpeechRecognition|handsUp|gestureTick/.test(cam) && /ไม่อัปโหลดภาพหรือวิดีโอ/.test(cam));
+  ok("เริ่มด้วยกล้องหลัง (ลูกหลานถือมือถือ) และสลับกล้องได้", /FACING = "environment"/.test(cam) && /csFlip/.test(cam));
+  ok("ระบบกลางรับวิธีวัดต่อท่า และผลทรงตัวที่คนยืนยัน", /methods: \{ ftsst:/.test(cl) && /!\(rec\.balFail && rec\.balFail\[i\]\)/.test(cl));
+  const D = new K.RepDetector({ target: 5 }); D.setRefs(0.30, 0.55); D.start(0);
+  let evs = []; const seq = [0.30, 0.31, 0.40, 0.50, 0.55, 0.55, 0.40, 0.31, 0.30];
+  for (let r = 0; r < 5; r++) seq.forEach((v, i) => { const e = D.push(v, 1000 + r * 2000 + i * 100); if (e) evs.push(e.event); });
+  ok("ตัวนับลุกนั่งจาก V2 นับครบ 5 ครั้งและจบเอง", evs.filter((e) => e === "rep").length === 4 && evs.includes("finish"), evs);
+  const B = new K.BalanceEngine(0);
+  ok("BalanceEngine จำแนกท่าจากเท้า: ซ้อน=ชิด · เหลื่อมครึ่ง=กึ่งต่อ · เต็มเท้า=ต่อเท้า · ยก=ขาเดียว", B._stance({ gap: 0.2, lift: 0.1 }) === 0 && B._stance({ gap: 0.6, lift: 0.1 }) === 1 && B._stance({ gap: 1.2, lift: 0.1 }) === 2 && B._stance({ gap: 0.2, lift: 0.9 }) === 3);
+  const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
+  ok("service worker แคชโมดูลกล้องและโมเดล MediaPipe", /cs-camera\.js/.test(sw) && /storage\\\.googleapis\\\.com/.test(sw));
 }
 
 console.log("  " + pass + " ผ่าน / " + fail + " ตก");

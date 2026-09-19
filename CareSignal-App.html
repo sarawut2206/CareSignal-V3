@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CareSignal V3 · ลูกหลานวัดให้</title>
-<meta name="description" content="ลูกหลานจับเวลาแบบทดสอบลุกนั่ง ลุกเดิน และทรงตัวให้ผู้สูงอายุที่บ้าน รู้ผลทันที ดูแนวโน้ม พกใบสรุปไปพบแพทย์ — ไม่ใช้กล้อง">
+<meta name="description" content="ลูกหลานจับเวลาแบบทดสอบลุกนั่ง ลุกเดิน และทรงตัวให้ผู้สูงอายุที่บ้าน รู้ผลทันที ดูแนวโน้ม พกใบสรุปไปพบแพทย์ — จับเวลาเอง หรือให้กล้องช่วยนับก็ได้">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon-192.png">
 <meta name="theme-color" content="#F4F6F8">
@@ -177,6 +177,8 @@ textarea{min-height:70px}
 .flow{display:flex;justify-content:space-between;gap:4px;margin:4px 0 2px}.flow div{flex:1;text-align:center;font-size:12px;color:var(--ink2);line-height:1.35}
 .flow i{display:flex;margin:0 auto 5px;width:42px;height:42px;border-radius:50%;background:var(--brandt);color:var(--brand);align-items:center;justify-content:center;font-style:normal}
 .flow i svg{width:22px;height:22px}.flow b{display:block;color:var(--ink);font-size:13px}
+.mode{display:flex;gap:6px;margin-bottom:12px}.mode button{flex:1;border:1.5px solid var(--line);border-radius:14px;padding:11px 8px;font:inherit;font-size:14.5px;font-weight:600;background:#fff;color:var(--ink2);cursor:pointer}.mode button.on{background:var(--brandt);border-color:var(--brand);color:var(--brand2)}
+.camtag{display:inline-block;font-size:11px;font-weight:600;background:#EAF0FF;color:#3559C7;border-radius:99px;padding:1px 7px;margin-left:6px;vertical-align:middle}
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;margin:14px 2px 8px}
 .sec-h h2{margin:0;font-size:19px}.sec-h span{font-size:13px;color:var(--ink2)}
 .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:6px}
@@ -260,9 +262,10 @@ body{font-size:18px}
 <script src="./cs-backend.js"></script>
 <script src="./cs-cloud.js"></script>
 <script src="./cs-teleconsult.js"></script>
+<script src="./cs-camera.js"></script>
 <script>
 /* ============================================================
-   CareSignal V3 — ลูกหลานเป็นผู้วัด · ไม่ใช้กล้อง · ข้อมูลอยู่ในเครื่องนี้
+   CareSignal V3 — ลูกหลานเป็นผู้วัด · จับเวลาเอง หรือให้กล้องช่วยนับ (cs-camera.js ยกมาจาก V2) · ข้อมูลอยู่ในเครื่องนี้
    ทำไมต้องมีรุ่นนี้: จากการสัมภาษณ์ 16 ก.ย. 2569 ผู้สูงอายุ 3 ใน 3 คนใช้แอปหรือตั้งกล้องเองไม่ได้
    และทั้ง 3 คนเลือก "ให้ลูกหลานรู้" เป็นอันดับ 1 — ผู้ใช้ของแอปนี้จึงเป็นลูกหลาน
    ============================================================ */
@@ -733,7 +736,7 @@ function dueNotify() {
 }
 /* หน้าแนะนำ 4 หน้า — แสดงครั้งแรกก่อนลงทะเบียน */
 var INTRO = [
-  ["🏠", "⏱️", "วัดความเสี่ยงหกล้มที่บ้าน", "ลูกหลานกดจับเวลา 3 ท่า ลุกนั่ง ลุกเดิน และยืนทรงตัว ประมาณ 10 นาที ไม่ต้องใช้กล้อง"],
+  ["🏠", "⏱️", "วัดความเสี่ยงหกล้มที่บ้าน", "ลูกหลานจับเวลา 3 ท่า ลุกนั่ง ลุกเดิน และยืนทรงตัว ประมาณ 10 นาที · กดเอง หรือให้กล้องช่วยนับก็ได้"],
   ["🧑‍⚕️", "✅", "ผู้เชี่ยวชาญยืนยันผลให้", "ผลเสี่ยงสูงส่งให้แพทย์ เภสัชกร พยาบาล หรือนักกายภาพบำบัดตรวจก่อน แล้วแอปจะแจ้งเตือน"],
   ["💊", "📷", "ถ่ายรูปซองยา", "เภสัชกรช่วยดูว่ายาตัวไหนอาจทำให้เวียนหัวหรือเสี่ยงล้ม ระบบไม่สั่งหยุดยาเอง"],
   ["📈", "📄", "ดูแนวโน้มและพกใบสรุปไปพบแพทย์", "เห็นว่าดีขึ้นหรือแย่ลงจากครั้งก่อน และเปิดใบสรุปให้แพทย์ดูได้ทันที"]
@@ -770,8 +773,8 @@ function renderMe(v) {
       row("info", "ดูหน้าแนะนำการใช้งานอีกครั้ง", "", "S.intro=0;S.screen='intro';render()") +
     '</div>' +
     (installedApp() || embedded() ? '' : '<button class="btn sec" onclick="installApp()">📲 ติดตั้งลงหน้าจอมือถือ</button>') +
-    '<div class="card" style="margin-top:14px"><h3>ความเป็นส่วนตัว</h3><p class="sub" style="margin:0">ข้อมูลเก็บในเครื่องนี้ และส่งขึ้นระบบกลางเฉพาะเมื่อคุณเชื่อมบัญชี · แอปนี้ไม่ใช้กล้อง รูปที่ถ่ายมีแค่รูปซองยาให้เภสัชกรดู · ผู้สูงอายุยินยอมก่อนบันทึกและก่อนแชร์ผล</p></div>' +
-    '<div class="card"><h3>ทำไมลูกหลานเป็นคนวัด</h3><p class="sub" style="margin:0">จากการสัมภาษณ์ผู้สูงอายุ 3 คน ทุกคนใช้แอปหรือตั้งกล้องเองไม่ได้ และทุกคนอยากให้ "ลูกหลานรู้" เป็นอันดับหนึ่ง แอปรุ่นนี้จึงให้คุณเป็นคนจับเวลา</p></div>';
+    '<div class="card" style="margin-top:14px"><h3>ความเป็นส่วนตัว</h3><p class="sub" style="margin:0">ข้อมูลเก็บในเครื่องนี้ และส่งขึ้นระบบกลางเฉพาะเมื่อคุณเชื่อมบัญชี · ถ้าเลือกให้กล้องช่วยนับ ภาพประมวลผลในเครื่องและทิ้งทันที เก็บเฉพาะตัวเลข · รูปที่ส่งออกมีแค่รูปซองยาให้เภสัชกรดู · ผู้สูงอายุยินยอมก่อนบันทึกและก่อนแชร์ผล</p></div>' +
+    '<div class="card"><h3>ทำไมลูกหลานเป็นคนวัด</h3><p class="sub" style="margin:0">จากการสัมภาษณ์ผู้สูงอายุ 3 คน ทุกคนใช้แอปหรือตั้งกล้องเองไม่ได้ และทุกคนอยากให้ "ลูกหลานรู้" เป็นอันดับหนึ่ง แอปรุ่นนี้จึงให้คุณเป็นคนวัด — จะกดจับเวลาเอง หรือถือมือถือให้กล้องช่วยนับก็ได้</p></div>';
 }
 function renderVideo(v) {
   head("ส่วนที่ 2", "วิธีวัด 3 ชุด", "วิดีโอสาธิตจาก Siriraj Health Policy · ดูครั้งแรกให้จบ");
@@ -817,6 +820,35 @@ function safetyNext() {
   if (!sv.safe) { S.draft.skipped = { ftsst: "safety", tug: "safety", balance: "safety" }; S.step = FLOW.indexOf("q"); toast("วันนี้ข้ามท่าทดสอบ ตอบเฉพาะคำถาม"); render(); return; }
   S.step = 1; render();
 }
+/* ---------- วิธีวัด: กดจับเวลาเอง หรือให้กล้องช่วยนับ (cs-camera.js) ----------
+   ผลจากกล้องไม่ข้ามขั้นตอนของคน: กล้องส่งตัวเลขกลับมาที่หน้าจับเวลาเดิม
+   ผู้วัดเห็นค่าแล้วกด "บันทึก" เอง จึงผ่านการตรวจค่าผิดปกติและกฎเดิมทุกข้อ */
+function measureMode() { try { return localStorage.getItem("cs3:measure") === "camera" ? "camera" : "manual"; } catch (e) { return "manual"; } }
+function setMeasureMode(m) { try { localStorage.setItem("cs3:measure", m); } catch (e) {} render(); }
+function camTag(cam, k) { return cam && cam[k] && !cam[k].manual ? '<span class="camtag">📷 กล้อง</span>' : ""; }
+function methodText(r) {
+  var c = r.cam || {}, parts = [];
+  ["ftsst", "tug"].forEach(function (k) { if (c[k] && !c[k].manual) parts.push({ ftsst: "ลุกนั่ง", tug: "ลุกเดิน" }[k]); });
+  if (r.balCam && r.balCam.some(Boolean)) parts.push("ทรงตัว");
+  if (!parts.length) return "ครอบครัวจับเวลาด้วยปุ่มในแอป (ไม่ใช้กล้อง)";
+  return "กล้องมือถือช่วยนับและจับเวลา (" + parts.join(" · ") + ") ประมวลผลในเครื่อง ไม่บันทึกภาพ · ส่วนที่เหลือครอบครัวจับเวลาเอง";
+}
+function camStart(k) {
+  if (!window.CSCam || !CSCam.supported()) return toast("เครื่องนี้เปิดกล้องจากเบราว์เซอร์ไม่ได้");
+  var d = S.draft, bi = d.balStages.length;
+  if (S.sw && S.sw.t) { clearInterval(S.sw.t); S.sw.t = null; }
+  CSCam.open({ kind: k, stage: bi, stageNames: BAL_STAGES.map(function (b) { return b.nm; }), how: k === "balance" ? BAL_STAGES[bi].how : "",
+    refs: d.camRefs || null,
+    onDone: function (res) {
+      if (res.manual) { setMeasureMode("manual"); toast("สลับเป็นกดจับเวลาเอง"); return; }
+      if (res.refs) d.camRefs = res.refs;
+      S.sw = { k: k, t: null, t0: 0, val: k === "balance" ? res.held : res.sec, cam: res };
+      toast(k === "balance" ? (res.pass ? "กล้องจับเวลาได้ " + res.held.toFixed(1) + " วิ · ยืนยันว่าผ่าน" : "บันทึก " + res.held.toFixed(1) + " วิ · ยืนยันว่าไม่ผ่าน") : "กล้องวัดได้ " + res.sec.toFixed(1) + " วินาที ตรวจแล้วกดบันทึก");
+      render();
+    },
+    onManual: function () { setMeasureMode("manual"); },
+    onCancel: function () { render(); } });
+}
 var SWLABEL = { ftsst: ["ลุกนั่ง 5 ครั้ง", "กดเริ่มพร้อมพูดว่า \"เริ่ม\" · กดหยุดตอนนั่งลงครั้งที่ 5"], tug: ["ลุกเดิน 3 เมตร", "กดเริ่มพร้อมพูดว่า \"เริ่ม\" · กดหยุดตอนกลับมานั่งเรียบร้อย"], balance: ["ทรงตัว", "กดเริ่มเมื่อปล่อยมือ · แอปหยุดเองเมื่อครบ 10 วินาที"] };
 function renderStopwatch(v, k, prog) {
   var vid = VIDEOS.filter(function (x) { return x.k === k; })[0];
@@ -824,14 +856,22 @@ function renderStopwatch(v, k, prog) {
   head("ชุดที่ " + S.step + " จาก 3", k === "balance" ? "ทรงตัว ท่าที่ " + (bi + 1) + " จาก 4 · " + bs.nm : SWLABEL[k][0], SWLABEL[k][1], null, prog);
   var sw = S.sw && S.sw.k === k ? S.sw : (S.sw = { k: k, t: null, t0: 0, val: null });
   var running = !!sw.t, shown = running ? (Date.now() - sw.t0) / 1000 : (sw.val || 0);
+  var cam = measureMode() === "camera", passed = sw.val >= 10 && !(sw.cam && sw.cam.pass === false);
+  var camHint = { ftsst: "ถือมือถือให้เห็นผู้สูงอายุทั้งตัว กล้องนับครั้งและจับเวลาให้ · เริ่มด้วยการบันทึกท่านั่งและท่ายืน", tug: "ถือมือถือให้เห็นเก้าอี้และทางเดิน กล้องจับเวลาตั้งแต่สัญญาณเริ่มจนกลับมานั่ง", balance: "ให้ผู้สูงอายุยืนหันข้าง ห่าง 2–3 เมตร กล้องดูท่าเท้าและจับเวลา 10 วินาที · ลูกหลานยืนยันผลเอง" }[k];
   v.innerHTML =
+    '<div class="mode"><button class="' + (cam ? "" : "on") + '" onclick="setMeasureMode(\'manual\')">⏱ กดจับเวลาเอง</button><button class="' + (cam ? "on" : "") + '" onclick="setMeasureMode(\'camera\')">📷 กล้องช่วยนับ</button></div>' +
     (k === "balance" ? '<div class="card" style="border:2px solid var(--brand)"><h3>' + (bi + 1) + '. ' + esc(bs.nm) + '</h3><p class="sub" style="margin:0">' + esc(bs.how) + '</p>' +
       (bi ? '<p class="sub" style="margin:6px 0 0">ผลท่าก่อนหน้า: ' + balDetail(S.draft.balStages) + '</p>' : '') + '</div>' : '') +
-    '<div class="card"><div class="big" id="clock">' + shown.toFixed(1) + '<small> วินาที</small></div>' +
-    '<button class="sw ' + (running ? "stop" : "") + '" onclick="swToggle()">' + (running ? "■ หยุด" : (sw.val != null ? "↻ จับใหม่" : "▶ เริ่ม")) + '</button></div>' +
+    (cam && sw.val == null && !running
+      ? '<div class="card" style="border:2px solid var(--brand)"><h3>📷 กล้องช่วยนับและจับเวลา</h3><p class="sub" style="margin:0 0 10px">' + camHint + '</p>' +
+        (CSCam.supported() ? '<button class="btn" style="margin:0" onclick="camStart(\'' + k + '\')">เปิดกล้อง</button>' : '<div class="warn">เครื่องนี้เปิดกล้องจากเบราว์เซอร์ไม่ได้ ใช้การกดจับเวลาแทน</div>') +
+        '<p class="sub" style="font-size:12.5px;margin:8px 0 0">ภาพประมวลผลในเครื่อง ไม่อัปโหลด เก็บเฉพาะตัวเลข · ยกมาจาก CareSignal V2</p></div>'
+      : '<div class="card"><div class="big" id="clock">' + shown.toFixed(1) + '<small> วินาที</small>' + (sw.cam && !running ? '<br><span class="camtag">📷 วัดด้วยกล้อง</span>' : '') + '</div>' +
+        '<button class="sw ' + (running ? "stop" : "") + '" onclick="swToggle()">' + (running ? "■ หยุด" : (sw.val != null ? "↻ จับใหม่" : "▶ เริ่ม")) + '</button>' +
+        (cam && !running ? '<button class="btn ghost" style="margin:8px 0 0" onclick="camStart(\'' + k + '\')">📷 วัดด้วยกล้องอีกครั้ง</button>' : '') + '</div>') +
     (sw.val != null && !running ? (k !== "balance" ? '<button class="btn" onclick="swSave()">บันทึก ' + sw.val.toFixed(1) + ' วินาที</button>'
-      : sw.val >= 10 ? '<button class="btn" onclick="balNext(true)">ผ่าน 10 วินาที · ' + (bi < 3 ? 'ไปท่าที่ ' + (bi + 2) : 'จบการทรงตัว') + '</button>'
-      : bi < 3 ? '<div class="warn"><b>ท่านี้ยืนได้ ' + sw.val.toFixed(1) + ' วินาที ไม่ครบ 10 วินาที</b><br>แนวทาง CDC ให้หยุดที่ท่านี้ เพราะท่าถัดไปยากกว่าและเสี่ยงล้มมากขึ้น ถ้าจะทำต่อ ต้องมีคนยืนประคองอยู่ข้างผู้สูงอายุตลอด</div>' +
+      : passed ? '<button class="btn" onclick="balNext(true)">ผ่าน 10 วินาที · ' + (bi < 3 ? 'ไปท่าที่ ' + (bi + 2) : 'จบการทรงตัว') + '</button>'
+      : bi < 3 ? '<div class="warn"><b>' + (sw.val >= 10 ? 'ยืนครบ 10 วินาที แต่ลูกหลานยืนยันว่าไม่ผ่าน (ขยับเท้าหรือต้องจับพยุง)' : 'ท่านี้ยืนได้ ' + sw.val.toFixed(1) + ' วินาที ไม่ครบ 10 วินาที') + '</b><br>แนวทาง CDC ให้หยุดที่ท่านี้ เพราะท่าถัดไปยากกว่าและเสี่ยงล้มมากขึ้น ถ้าจะทำต่อ ต้องมีคนยืนประคองอยู่ข้างผู้สูงอายุตลอด</div>' +
         '<button class="btn" onclick="balNext(true)">บันทึก ' + sw.val.toFixed(1) + ' วินาที · ไปท่าที่ ' + (bi + 2) + '</button>' +
         '<button class="btn sec" onclick="balNext(false)">บันทึก ' + sw.val.toFixed(1) + ' วินาที · หยุดการทรงตัว (ตามแนวทาง CDC)</button>'
       : '<button class="btn" onclick="balNext(false)">บันทึก ' + sw.val.toFixed(1) + ' วินาที · จบการทรงตัว</button>') : "") +
@@ -857,7 +897,9 @@ function swSave() {
   if (!CSScore.plausible(k, val)) {
     if (!confirm("ค่า " + val.toFixed(1) + " วินาที ดูผิดปกติสำหรับท่านี้ (ปกติ " + CSScore.RANGE[k][0] + "–" + CSScore.RANGE[k][1] + " วินาที)\nกดตกลงถ้าเป็นค่าจริง · กดยกเลิกเพื่อจับใหม่")) return;
   }
-  S.draft[k] = val; S.sw = null; S.step++; render();
+  S.draft[k] = val;
+  if (sw.cam && !sw.cam.manual) { S.draft.cam = S.draft.cam || {}; S.draft.cam[k] = sw.cam; if (sw.cam.refs) S.draft.camRefs = sw.cam.refs; }
+  S.sw = null; S.step++; render();
 }
 function swSkip() {
   var k = S.sw.k;
@@ -868,12 +910,14 @@ function swSkip() {
    ครบ 10 วินาที → ท่าถัดไป · ไม่ครบ → ผู้วัดเลือกเองว่าจะทำต่อ (ต้องมีคนประคอง) หรือหยุดตาม CDC
    CDC แนะนำให้หยุดเมื่อท่าใดไม่ครบ 10 วินาที แอปจึงถามยืนยันเรื่องคนประคองก่อนไปท่าที่ยากกว่า */
 function balNext(cont) {
-  var v = S.sw.val, d = S.draft;
-  if (v < 10 && cont && d.balStages.length < 3 &&
+  var v = S.sw.val, d = S.draft, cm = S.sw.cam, ok = v >= 10 && !(cm && cm.pass === false);
+  if (!ok && cont && d.balStages.length < 3 &&
       !confirm("ท่าถัดไปยากกว่าและเสี่ยงล้มมากขึ้น\nยืนยันว่ามีคนยืนประคองอยู่ข้างผู้สูงอายุตลอดการทดสอบ")) return;
-  d.balStages.push(v); S.sw = null;
+  d.balStages.push(v);
+  if (cm && !cm.manual) { d.balCam = d.balCam || []; d.balCam[d.balStages.length - 1] = cm; if (cm.pass === false) { d.balFail = d.balFail || []; d.balFail[d.balStages.length - 1] = true; } }
+  S.sw = null;
   if (d.balStages.length >= 4 || !cont) return balDone();
-  toast(v >= 10 ? "ผ่าน · พักสักครู่แล้วทำท่าถัดไป" : "บันทึกแล้ว · ประคองให้ดีในท่าถัดไป");
+  toast(ok ? "ผ่าน · พักสักครู่แล้วทำท่าถัดไป" : "บันทึกแล้ว · ประคองให้ดีในท่าถัดไป");
   render();
 }
 /* ข้ามท่า: บันทึกเป็น "ไม่ได้ทดสอบ" (null) ไม่ใช่ 0 วินาที เพราะความหมายต่างกัน */
@@ -1024,7 +1068,7 @@ function balDone() {
   var d = S.draft, st = d.balStages;
   /* ระดับที่ผ่านนับแบบ CDC: ผ่านต่อเนื่องจากท่าแรกกี่ท่า (ท่าที่ข้ามหรือไม่ครบ = จบการนับ)
      เวลาทุกท่ายังเก็บไว้ครบใน balStages ให้ผู้เชี่ยวชาญดู */
-  var n = 0; while (n < st.length && st[n] != null && st[n] >= 10) n++;
+  var n = 0; while (n < st.length && st[n] != null && st[n] >= 10 && !(d.balFail && d.balFail[n])) n++;
   if (!st.some(function (x) { return x != null; })) { d.balPassed = null; d.balance = null; d.skipped.balance = "skip"; S.sw = null; S.step++; render(); return; }
   d.balPassed = n;
   d.balance = st.length >= 3 && st[2] != null ? st[2] : null;   /* วินาทีของท่ายืนต่อเท้า (ท่าที่ 3) ถ้าได้ทำ */
@@ -1060,8 +1104,8 @@ function renderConfirm(v, prog) {
   head("ตรวจทาน", "ก่อนบันทึก", "แก้ได้โดยกดย้อนกลับ", null, prog);
   function row(nm, val) { return '<div class="hist"><span>' + nm + '</span><b>' + val + '</b></div>'; }
   v.innerHTML = '<div class="card">' +
-    row("ลุกนั่ง 5 ครั้ง", d.ftsst != null ? d.ftsst.toFixed(1) + " วิ" : "ข้าม") +
-    row("ลุกเดิน 3 เมตร", d.tug != null ? d.tug.toFixed(1) + " วิ" : "ข้าม") +
+    row("ลุกนั่ง 5 ครั้ง", d.ftsst != null ? d.ftsst.toFixed(1) + " วิ" + camTag(d.cam, "ftsst") : "ข้าม") +
+    row("ลุกเดิน 3 เมตร", d.tug != null ? d.tug.toFixed(1) + " วิ" + camTag(d.cam, "tug") : "ข้าม") +
     row("ทรงตัว 4 ท่า", d.balPassed != null ? "ผ่าน " + d.balPassed + "/4 ท่า<br><small style=\"color:var(--ink2);font-weight:400\">" + balDetail(d.balStages) + "</small>" : "ข้าม") +
     row("ล้มใน 12 เดือน", d.fallsCount === 9 ? "จำไม่ได้" : d.fallsCount + " ครั้ง") +
     row("กลัวล้ม", d.worried ? "ใช่" : "ไม่") + row("กิจวัตร", ["ต้องช่วยเกือบทุกอย่าง", "ต้องช่วยบางอย่าง", "ทำเองได้"][d.adl]) + '</div>' +
@@ -1075,7 +1119,7 @@ function finish() {
   if (fl.level === "urgent" && tier > 2) tier = 2;                 /* ธงแดงดึงลงอย่างน้อยระดับส้ม */
   if (fl.level === "watch" && tier > 3) tier = 3;                  /* มีธงเหลือง ไม่แสดงเขียว — ตรงกับระดับ watch ที่ส่งให้เจ้าหน้าที่ */
   if (tr.some(function (t) { return !t.good; }) && tier > 2) tier = 2; /* แย่ลงจากเดิมชัดเจน */
-  var rec = Object.assign({ id: uid(), score: sc.score, max: sc.max, tier: tier, parts: sc.parts, flags: fl, trend: tr, by: D.caregiver.name, method: "manual" }, d);
+  var rec = Object.assign({ id: uid(), score: sc.score, max: sc.max, tier: tier, parts: sc.parts, flags: fl, trend: tr, by: D.caregiver.name, method: (d.cam && Object.keys(d.cam).length) || (d.balCam && d.balCam.length) ? "camera-pose" : "manual" }, d);
   /* ส้ม/แดง: ยังไม่บอกระดับและคำแนะนำ จนกว่าผู้เชี่ยวชาญยืนยัน */
   rec.pending = tier <= 2;
   if (rec.pending) askNotify();
@@ -1110,7 +1154,7 @@ function flagList(r) {
 function measuredCard(r) {
   function row(nm, val) { return '<div class="hist"><span>' + nm + '</span><b>' + val + '</b></div>'; }
   return '<div class="card"><h3>ค่าที่วัดได้วันนี้</h3>' +
-    row("ลุกนั่ง 5 ครั้ง", r.ftsst != null ? r.ftsst.toFixed(1) + " วินาที" : "ข้าม") +
+    row("ลุกนั่ง 5 ครั้ง", r.ftsst != null ? r.ftsst.toFixed(1) + " วินาที" + camTag(r.cam, "ftsst") : "ข้าม") +
     row("ลุกเดิน 3 เมตร", r.tug != null ? r.tug.toFixed(1) + " วินาที" : "ข้าม") +
     row("ทรงตัว 4 ท่า", balText(r)) + (r.balStages && r.balStages.length ? '<p class="sub" style="margin:4px 0 0;font-size:14px">' + balDetail(r.balStages) + '</p>' : '') + '</div>';
 }
@@ -1218,7 +1262,7 @@ function docHTML(r) {
        '<tr><th>อุปกรณ์ช่วยเดิน</th><td>' + (e.aid ? (e.aid === "cane" ? "ไม้เท้า" : "วอล์กเกอร์") : "ไม่ใช้") + '</td></tr>' +
        '<tr><th>โรคประจำตัว (ครอบครัวแจ้ง)</th><td>' + (e.conditions ? esc(e.conditions) : "ไม่ได้ระบุ") + '</td></tr>' +
        '<tr><th>ผู้วัดและผู้ติดต่อ</th><td>' + esc(r.by || D.caregiver.name) + (D.caregiver.phone ? ' โทร ' + esc(D.caregiver.phone) : '') + '</td></tr>' +
-       '<tr><th>วิธีวัด</th><td>ครอบครัวจับเวลาด้วยปุ่มในแอป ไม่ใช้กล้อง · มีคนอยู่ข้างผู้สูงอายุระหว่างทดสอบ</td></tr></table>';
+       '<tr><th>วิธีวัด</th><td>' + methodText(r) + ' · มีคนอยู่ข้างผู้สูงอายุระหว่างทดสอบ</td></tr></table>';
   /* ---------- ๒ ผลการทดสอบเทียบเกณฑ์ ---------- */
   h += '<h2>๒. ผลการทดสอบครั้งล่าสุดเทียบเกณฑ์ (' + longDate(r.date) + ')</h2><table><tr><th>การทดสอบ</th><th>ผลที่วัดได้</th><th>เกณฑ์</th><th>แปลผล</th></tr>' +
        '<tr><td>ลุก–นั่ง 5 ครั้ง (5×STS)</td><td>' + (r.ftsst != null ? r.ftsst.toFixed(1) + ' วินาที' : 'ไม่ได้ทดสอบ') + '</td><td>≤ ' + cut + ' วินาที ตามอายุ' + cite(["ftsst"]) + '</td><td>' + res(r.ftsst == null ? null : r.ftsst <= cut) + '</td></tr>' +

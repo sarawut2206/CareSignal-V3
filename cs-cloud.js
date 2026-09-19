@@ -64,10 +64,13 @@
     var balPassed = rec.balPassed != null ? rec.balPassed
                   : rec.balance == null ? null : (rec.balance >= 10 ? 3 : 2);   /* ข้อมูลรุ่นแรก: รู้แค่ท่ายืนต่อเท้า */
     var STG = ["feet_together", "semi_tandem", "tandem", "one_leg"];
-    var stages = (rec.balStages || []).map(function (sec, i) { return { stage: STG[i], seconds: sec, tested: sec != null, passed: sec == null ? null : sec >= 10 }; });
+    var stages = (rec.balStages || []).map(function (sec, i) { return { stage: STG[i], seconds: sec, tested: sec != null, passed: sec == null ? null : (sec >= 10 && !(rec.balFail && rec.balFail[i])), by: rec.balCam && rec.balCam[i] ? "camera-pose" : "manual" }; });
+    /* วิธีวัดต่อท่า: กล้อง (cs-camera.js ยกจาก V2) หรือกดจับเวลาเอง — โครงสร้างเดียวกับที่ V2 ส่ง */
+    var cam = rec.cam || {}, cf = cam.ftsst && !cam.ftsst.manual ? cam.ftsst : null, ct = cam.tug && !cam.tug.manual ? cam.tug : null;
+    var anyCam = !!(cf || ct || (rec.balCam && rec.balCam.some(Boolean)));
     return {
-      at: rec.date, method: "manual", ftsst: rec.ftsst, tug: rec.tug,
-      reps: rec.ftsst != null ? 5 : null, cv: null, gaps: null,
+      at: rec.date, method: anyCam ? "camera-pose" : "manual", ftsst: rec.ftsst, tug: rec.tug,
+      reps: rec.ftsst != null ? (cf ? cf.reps : 5) : null, cv: cf ? cf.cv : null, gaps: cf ? cf.gaps : null,
       score: rec.score, max: rec.max, tier: rec.tier, parts: rec.parts, verified: false,
       engine: ENGINE, durSec: null,
       safetyGate: { answers: rec.safety || null, verdict: { safe: true, mode: "carer" } },
@@ -75,11 +78,13 @@
       medsDetail: { count: rec.medsCount, n: rec.medsItems ? rec.medsItems.length : null, items: rec.medsItems || null,
                     frid_high: rec.fridHigh == null ? null : rec.fridHigh, frid_total: rec.fridTotal == null ? null : rec.fridTotal },
       homeDetail: null, notTested: rec.ftsst == null && rec.tug == null && rec.balance == null,
-      testQuality: { measured_by: "carer", ended_by: "carer", alone: false, alone_skip: false, distance_ok: rec.tug != null ? true : null },
+      testQuality: { measured_by: "carer", ended_by: ct ? "camera" : "carer", alone: false, alone_skip: false, distance_ok: rec.tug != null ? (ct ? ct.distanceOk : true) : null },
       detail: {
-        method: "manual", measured_by: "carer", carer_name: carerName || null, app: "v3",
+        method: anyCam ? "camera-pose" : "manual", measured_by: "carer", carer_name: carerName || null, app: "v3",
+        methods: { ftsst: cf ? "camera-pose" : "manual", tug: ct ? "camera-pose" : "manual", balance: rec.balCam && rec.balCam.some(Boolean) ? "camera-pose" : "manual" },
         steadi: { fell: rec.fallsCount != null && rec.fallsCount >= 1 && rec.fallsCount !== 9, worried: !!rec.worried, unsteady: null },
-        tug: { out: null, back: null, distance_ok: rec.tug != null ? true : null, turn_by: null, back_by: null, ended_by: "carer", mark_turn: false, reach: null, drift: null },
+        tug: ct ? { out: ct.out, back: ct.back, distance_ok: ct.distanceOk, turn_by: "camera", back_by: "camera", ended_by: "camera", mark_turn: false, reach: ct.reaction, drift: ct.drift, gait: ct.gait || null }
+                : { out: null, back: null, distance_ok: rec.tug != null ? true : null, turn_by: null, back_by: null, ended_by: "carer", mark_turn: false, reach: null, drift: null },
         balance: { passed: balPassed, seconds: rec.balance,
                    label: balPassed == null ? null : "ทรงตัวผ่าน " + balPassed + " จาก 4 ท่า" + (rec.balance != null ? " · ยืนต่อเท้า " + rec.balance + " วินาที" : ""),
                    stages: stages.length ? stages : null, alone: false, alone_skip: false },
