@@ -486,7 +486,7 @@ var CSMeds = (function () {
     ["fluconazole",   "J02AC01", "none",     ["diflucan","fluconazole"]],
     /* ---- ไม่อยู่ในกลุ่มเสี่ยง: วิตามิน เกลือแร่ สมุนไพร อื่น ๆ ---- */
     ["thiamine",      "A11DA01", "none",     ["thiamine","ไทอามีน"]],
-    ["vitamin b complex","A11EA","none",     ["b-complex","วิตามินบีรวม"]],
+    ["vitamin b complex","A11EA","none",     ["b-complex","วิตามินบีรวม","besix","neurobion","vitamin b1 b6 b12","vitamin b1-6-12","b1-6-12","วิตามินบี 1 6 12","วิตามินบี1-6-12"]],
     ["cyanocobalamin","B03BA01", "none",     ["cyanocobalamin"]],
     ["mecobalamin",   "B03BA05", "none",     ["methycobal","mecobalamin"]],
     ["potassium chloride","A12BA01","none",  ["kcl","slow-k"]],
@@ -803,7 +803,18 @@ var CSMeds = (function () {
 
   /* จับคู่คำเดียว → {inn, conf, via} หรือ null
      conf: 1.0 ตรงเป๊ะ · 0.9 prefix ≥5 ตัว · 0.75 edit distance 1 · 0.6 edit distance 2 */
+  /* ตัวอักษรที่ OCR สับสนบ่อยบนฟอยล์แผงยา: 1↔I/l · 0↔O · 5↔S · 8↔B — แก้เฉพาะตัวเลขที่อยู่กลางคำอักษร */
+  var CONF = { "0": "o", "1": "i", "5": "s", "8": "b", "|": "l", "$": "s" };
+  function ocrFix(s) {
+    return String(s || "").replace(/([A-Za-z])([0158|$])(?=[A-Za-z])/g, function (_, a, d) { return a + CONF[d]; })
+      .replace(/(^|[^A-Za-z0-9])([058])(?=[A-Za-z]{3})/g, function (_, a, d) { return a + CONF[d]; });
+  }
   function matchToken(tok) {
+    var r1 = matchOne(tok), f = ocrFix(tok);
+    if (f !== tok && (!r1 || r1.conf < 1)) { var r2 = matchOne(f); if (r2 && (!r1 || r2.conf > r1.conf)) r1 = r2; }
+    return r1;
+  }
+  function matchOne(tok) {
     var t = norm(tok);
     if (t.length < 3) return null;
     var best = null;
@@ -828,9 +839,26 @@ var CSMeds = (function () {
   var FREQ_RE = /(วันละ\s*\d+\s*(?:ครั้ง|เม็ด)|\d+\s*(?:ครั้ง|เม็ด)\s*(?:ต่อ)?วัน|ก่อนนอน|หลังอาหาร|ก่อนอาหาร|เช้า|กลางวัน|เย็น|od|bid|tid|qid|hs|prn|q\d+h)/gi;
   var STOP = /^(tab|tablet|tablets|cap|capsule|caps|เม็ด|แคปซูล|ยา|รับประทาน|ครั้งละ|วันละ|ก่อน|หลัง|อาหาร|นอน|เช้า|เย็น|กลางวัน|the|and|for|with|use|take|film|coated|extended|release|sr|xr|er|forte|plus|mg|ml|mcg)$/i;
 
+  /* คำที่พิมพ์บนแผงยาแต่ไม่ใช่ชื่อยา — ไม่ใช้เป็นคำค้นทะเบียน */
+  var PACK = /^(vitamin|vitamins|hydrochloride|hcl|sodium|potassium|calcium|tablet|tablets|capsule|capsules|film|coated|each|contains|contain|lot|exp|mfg|mfd|reg|batch|made|thailand|ltd|company|pharma|pharmaceutical|pharmaceuticals|laboratories|laboratory|limited|only|keep|store|below|dose|doctor|prescription|drug|medicine|mono|dihydrate|anhydrous|equivalent|base)$/i;
+  /* คำอักษรอังกฤษในภาพ เรียงตาม "พิมพ์ซ้ำกี่ครั้ง × ความยาว" — แผงยาพิมพ์ชื่อการค้าซ้ำทุกเม็ด
+     คำที่ต่างกันแค่ตัวเดียว (OCR อ่านเพี้ยน) รวมเป็นคำเดียว */
+  function rankTokens(text) {
+    var cnt = {};
+    (ocrFix(text || "").match(/[A-Za-z][A-Za-z\-]{3,}/g) || []).forEach(function (w) {
+      var k = w.toLowerCase().replace(/-/g, ""); if (k.length < 4 || STOP.test(k) || PACK.test(k)) return; cnt[k] = (cnt[k] || 0) + 1;
+    });
+    var keys = Object.keys(cnt).sort(function (a, b) { return cnt[b] - cnt[a]; }), out = [];
+    keys.forEach(function (k) {
+      for (var i = 0; i < out.length; i++) if (Math.abs(out[i].token.length - k.length) <= 1 && lev(out[i].token, k) <= 1) { out[i].count += cnt[k]; return; }
+      out.push({ token: k, count: cnt[k] });
+    });
+    return out.sort(function (a, b) { return b.count * Math.min(b.token.length, 10) - a.count * Math.min(a.token.length, 10); });
+  }
   function extract(text) {
     var out = { candidates: [], doses: [], freq: [], raw: text };
     if (!text) return out;
+    text = ocrFix(text);
     var m;
     while ((m = UNIT_RE.exec(text)) !== null) out.doses.push(m[1].replace(",", ".") + " " + m[2].toLowerCase());
     while ((m = FREQ_RE.exec(text)) !== null) out.freq.push(m[0]);
@@ -838,7 +866,7 @@ var CSMeds = (function () {
     var toks = text.match(/[A-Za-z][A-Za-z\-]{2,}|[฀-๿]{3,}/g) || [];
     var seen = {};
     toks.forEach(function (tk) {
-      if (STOP.test(tk)) return;
+      if (STOP.test(tk) || PACK.test(tk)) return;
       var r = matchToken(tk);
       if (!r || seen[r.inn]) return;
       seen[r.inn] = 1;
@@ -851,7 +879,24 @@ var CSMeds = (function () {
       var r2 = matchToken(pair);
       if (r2 && r2.conf >= 0.9 && !seen[r2.inn]) { seen[r2.inn] = 1; out.candidates.push({ token: pair, inn: r2.inn, conf: r2.conf, via: r2.via }); }
     }
-    out.candidates.sort(function (a, b) { return b.conf - a.conf; });
+    /* วิตามินบีรวม: ฉลากมักเขียนแยก "Vitamin B1 B6 B12" ซึ่งไม่ตรงกับชื่อใดชื่อหนึ่ง */
+    if (!seen["vitamin b complex"] && /vitamin\s*b\s*[-,&]?\s*\d|\bb\s?1\b[\s\S]{0,20}\bb\s?6\b|\bb\s?12\b|วิตามินบี/i.test(text) && (out.candidates.length === 0 || out.candidates[0].conf < 0.9)) {
+      seen["vitamin b complex"] = 1; out.candidates.push({ token: "Vitamin B", inn: "vitamin b complex", conf: 0.8, via: "phrase" });
+    }
+    var rank = rankTokens(text);
+    /* ชื่อถูกตัดท้าย (ตัวสุดท้ายอยู่ใต้รอยพับ/แสงสะท้อน) เช่น "BESI" — รับเมื่อพิมพ์ซ้ำ ≥2 จุด
+       และเป็นต้นคำของชื่อในฐาน "ชื่อเดียว" เท่านั้น ถ้าตรงหลายชื่อไม่เดา */
+    if (!out.candidates.length) rank.forEach(function (rt) {
+      if (rt.count < 2 || rt.token.length < 4) return;
+      /* ต้นคำต้องไม่ซ้ำกับยาอื่นเลย (ไม่ว่าชื่อยาวเท่าไร) และขาดได้แค่ตัวเดียว — "PARA" ตรงทั้ง paracetamol และ parafon จึงไม่เดา */
+      var hit = {}, via = null; INDEX.forEach(function (e) { if (e.key.indexOf(rt.token) === 0) { hit[e.inn] = 1; if (e.key.length - rt.token.length <= 1) via = e.key; } });
+      var inns = Object.keys(hit); if (inns.length !== 1 || !via || seen[inns[0]]) return;
+      seen[inns[0]] = 1; out.candidates.push({ token: rt.token.toUpperCase(), inn: inns[0], conf: 0.7, via: via });
+    });
+    var freqOf = function (tk) { var k = String(tk).toLowerCase().replace(/[^a-z]/g, ""); for (var i = 0; i < rank.length; i++) if (rank[i].token === k || lev(rank[i].token, k) <= 1) return rank[i].count; return 1; };
+    out.candidates.forEach(function (c) { c.count = freqOf(c.token); });
+    out.candidates.sort(function (a, b) { return b.conf - a.conf || b.count - a.count; });
+    out.tokens = rank;
     return out;
   }
 
@@ -883,7 +928,7 @@ var CSMeds = (function () {
   };
 
   return { FRID: FRID, DRUGS: DRUGS, BY_INN: BY_INN, MSG: MSG, CLS: CLS, INFO: INFO, info: info,
-           norm: norm, matchToken: matchToken, extract: extract,
+           norm: norm, ocrFix: ocrFix, rankTokens: rankTokens, matchToken: matchToken, extract: extract,
            classify: classify, summarize: summarize };
 })();
 if (typeof module !== "undefined") module.exports = CSMeds;

@@ -271,6 +271,7 @@ body{font-size:18px}
 <script src="./cs-teleconsult.js"></script>
 <script src="./cs-camera.js"></script>
 <script src="./cs-install.js"></script>
+<script src="./cs-ocr.js"></script>
 <script>
 /* ============================================================
    CareSignal V3 — ลูกหลานเป็นผู้วัด · จับเวลาเอง หรือให้กล้องช่วยนับ (cs-camera.js ยกมาจาก V2) · ข้อมูลอยู่ในเครื่องนี้
@@ -945,7 +946,8 @@ function balText(a) {
   return a.balance != null ? "ต่อเท้า " + a.balance.toFixed(1) + " วิ" : "–";
 }
 /* ============================================================
-   ยาที่ใช้ประจำ — ถ่ายรูปซองยา แล้วอ่านฉลากในเครื่อง (Tesseract ไทย+อังกฤษ แบบเดียวกับ V2)
+   ยาที่ใช้ประจำ — ถ่ายรูปซองยา แล้วอ่านฉลากในเครื่อง (PaddleOCR สำหรับแผงยา + Tesseract สำหรับฉลากไทย)
+   ลำดับหาชื่อยา: ฐาน 362 ตัวยาในเครื่อง → ทะเบียนตำรับยา อย. (edge function drug-lookup) → คิวเภสัชกร
    ระบบจัดกลุ่มยาเสี่ยงหกล้ม (FRID) เพื่อ "ส่งให้เภสัชกรทบทวน" เท่านั้น ไม่สั่งหยุดหรือปรับยา
    ============================================================ */
 var OCR = { worker: null };
@@ -954,8 +956,52 @@ async function ocrLoad(status) {
   status("กำลังโหลดตัวอ่านฉลาก (ครั้งแรกใช้เวลาสักครู่)…");
   var mod = await import("https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.esm.min.js");
   var T = mod.default || mod;
-  OCR.worker = await T.createWorker(["tha", "eng"], 1, { logger: function (m) { if (m.status === "recognizing text") status("กำลังอ่านฉลาก " + Math.round((m.progress || 0) * 100) + "%"); } });
+  OCR.worker = await T.createWorker(["eng", "tha"], 1, { logger: function (m) { if (m.status === "recognizing text" && OCR.say) OCR.say(Math.round((m.progress || 0) * 100)); } });
   return OCR.worker;
+}
+/* เตรียมภาพให้อ่านง่าย: หมุน · ขาวดำ · ยืดความต่างแสง (ฟอยล์แผงยาเงาวาว ตัวหนังสือจาง) */
+function ocrCanvas(img, deg) {
+  var r = deg * Math.PI / 180, W = img.naturalWidth || img.width, H = img.naturalHeight || img.height, sc = Math.min(1, 1600 / Math.max(W, H));
+  W = Math.round(W * sc); H = Math.round(H * sc);
+  var cw = Math.round(Math.abs(W * Math.cos(r)) + Math.abs(H * Math.sin(r))), ch = Math.round(Math.abs(W * Math.sin(r)) + Math.abs(H * Math.cos(r)));
+  var c = document.createElement("canvas"); c.width = cw; c.height = ch; var x = c.getContext("2d");
+  x.fillStyle = "#fff"; x.fillRect(0, 0, cw, ch); x.translate(cw / 2, ch / 2); x.rotate(r); x.drawImage(img, -W / 2, -H / 2, W, H);
+  var d = x.getImageData(0, 0, cw, ch), a = d.data, hist = new Array(256).fill(0), n = cw * ch, i;
+  for (i = 0; i < a.length; i += 4) { var y = Math.round(0.299 * a[i] + 0.587 * a[i + 1] + 0.114 * a[i + 2]); a[i] = y; hist[y]++; }
+  var lo = 0, hi = 255, acc = 0; for (i = 0; i < 256; i++) { acc += hist[i]; if (acc > n * 0.02) { lo = i; break; } }
+  acc = 0; for (i = 255; i >= 0; i--) { acc += hist[i]; if (acc > n * 0.02) { hi = i; break; } }
+  var k = 255 / Math.max(30, hi - lo);
+  for (i = 0; i < a.length; i += 4) { var v = Math.max(0, Math.min(255, (a[i] - lo) * k)); a[i] = a[i + 1] = a[i + 2] = v; }
+  x.setTransform(1, 0, 0, 1, 0, 0); x.putImageData(d, 0, 0); return c;
+}
+function loadImg(src) { return new Promise(function (res, rej) { var i = new Image(); i.onload = function () { res(i); }; i.onerror = rej; i.src = src; }); }
+/* ฉลากในรูปมักเอียงหรือกลับหัว (แผงยาวางแนวไหนก็ได้) — อ่านทีละมุม หยุดเมื่อเจอชื่อยาที่มั่นใจ
+   รวมข้อความทุกมุมไว้ให้เภสัชกรและใช้ค้นทะเบียน อย. */
+var OCR_PASSES = [[0, "3"], [90, "11"], [270, "11"], [180, "11"]];
+async function ocrRead(src, say) {
+  var img = await loadImg(src), texts = [], best = null;
+  /* ชั้นแรก: PaddleOCR (cs-ocr.js) — หากล่องตัวหนังสือในภาพถ่ายเอง ทนภาพเอียง ฟอยล์สะท้อนแสง
+     อ่านได้ดีกับชื่อยาอักษรอังกฤษ (ทดสอบกับรูปแผงยาจริงของผู้ใช้: Tesseract อ่านไม่ได้ · PaddleOCR อ่าน "BESIX" ได้ 6 จุด) */
+  if (window.CSOcr) {
+    try {
+      var lines = await CSOcr.read(img, say); if (!MEDX || MEDX.src !== src) return "";
+      var tx0 = lines.map(function (l) { return l.text; }).join("\n"); texts.push(tx0);
+      var c0 = CSMeds.extract(tx0).candidates[0]; if (c0) best = c0;
+      if (best && best.conf >= 0.9) return texts.join("\n");
+    } catch (e) { console.warn("paddle ocr", e); }
+  }
+  /* ชั้นสอง: Tesseract อังกฤษ+ไทย หลายมุม — สำหรับฉลากภาษาไทย (ซองยาโรงพยาบาล) */
+  var w = await ocrLoad(function (t) { say(t); });
+  for (var i = 0; i < OCR_PASSES.length; i++) {
+    if (!MEDX || MEDX.src !== src || MEDX.stopRead) break;
+    var ps = OCR_PASSES[i]; OCR.say = function (pc) { say("กำลังอ่านฉลากภาษาไทย มุมที่ " + (i + 1) + "/" + OCR_PASSES.length + " · " + pc + "%"); };
+    await w.setParameters({ tessedit_pageseg_mode: ps[1] });
+    var out = await w.recognize(ocrCanvas(img, ps[0])), tx = (out.data && out.data.text) || "";
+    texts.push(tx); var ex = CSMeds.extract(tx), c = ex.candidates[0];
+    if (c && (!best || c.conf > best.conf)) best = c;
+    if (best && best.conf >= 0.9) break;
+  }
+  OCR.say = null; return texts.join("\n");
 }
 function shrink(file, maxW, q) {
   return new Promise(function (res, rej) {
@@ -992,6 +1038,8 @@ function renderMeds(v, prog) {
   var add = MEDX ? ('<div class="card" style="border:2px solid var(--brand)"><h3>ยารายการใหม่</h3>' +
       (MEDX.thumb ? '<img src="' + MEDX.thumb + '" style="width:100%;max-height:220px;object-fit:contain;border-radius:12px;background:#F2F6FB">' : '') +
       '<p class="sub" id="ocrStatus" style="margin:6px 0">' + esc(MEDX.status || "") + '</p>' +
+      (MEDX.reading ? '<button class="btn ghost" style="margin:0 0 6px" onclick="MEDX.stopRead=true">หยุดอ่าน · พิมพ์ชื่อเอง</button>' : '') +
+      (MEDX.reg ? '<div class="card" style="margin:6px 0;background:var(--c4b)"><b>ทะเบียนยา อย.</b><br><small>' + esc(MEDX.reg.tradeName || "") + (MEDX.reg.inn ? ' · ตัวยา ' + esc(MEDX.reg.inn) : '') + (MEDX.reg.regNo ? ' · เลขทะเบียน ' + esc(MEDX.reg.regNo) : '') + '<br>' + esc(MEDX.reg.frid && MEDX.reg.frid !== "unknown" && CSMeds.FRID[MEDX.reg.frid] ? CSMeds.FRID[MEDX.reg.frid].nm : "รอเภสัชกรจัดกลุ่ม") + '</small></div>' : '') +
       (MEDX.cands && MEDX.cands.length ? '<p class="sub" style="margin:0 0 6px">ระบบอ่านได้ว่าอาจเป็น (แตะเพื่อเลือก)</p><div class="opt">' + MEDX.cands.slice(0, 4).map(function (c, i) { return '<button onclick="medPick(' + i + ')">' + esc(c.inn) + ' <small style="color:var(--ink2)">จากคำว่า ' + esc(c.token) + '</small></button>'; }).join("") + '</div>' : '') +
       '<label class="f">ชื่อยา (พิมพ์เองได้ ถ้าอ่านไม่ออกเว้นว่างไว้ เภสัชกรจะดูจากรูป)</label><input type="text" id="medName" value="' + esc(MEDX.name || "") + '" placeholder="เช่น Amlodipine" oninput="medHint()"><p class="sub" id="medHint" style="margin:4px 0 0"></p>' +
       '<button class="btn" onclick="medSave()">บันทึกยารายการนี้</button><button class="btn ghost" onclick="MEDX=null;render()">ยกเลิก</button></div>') : '';
@@ -1005,7 +1053,8 @@ function renderMeds(v, prog) {
       }).join("") : '<p class="sub" style="margin:0">ยังไม่มีรายการ</p>') +
       (sum.high || sum.mod ? '<div class="flag"><b>' + esc(CSMeds.MSG.flagged) + '</b><span class="src">ที่มา: ' + esc(EVID.meds.src) + '</span></div>' : '') +
     '</div>' +
-    (MEDX ? '' : '<label class="btn" style="text-align:center;cursor:pointer">📷 ถ่ายรูปซองยา<input type="file" accept="image/*" capture="environment" onchange="medPhoto(this)" style="display:none"></label>' +
+    (MEDX ? '' : '<p class="sub" style="font-size:13px;margin:0 0 8px">📸 ถ่ายให้อ่านง่าย: วางแผงยาบนพื้นเรียบ ถ่ายใกล้ ๆ ให้<b>ชื่อยาตัวใหญ่เต็มจอ</b> เลี่ยงแสงสะท้อนบนฟอยล์ · ซองยาโรงพยาบาลให้ถ่ายด้านที่มีชื่อยาพิมพ์</p>' +
+      '<label class="btn" style="text-align:center;cursor:pointer">📷 ถ่ายรูปซองยา<input type="file" accept="image/*" capture="environment" onchange="medPhoto(this)" style="display:none"></label>' +
       '<button class="btn sec" onclick="MEDX={name:\'\'};render()">✏️ พิมพ์ชื่อยาเอง</button>') +
     (inFlow ? '<button class="btn ' + (list.length ? '' : 'sec') + '" onclick="medsNext(' + (list.length ? 'false' : 'true') + ')">' + (list.length ? 'ต่อไป' : 'ไม่ได้ใช้ยาประจำ / ข้ามไปก่อน') + '</button>' : '') +
     '<p class="sub" style="font-size:12.5px;margin-top:10px">รูปถ่ายใช้ให้เภสัชกรตรวจชื่อยาเท่านั้น · ' + esc(CSMeds.MSG.unknown) + '</p>';
@@ -1018,29 +1067,52 @@ async function medPhoto(inp) {
     MEDX.photo = await shrink(f, 1400, 0.8);
     MEDX.thumb = await shrink(f, 240, 0.7);
     render();
-    var st = function (t) { MEDX.status = t; var el = $("ocrStatus"); if (el) el.textContent = t; };
-    var w = await ocrLoad(st);
-    var out = await w.recognize(MEDX.photo);
-    MEDX.ocr = (out.data && out.data.text) || "";
-    var ex = CSMeds.extract(MEDX.ocr);
-    MEDX.cands = ex.candidates; MEDX.dose = ex.doses[0] || null; MEDX.freq = ex.freq[0] || null;
-    if (ex.candidates.length) { MEDX.name = ex.candidates[0].inn; MEDX.conf = ex.candidates[0].conf; MEDX.status = "อ่านฉลากได้ ตรวจชื่อยาให้ถูกก่อนบันทึก"; }
-    else MEDX.status = "อ่านชื่อยาจากรูปไม่ได้ — พิมพ์ชื่อเอง หรือบันทึกไว้ให้เภสัชกรดูจากรูป";
-  } catch (e) { console.warn(e); MEDX.status = "อ่านฉลากไม่ได้ในเครื่องนี้ — พิมพ์ชื่อเอง หรือบันทึกไว้ให้เภสัชกรดูจากรูป"; }
+    var st = function (t) { if (!MEDX) return; MEDX.status = t; var el = $("ocrStatus"); if (el) el.textContent = t; };
+    var me = MEDX; me.src = me.photo; me.reading = true; render();
+    me.ocr = await ocrRead(me.photo, st); me.reading = false;
+    if (MEDX !== me) return;
+    var ex = CSMeds.extract(me.ocr);
+    me.cands = ex.candidates; me.dose = ex.doses[0] || null; me.freq = ex.freq[0] || null;
+    if (ex.candidates.length && ex.candidates[0].conf >= 0.75) { me.name = ex.candidates[0].inn; me.conf = ex.candidates[0].conf; me.status = "อ่านฉลากได้ ตรวจชื่อยาให้ถูกก่อนบันทึก"; }
+    else {
+      /* ฐานในเครื่องไม่รู้จัก → ค้นทะเบียนตำรับยา อย. ด้วยคำที่พิมพ์ซ้ำบนแผงมากที่สุด (ส่งเฉพาะคำ ไม่ส่งรูป) */
+      var toks = (ex.tokens || []).slice(0, 4), reg = null;
+      if (toks.length && CSCloud.connected()) {
+        for (var i = 0; i < toks.length && !reg; i++) { st("กำลังค้นทะเบียนยา อย. คำว่า “" + toks[i].token.toUpperCase() + "”…"); reg = await CSBackend.lookupDrug(toks[i].token); if (reg) reg.token = toks[i].token; }
+      }
+      if (MEDX !== me) return;
+      if (reg) { me.reg = reg; me.name = reg.tradeName || reg.token.toUpperCase(); me.status = "พบในทะเบียนยา อย.: " + (reg.tradeName || reg.token.toUpperCase()) + (reg.inn ? " (" + reg.inn + ")" : "") + " — ตรวจแล้วกดบันทึก"; }
+      else if (ex.candidates.length) { me.name = ex.candidates[0].inn; me.conf = ex.candidates[0].conf; me.status = "อ่านได้ไม่ชัด ระบบเดาว่าอาจเป็นยาด้านล่าง — ตรวจให้ถูกก่อนบันทึก"; }
+      else { me.guess = toks[0] ? toks[0].token.toUpperCase() : ""; if (me.guess) me.name = me.guess;
+        me.status = me.guess ? "อ่านได้คำว่า “" + me.guess + "” แต่ไม่พบในฐานยา" + (CSCloud.connected() ? "และทะเบียน อย." : " (ยังไม่ได้เชื่อมระบบกลาง จึงค้นทะเบียน อย. ไม่ได้)") + " — ตรวจชื่อแล้วบันทึก เภสัชกรจะจัดกลุ่มให้จากรูป"
+                             : "อ่านชื่อยาจากรูปไม่ได้ — ถ่ายใหม่ให้ชื่อยาตัวใหญ่และตั้งตรง หรือพิมพ์ชื่อเอง หรือบันทึกไว้ให้เภสัชกรดูจากรูป"; }
+    }
+  } catch (e) { console.warn(e); if (MEDX) { MEDX.reading = false; MEDX.status = "อ่านฉลากไม่ได้ในเครื่องนี้ — พิมพ์ชื่อเอง หรือบันทึกไว้ให้เภสัชกรดูจากรูป"; } }
   render();
 }
 function medPick(i) { var c = MEDX.cands[i]; MEDX.name = c.inn; MEDX.conf = c.conf; render(); }
 function medHint() {
   var el = $("medHint"), nm = $("medName").value.trim(); if (!el) return;
   var m = nm ? CSMeds.matchToken(nm) : null;
-  el.innerHTML = !nm ? "" : m ? '<span style="color:var(--c4)">รู้จักยา <b>' + esc(m.inn) + '</b> · ' + esc(CSMeds.classify(m.inn).fridNm) + '</span>' : '<span style="color:var(--ink3)">ไม่พบในฐานข้อมูล — บันทึกตามที่พิมพ์ แล้วให้เภสัชกรจัดกลุ่ม</span>';
+  el.innerHTML = !nm ? "" : m ? '<span style="color:var(--c4)">รู้จักยา <b>' + esc(m.inn) + '</b> · ' + esc(CSMeds.classify(m.inn).fridNm) + '</span>' : '<span style="color:var(--ink3)">ไม่พบในฐานข้อมูลในเครื่อง' + (CSCloud.connected() && nm.length >= 4 ? ' — กำลังค้นทะเบียนยา อย.…' : ' — บันทึกตามที่พิมพ์ แล้วให้เภสัชกรจัดกลุ่ม') + '</span>';
+  clearTimeout(medHint.t);
+  if (!m && nm.length >= 4 && CSCloud.connected() && !(MEDX.reg && MEDX.reg.q === nm.toLowerCase())) medHint.t = setTimeout(async function () {
+    var q = nm.toLowerCase(), reg = await CSBackend.lookupDrug(q), el2 = $("medHint"), cur = $("medName");
+    if (!MEDX || !cur || cur.value.trim().toLowerCase() !== q) return;
+    if (reg) { reg.q = q; MEDX.reg = reg; }
+    if (el2) el2.innerHTML = reg ? '<span style="color:var(--c4)">พบในทะเบียนยา อย.: <b>' + esc(reg.tradeName || nm) + '</b>' + (reg.inn ? ' · ตัวยา ' + esc(reg.inn) : '') + '</span>'
+                                 : '<span style="color:var(--ink3)">ไม่พบทั้งในฐานยาและทะเบียน อย. — บันทึกตามที่พิมพ์ เภสัชกรจะจัดกลุ่มให้</span>';
+  }, 700);
 }
 function medSave() {
   var nm = $("medName").value.trim(), m = nm ? CSMeds.matchToken(nm) : null, cl = m ? CSMeds.classify(m.inn) : { frid: "unknown", lv: null };
+  var reg = !m && MEDX.reg ? MEDX.reg : null;   /* ฐานในเครื่องไม่รู้จัก แต่ทะเบียน อย. รู้จัก */
+  if (reg) { var li = reg.inn ? CSMeds.matchToken(reg.inn) : null; cl = li ? CSMeds.classify(li.inn) : { frid: reg.frid || "unknown", lv: reg.lv }; m = li || (reg.inn ? { inn: reg.inn.toLowerCase(), conf: null } : null); }
   if (!nm && !MEDX.photo) return toast("ถ่ายรูปหรือพิมพ์ชื่อยาอย่างใดอย่างหนึ่ง");
   var item = { id: uid(), elderId: elder().id, date: new Date().toISOString(), name: nm || null, inn: m ? m.inn : null,
                frid: cl.frid, lv: cl.lv, dose: MEDX.dose || null, freq: MEDX.freq || null,
-               source: MEDX.photo ? "photo_ocr" : "manual", conf: m ? m.conf : null, ocr: MEDX.ocr ? MEDX.ocr.slice(0, 1000) : null,
+               source: reg ? "fda_registry" : MEDX.photo ? "photo_ocr" : "manual", conf: m ? m.conf : null, ocr: MEDX.ocr ? MEDX.ocr.slice(0, 1000) : null,
+               regNo: reg ? reg.regNo || null : null,
                photo: MEDX.photo || null, thumb: MEDX.thumb || null };
   D.meds = D.meds || []; D.meds.push(item); MEDX = null; save(); toast("บันทึกยาแล้ว"); render();
   medSync(item);
@@ -1066,6 +1138,8 @@ async function medSync(m) {
     var row = await CSBackend.saveMed({ inn: m.inn, brand: m.name, dose: m.dose, freq: m.freq, frid: m.frid, lv: m.lv,
                                         source: m.source, ocr: m.ocr, conf: m.conf, photo: path, by: "carer" });
     m.cloudId = row.id; m.photo = null;   /* ส่งรูปเต็มแล้ว เก็บแค่รูปย่อในเครื่อง */
+    /* ทั้งฐานในเครื่องและทะเบียน อย. จัดกลุ่มไม่ได้ → คิวเภสัชกร พร้อมรูปฉลาก */
+    if (!m.frid || m.frid === "unknown") { try { await CSBackend.queueUnknownDrug({ medId: row.id, ocr: m.ocr, name: m.name, photo: path }); } catch (e2) { console.warn("queue", e2); } }
     save(); if (S.screen === "meds" || FLOW[S.step] === "meds") render();
   } catch (e) { console.warn("med sync", e); }
 }

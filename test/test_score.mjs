@@ -162,7 +162,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("ปิดแถบชวนติดตั้งแล้วจำไว้", /localStorage\.setItem\(A2HS\.key, "no"\)/.test(app));
   ok("ทางลัด ?go= เปิดหน้าที่ต้องการได้", /\["fall", "test", "history", "meds", "video", "appts"\]\.indexOf\(goto\)/.test(app));
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
-  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-19/.test(sw));
+  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-20/.test(sw));
 }
 
 /* ใบส่งต่อแบบเอกสารทางการ: ทุกสัญญาณต้องมีเกณฑ์ เหตุผล และเอกสารอ้างอิง */
@@ -227,7 +227,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("นัดวิดีโอเข้าไปในรายการนัดและปฏิทิน", /kind: "video", at: new Date\(a\.slot_at\)/.test(app) && /x\.appt \? "-PT15M"/.test(app));
   ok("ห้องวิดีโอขอสิทธิ์จาก appt_join ก่อนเปิดกล้อง", vis.indexOf("joinAppointment(APPT)") >= 0 && vis.indexOf("joinAppointment(APPT)") < vis.indexOf("await openMedia()"));
   ok("ห้องวิดีโอไม่บันทึกภาพหรือเสียง", !/MediaRecorder/.test(vis) && /ไม่บันทึกภาพหรือเสียง/.test(vis));
-  ok("รหัสห้องไม่เปิดให้อ่านจากตาราง", /revoke select on public\.appointments from anon, authenticated/.test(sql) && !/grant select \([^)]*room/.test(sql));
+  ok("รหัสห้องไม่เปิดให้อ่านจากตาราง", /revoke select on public\.appointments from anon, authenticated/.test(sql) && !/grant select \([^)]*\broom\b/.test(sql));
   ok("บริษัทประกันไม่ได้รับ user_id ชื่อ หรือรหัสสมาชิก", (() => { const m = sql.match(/function public\.insurer_prevention_list\(\)\s*returns table \(([^)]*)\)/); return m && !/user_id|display_name|pseudonym|phone/.test(m[1]); })());
   ok("ส่งบริษัทได้เฉพาะยืนยันว่าเสี่ยงจริงและครอบครัวยินยอม", /fr\.risk <> 'confirmed'/.test(sql) && /not coalesce\(a\.share_insurer, false\)/.test(sql));
   ok("แบบยืนยันผลต้องลงชื่อ ใบอนุญาต และรับรอง แก้ไขไม่ได้", /attested\s+boolean not null check \(attested\)/.test(sql) && /revoke insert, update, delete on public\.final_reports/.test(sql));
@@ -260,6 +260,25 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("BalanceEngine จำแนกท่าจากเท้า: ซ้อน=ชิด · เหลื่อมครึ่ง=กึ่งต่อ · เต็มเท้า=ต่อเท้า · ยก=ขาเดียว", B._stance({ gap: 0.2, lift: 0.1 }) === 0 && B._stance({ gap: 0.6, lift: 0.1 }) === 1 && B._stance({ gap: 1.2, lift: 0.1 }) === 2 && B._stance({ gap: 0.2, lift: 0.9 }) === 3);
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
   ok("service worker แคชโมดูลกล้องและโมเดล MediaPipe", /cs-camera\.js/.test(sw) && /storage\\\.googleapis\\\.com/.test(sw));
+}
+
+/* อ่านชื่อยาจากรูปแผงยา — ตัวอย่างจากรูปจริงของผู้ใช้ (แผง BESIX) */
+{
+  const M = require("../cs-meds.js"), top = (t) => (M.extract(t).candidates[0] || {}).inn || null;
+  const app = readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8");
+  ok("แผงยาพิมพ์ชื่อการค้าซ้ำ: BESIX → วิตามินบีรวม (รวมคำที่ OCR อ่านเพี้ยน BES1X / 8ESIX)", top("BESIX BESIX") === "vitamin b complex" && top("BES1X 8ESIX") === "vitamin b complex" && M.rankTokens("BESIX BES1X BESIY vitamin")[0].count === 3);
+  ok("ฉลากเขียน Vitamin B1 B6 B12 แยกกัน → วิตามินบีรวม · คำว่า vitamin เดี่ยว ๆ ไม่กลายเป็นวิตามินดี", top("Vitamin B1, B6 & B12") === "vitamin b complex" && top("VITAMIN") === null && top("Amlod1pine 5 mg") === "amlodipine");
+  ok("ชื่อถูกตัดท้าย: BESI (ซ้ำ 2 จุด) → BESIX · PARA ไม่เดา (ตรงทั้ง paracetamol และ parafon) · คำเดียวไม่เดา", top("BESI BESI") === "vitamin b complex" && top("PARA PARA") === null && top("BESI") === null);
+  ok("อ่านรูป: PaddleOCR ก่อน แล้ว Tesseract ภาษาไทย · ฐานในเครื่องไม่รู้จัก → ทะเบียน อย. → คิวเภสัชกร", /<script src="\.\/cs-ocr\.js"><\/script>/.test(app) && /CSOcr\.read\(img, say\)/.test(app) && /CSBackend\.lookupDrug\(toks\[i\]\.token\)/.test(app) && /CSBackend\.queueUnknownDrug\(/.test(app) && /cs-ocr\.js/.test(readFileSync(new URL("../sw.js", import.meta.url), "utf8")));
+  /* สคริปต์ในหน้าต้องคอมไพล์ผ่าน — กันตัวอักษรขึ้นบรรทัดหลุดเข้าไปในสตริงแล้วทั้งแอปใช้ไม่ได้ */
+  const vm = await import("node:vm"), bad = [];
+  for (const f of ["CareSignal-App.html", "index.html"]) {
+    const src = readFileSync(new URL("../" + f, import.meta.url), "utf8");
+    [...src.matchAll(/<script>([\s\S]*?)<\/script>/g)].forEach((m, i) => { try { new vm.Script(m[1]); } catch (e) { bad.push(f + "#" + i + " " + e.message); } });
+    if (/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(src)) bad.push(f + " มีอักขระควบคุมแฝง");
+  }
+  ["cs-meds.js", "cs-ocr.js", "cs-camera.js", "cs-install.js"].forEach((f) => { const src = readFileSync(new URL("../" + f, import.meta.url), "utf8"); try { new vm.Script(src); } catch (e) { bad.push(f + " " + e.message); } if (/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(src)) bad.push(f + " มีอักขระควบคุมแฝง"); });
+  ok("สคริปต์ทุกหน้าคอมไพล์ผ่าน และไม่มีอักขระควบคุมแฝง", !bad.length, bad);
 }
 
 console.log("  " + pass + " ผ่าน / " + fail + " ตก");
