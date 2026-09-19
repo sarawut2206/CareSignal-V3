@@ -163,6 +163,11 @@
     if (!connected()) throw new Error("offline");
     return B.reportEvent("fall", { where: f.where, injury: f.injury, getup: f.getup, app: "v3", reported_by: "carer" }, fallSeverity(f));
   }
+  /* แจ้งเหตุ (cs-incident.js) — kind: fall | near_fall | accident | hospital | adl_drop */
+  async function reportIncident(f) {
+    if (!connected()) throw new Error("offline");
+    return B.reportEvent(f.kind || "fall", Object.assign({ app: "v3", reported_by: "carer" }, f.detail || { where: f.where, injury: f.injury, getup: f.getup }), f.severity || fallSeverity(f));
+  }
   async function careStatus() {
     if (!connected()) return { cases: [], referrals: [], followUps: [], appts: [], prev: [] };
     var cases = await B.myCases(5), refs = [], fu = [];
@@ -195,6 +200,6 @@
   }
 
   g.CSCloud = Object.assign({ init: init, state: state, connected: connected, mode: mode, register: register, signIn: signIn,
-                              signOut: signOut, syncAssessment: syncAssessment, reportFall: reportFall, careStatus: careStatus,
+                              signOut: signOut, syncAssessment: syncAssessment, reportFall: reportFall, reportIncident: reportIncident, careStatus: careStatus,
                               pullAssessments: pullAssessments }, pure);
 })(typeof globalThis !== "undefined" ? globalThis : this);

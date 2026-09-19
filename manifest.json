@@ -58,8 +58,8 @@
       ]
     },
     {
-      "name": "บันทึกว่าล้ม",
-      "short_name": "บันทึกว่าล้ม",
+      "name": "แจ้งเหตุ (ล้ม · อุบัติเหตุ)",
+      "short_name": "แจ้งเหตุ",
       "url": "./CareSignal-App.html?go=fall",
       "icons": [
         {

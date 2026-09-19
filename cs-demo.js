@@ -29,7 +29,7 @@
     doctor: "แพทย์", nurse: "พยาบาล", admin: "ผู้ดูแลระบบ", insurer: "บริษัทประกัน" };
   var role = ROLE_ALIAS[String(want).toLowerCase()] || "care_manager";
 
-  var STORE = "cs-demo-state-v5";   /* เปลี่ยนเลขรุ่นทุกครั้งที่รูปแบบข้อมูลเปลี่ยน แท็บที่เปิดค้างจะได้ไม่ใช้ข้อมูลรุ่นเก่า */
+  var STORE = "cs-demo-state-v6";   /* เปลี่ยนเลขรุ่นทุกครั้งที่รูปแบบข้อมูลเปลี่ยน แท็บที่เปิดค้างจะได้ไม่ใช้ข้อมูลรุ่นเก่า */
   var ORG = "โรงพยาบาลสาธิต (ข้อมูลสังเคราะห์)";
   var NOW = Date.now();
   var H = 3600e3, D = 24 * H;
@@ -249,8 +249,19 @@
       [8, "phone", "booked", "นัด 12 ก.ย. 09:00", 120], [10, "phone", "no_answer", "ไม่รับสาย", 90], [10, "phone", "no_answer", "ไม่รับสาย", 66], [10, "line", "no_answer", "ส่งข้อความแล้วไม่ตอบ", 40],
       [11, "phone", "reached", "รับทราบผลจากนักกายภาพ", 150], [9, "visit", "referred_ok", "เยี่ยมบ้านหลังจบโปรแกรม", 190]];
     CON.forEach(function (c, ix) { S.contacts.push({ id: uuid(12, ix + 1), case_id: uuid(4, c[0]), user_id: S.members[c[0] - 1].id, by_staff: staffOf("care_manager").id, channel: c[1], result: c[2], note: c[3], created_at: ago(c[4]) }); });
-    var EV = [[2, "fall", "high", 36], [6, "fall", "high", 24 * 5], [10, "near_fall", "medium", 24 * 3], [4, "near_fall", "low", 24 * 8], [2, "hospital", "high", 30], [6, "med_change", "medium", 24 * 4], [21, "fall", "medium", 24 * 40]];
-    EV.forEach(function (e, ix) { S.events.push({ id: uuid(13, ix + 1), user_id: S.members[e[0] - 1].id, reporter_id: null, kind: e[1], detail: { by: "family", memberId: S.members[e[0] - 1].id }, severity: e[2], created_at: ago(e[3]), handled_at: null }); });
+    /* เหตุที่ครอบครัวแจ้ง (ข้อมูลสาธิต) — รูปแบบ detail ตาม cs-incident.js */
+    var EV = [[2, "fall", "high", 36, { place: "bathroom", activity: "night_toilet", when_part: "night", injury_code: "doctor", head: true, getup_code: "helped", lie: "m5to60", impact: "walk_worse" }],
+      [6, "fall", "high", 24 * 5, { place: "stairs", activity: "stairs", when_part: "evening", injury_code: "fracture", getup_code: "cannot", lie: "gt60", impact: "bedbound", hospital_name: "รพ.สาธิต" }],
+      [10, "near_fall", "medium", 24 * 3, { place: "bathroom", activity: "bathing", when_part: "morning", injury_code: "none" }],
+      [4, "near_fall", "low", 24 * 8, { place: "walkway", activity: "walking", when_part: "day", injury_code: "none" }],
+      [2, "hospital", "high", 30, { injury_code: "admit", hospital_name: "รพ.สาธิต" }], [6, "med_change", "medium", 24 * 4, {}],
+      [21, "fall", "medium", 24 * 40, { place: "bedroom", activity: "getting_up", when_part: "night", injury_code: "minor", getup_code: "self_slow", impact: "same" }],
+      [12, "accident", "medium", 24 * 12, { acc_type: "burn", place: "kitchen", injury_code: "minor", impact: "same" }],
+      [15, "fall", "medium", 24 * 20, { place: "bathroom", activity: "bathing", when_part: "morning", injury_code: "minor", getup_code: "self_now", impact: "same" }],
+      [18, "adl_drop", "high", 24 * 9, { impact: "need_help" }]];
+    EV.forEach(function (e, ix) { var m = S.members[e[0] - 1]; if (!m) return; var dt = Object.assign({ by: "family", memberId: m.id, v: 2 }, e[4] || {});
+      if (window.CSIncident) { if (dt.place) dt.where = CSIncident.PLACE[dt.place]; if (dt.injury_code) dt.injury = CSIncident.INJURY[dt.injury_code]; if (dt.getup_code) dt.getup = CSIncident.GETUP[dt.getup_code]; }
+      S.events.push({ id: uuid(13, ix + 1), user_id: m.id, reporter_id: null, kind: e[1], detail: dt, severity: e[2], created_at: ago(e[3]), handled_at: null }); });
     /* รหัสเชิญและบันทึกตรวจสอบตั้งต้น */
     S.invites.push({ id: uuid(14, 1), username: "demo.nurse2", role: "nurse", display_name: "สาธิต พยาบาล 2", note: "หอผู้ป่วยอายุรกรรม", code_hint: "DEMO", created_at: ago(24 * 2), expires_at: ahead(24 * 28), used_at: null, revoked_at: null, status: "open" });
     S.invites.push({ id: uuid(14, 2), username: "demo.physio", role: "physio", display_name: "สาธิต นักกายภาพบำบัด", note: null, code_hint: "DEMO", created_at: ago(24 * 40), expires_at: ago(24 * 10), used_at: ago(24 * 39), revoked_at: null, status: "used" });
@@ -275,7 +286,7 @@
         must_set_password: false, created_at: ago(24 * 60), level: "watch", flagship: true };
       S.members.push(m);
       /* วันที่ 0 · ลูกสาวแจ้งเหตุล้มในห้องน้ำ */
-      S.events.push({ id: uuid(13, 20), user_id: m.id, reporter_id: null, kind: "fall", detail: { by: "family", memberId: m.id, place: "ห้องน้ำ", time: "กลางคืน" }, severity: "medium", created_at: ago(24 * 44), handled_at: ago(24 * 42) });
+      S.events.push({ id: uuid(13, 20), user_id: m.id, reporter_id: null, kind: "fall", detail: { by: "family", memberId: m.id, place: "bathroom", where: "ห้องน้ำ", when_part: "night", time: "กลางคืน" }, severity: "medium", created_at: ago(24 * 44), handled_at: ago(24 * 42) });
       /* วันที่ 2 · ประเมินครั้งที่ 1 — คะแนน 5/12 ระดับถดถอย */
       S.assess.push({ id: uuid(2, 410), user_id: m.id, assessed_at: ago(24 * 42), method: "camera_aruco", ftsst_seconds: 14.1, tug_seconds: 15.2, reps: 5, cadence_cv: 0.183,
         score: 5, score_max: 12, tier: 3, parts: { ftsst: 1, balance: 1, falls: 2, meds: 0, adl: 1 },
@@ -776,7 +787,7 @@
       S.assess.filter(function (a) { return a.user_id === c.user_id; }).forEach(function (a) { t.push({ at: a.assessed_at, kind: "assessment", title: "ผลประเมิน " + a.score + "/12", detail: "ลุกนั่ง " + a.ftsst_seconds + " วิ · TUG " + a.tug_seconds + " วิ" }); });
       S.contacts.filter(function (x) { return x.user_id === c.user_id; }).forEach(function (x) { t.push({ at: x.created_at, kind: "contact", title: "ติดต่อ: " + x.result, detail: x.note }); });
       S.refs.filter(function (r) { return r.user_id === c.user_id; }).forEach(function (r) { t.push({ at: r.created_at, kind: "referral", title: "ส่งต่อ " + (ROLE_NM[r.destination] || r.destination), detail: r.action }); if (r.review) t.push({ at: r.reviewed_at, kind: "review", title: "ผลทบทวนกลับ", detail: r.review.finding }); });
-      S.events.filter(function (e) { return e.user_id === c.user_id; }).forEach(function (e) { t.push({ at: e.created_at, kind: "event", title: "เหตุการณ์: " + e.kind, detail: "รายงานโดยครอบครัว" }); });
+      S.events.filter(function (e) { return e.user_id === c.user_id; }).forEach(function (e) { t.push({ at: e.created_at, kind: "event", title: "แจ้งเหตุ: " + (window.CSIncident && CSIncident.KINDS[e.kind] ? CSIncident.KINDS[e.kind].nm : e.kind), detail: "รายงานโดยครอบครัว" }); });
       S.medrev.filter(function (r) { return r.user_id === c.user_id; }).forEach(function (r) { t.push({ at: r.requested_at, kind: "med_review", title: "ขอทบทวนยา", detail: r.reason }); if (r.reviewed_at) t.push({ at: r.reviewed_at, kind: "med_review", title: "เภสัชกรปิดการทบทวน", detail: r.recommend }); });
       return Promise.resolve(t.sort(byTime("at")));
     },
@@ -979,6 +990,12 @@
         }
       });
       return Promise.resolve(order.map(function (k) { var r = rows[k]; delete r._seen; return r; }));
+    },
+    insurerIncidents: function (days) {
+      var pool = {}; S.members.forEach(function (m) { if (m.share_pool) pool[m.id] = 1; });
+      if (!window.CSIncident) return Promise.resolve(null);
+      var r = CSIncident.summarize(S.events.filter(function (e) { return pool[e.user_id] && ["fall", "near_fall", "accident", "hospital", "adl_drop"].indexOf(e.kind) >= 0; }), days || 365);
+      delete r.by_activity.undefined; return Promise.resolve(r);
     },
     insurerOutcomes: function () {
       var pool = {}, n = 0; S.members.forEach(function (m) { if (m.share_pool) { pool[m.id] = 1; n++; } });

@@ -1006,6 +1006,15 @@ var CSBackend = (function () {
     return row;
   }
 
+  /* ภาพรวมการแจ้งเหตุ (ไม่ระบุตัวตน) — SQL 28 · ยังไม่รัน migration = คืน null ให้หน้าจอใช้ตัวเลขเดิม */
+  async function insurerIncidents(days) {
+    if (!isCloud()) return null;
+    var r = await sb.rpc("insurer_incident_summary", { p_days: days || 365 });
+    if (r.error) { console.warn(r.error); return null; }
+    if (r.data) await audit("incidents.view", null, "เปิดดูภาพรวมการแจ้งเหตุเชิงกลุ่ม");
+    return r.data || null;
+  }
+
   /* ============================================================
      Audit log — เขียนได้อย่างเดียว แก้/ลบไม่ได้แม้แต่ admin
      ============================================================ */
@@ -1469,7 +1478,7 @@ var CSBackend = (function () {
     saveAssessment: saveAssessment, listAssessments: listAssessments,
     saveRiskSignal: saveRiskSignal, createReferral: createReferral,
     listReferralQueue: listReferralQueue, decideReferral: decideReferral,
-    insurerPortfolio: insurerPortfolio, insurerOutcomes: insurerOutcomes,
+    insurerPortfolio: insurerPortfolio, insurerOutcomes: insurerOutcomes, insurerIncidents: insurerIncidents,
     myCases: myCases, caseQueue: caseQueue, updateCase: updateCase,
     updateReferral: updateReferral,
     cmWorklist: cmWorklist, logContact: logContact, caseDetail: caseDetail,

@@ -68,6 +68,12 @@ textarea{min-height:70px}
 .adlsum.ok{border:2px solid var(--c4)}.adlsum.watch{border:2px solid var(--c3)}.adlsum.dep{border:2px solid var(--c1)}
 .noteb{background:var(--surf2);border-radius:14px;padding:10px 14px;font-size:14px;color:var(--ink2);margin-bottom:10px}
 .opt button small{color:var(--ink3);font-weight:400}
+.chips2{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}.chips2 button{border:1.5px solid var(--line);background:#fff;border-radius:99px;padding:9px 14px;font:inherit;font-size:15px;cursor:pointer}
+.chips2 button.on{border-color:var(--brand);background:var(--surf2);font-weight:700}.chips2 button.red.on{border-color:var(--c1);background:var(--c1b);color:var(--c1)}
+.kindb{display:flex;gap:12px;align-items:center;text-align:left;width:100%;border:1.5px solid var(--line);background:#fff;border-radius:16px;padding:12px 14px;margin:0 0 8px;font:inherit;cursor:pointer}
+.kindb.on{border-color:var(--brand);background:var(--surf2)}.kindb .e{font-size:26px}.kindb b{display:block;font-size:16px}.kindb small{color:var(--ink2);font-size:13.5px}
+.sevc{display:inline-block;border-radius:99px;padding:2px 10px;font-size:13px;font-weight:700}.sevc.high{background:var(--c1b);color:var(--c1)}.sevc.medium{background:var(--c3b);color:var(--c3)}.sevc.low{background:#EEF1F4;color:var(--ink2)}
+.redcard{background:var(--c1b);border:2px solid var(--c1);border-radius:16px;padding:12px 14px;margin-bottom:12px}.redcard b{color:var(--c1)}
 .big{font-size:64px;font-weight:700;text-align:center;letter-spacing:-.02em;line-height:1;margin:14px 0 6px;font-variant-numeric:tabular-nums}
 .big small{font-size:22px;color:var(--ink2);font-weight:500}
 .sw{border:0;border-radius:26px;width:100%;padding:28px;font:inherit;font-size:26px;font-weight:700;color:#fff;background:var(--c4);cursor:pointer;box-shadow:var(--sh)}
@@ -282,6 +288,7 @@ body{font-size:18px}
 <script src="./cs-camera.js"></script>
 <script src="./cs-install.js"></script>
 <script src="./cs-assess.js"></script>
+<script src="./cs-incident.js"></script>
 <script src="./cs-ocr.js"></script>
 <script>
 /* ============================================================
@@ -451,6 +458,7 @@ function render() {
   if (sc === "result") return renderResult(v);
   if (sc === "history") return renderHistory(v);
   if (sc === "fall") return renderFall(v);
+  if (sc === "incdone") return renderIncDone(v);
   if (sc === "contacts") return renderContacts(v);
   if (sc === "appts") return renderAppts(v);
   if (sc === "cloud") return renderCloud(v);
@@ -597,7 +605,7 @@ function renderHome(v) {
   if (!installedApp() && !embedded()) bn.push(["📲", "ติดตั้งลงหน้าจอมือถือ", "เปิดง่ายเหมือนแอป ใช้วัดได้แม้ไม่มีเน็ต", "ติดตั้ง", "installApp()"]);
   var T = [
     ["watch", "วัดวันนี้", "startTest()", "", 1], ["cal", "นัดหมาย", "go('appts')", apptList().length ? String(apptList().length) : "", 0],
-    ["pill", "ยาที่ใช้", "go('meds')", meds ? String(meds) : "", 0], ["fall", "บันทึกว่าล้ม", "go('fall')", "", 0],
+    ["pill", "ยาที่ใช้", "go('meds')", meds ? String(meds) : "", 0], ["fall", "แจ้งเหตุ", "S.inc=null;go('fall')", "", 1],
     ["safe", "บ้านปลอดภัย", "S.homeRedo=false;S.homeAns=null;go('homechk')", hcr && hcr.open.length ? String(hcr.open.length) : "", 0], ["chart", "แนวโน้ม", "go('history')", list.length ? String(list.length) : "", 0], ["doc", "ใบสรุปแพทย์", list.length ? "S.last=null;go('doc')" : "toast('ยังไม่มีผลวัด')", "", 0],
     ["team", "ทีมดูแล", "go('cloud')", "", 0], ["phone", "เบอร์ฉุกเฉิน", "go('contacts')", "", 0]
   ];
@@ -1187,7 +1195,8 @@ function renderQ(v, prog) {
   v.innerHTML = QS.map(function (q) {
     if (q.dep && !(d[q.dep] >= 1 && d[q.dep] !== 9)) return "";
     return '<div class="card"><p style="margin:0 0 10px;font-size:16.5px">' + esc(q.q) + '</p><div class="opt">' +
-      q.o.map(function (o) { return '<button class="' + (d[q.k] === o[1] ? "on" : "") + '" onclick="setQ(\'' + q.k + '\',' + JSON.stringify(o[1]) + ')">' + esc(o[0]) + '</button>'; }).join("") + '</div></div>';
+      q.o.map(function (o) { return '<button class="' + (d[q.k] === o[1] ? "on" : "") + '" onclick="setQ(\'' + q.k + '\',' + JSON.stringify(o[1]) + ')">' + esc(o[0]) + '</button>'; }).join("") + '</div>' +
+      (q.k === "fallsCount" && fallsInYear(elder().id) ? '<p class="sub" style="margin:8px 0 0">📌 ในแอปมีการแจ้งว่าล้ม ' + fallsInYear(elder().id) + ' ครั้งใน 12 เดือน</p>' : '') + '</div>';
   }).join("") +
     '<div class="card"><label class="f">สิ่งที่สังเกตวันนี้ (ไม่บังคับ)</label><textarea id="note" placeholder="เช่น บ่นปวดเข่า เพิ่งเปลี่ยนยา นอนไม่พอ">' + esc(d.note) + '</textarea></div>' +
     '<button class="btn" onclick="qNext()">ดูผล</button>';
@@ -1353,6 +1362,7 @@ async function cloudSync(rec) {
 async function cloudRetry() {
   if (!CSCloud.connected()) return;
   (D.meds || []).filter(function (m) { return !m.cloudId && !m.retired; }).forEach(medSync);
+  (D.falls || []).filter(function (f) { return f.detail && !f.cloud && Date.now() - new Date(f.date).getTime() < 14 * 864e5; }).forEach(function (f) { CSCloud.reportIncident(f).then(function () { f.cloud = true; delete f.cloudError; save(); }).catch(function () {}); });
   var pend = D.assessments.filter(function (a) { return !a.cloud && !a.fromCloud; });
   for (var i = 0; i < pend.length; i++) await cloudSync(pend[i]);
 }
@@ -1510,6 +1520,8 @@ function docHTML(r) {
        (r.barthel.change && r.barthel.change.delta ? ' · ' + (r.barthel.change.delta > 0 ? 'เพิ่มขึ้น ' : 'ลดลง ') + Math.abs(r.barthel.change.delta) + ' คะแนนจากครั้งก่อน' : '') + '</p>';
   if (r.home) h += '<p><b>สำรวจความปลอดภัยในบ้าน</b> (ครอบครัวสำรวจ ' + (r.home.checked_at ? thDate(r.home.checked_at) : '') + ') ' + (r.home.none ? 'ไม่พบจุดเสี่ยงที่ยังไม่ได้แก้' : 'พบ ' + r.home.count + ' จุด: ' + (r.home.items || []).map(function (x) { return esc(x.t); }).join(" · ")) +
        (r.home.helper === "alone" ? ' · <b>อยู่คนเดียว</b>' : '') + cite(["cdcHome"]) + '</p>';
+  var incs = (D.falls || []).filter(function (f) { return f.elderId === e.id && new Date(f.date).getTime() > Date.now() - 365 * 864e5; });
+  if (incs.length) h += '<p><b>เหตุที่ครอบครัวแจ้งใน 12 เดือน</b> ' + incs.length + ' ครั้ง: ' + incs.slice(-5).map(function (f) { return thDate(f.date) + ' ' + esc(incKindNm(f)) + (f.detail ? ' (' + esc(CSIncident.describe(f.kind, f.detail)) + ')' : ' (' + esc(f.where) + ')'); }).join(" · ") + '</p>';
   /* ---------- ๓ แนวโน้ม ---------- */
   h += '<h2>๓. ผลทุกครั้งที่วัด (ล่าสุด ' + th(Math.min(6, list.length)) + ' ครั้ง)</h2><table><tr><th>วันที่</th><th>ลุก–นั่ง 5 ครั้ง (วินาที)</th><th>ลุกเดิน 3 ม. (วินาที)</th><th>ทรงตัว</th><th>ระดับ</th></tr>' +
        list.slice(-6).map(function (a) { return '<tr><td>' + thDate(a.date) + '</td><td>' + (a.ftsst != null ? a.ftsst.toFixed(1) : "–") + '</td><td>' + (a.tug != null ? a.tug.toFixed(1) : "–") + '</td><td>' + balText(a) + '</td><td>' + lvl(a) + '</td></tr>'; }).join("") + '</table>' +
@@ -1607,27 +1619,113 @@ function renderHistory(v) {
     (list.length ? '<div class="card"><h3>ทุกครั้งที่วัด</h3>' + list.slice().reverse().map(function (a) { return '<div class="hist" style="cursor:pointer" onclick="S.last=D.assessments.filter(function(x){return x.id===\'' + a.id + '\'})[0];go(\'result\')"><span>' + thDate(a.date) + '<br><small style="color:var(--ink2)">ลุกนั่ง ' + (a.ftsst != null ? a.ftsst.toFixed(1) : "–") + ' · ลุกเดิน ' + (a.tug != null ? a.tug.toFixed(1) : "–") + ' · ทรงตัว ' + balText(a) + '</small></span>' + (pending(a) ? '<span class="pill" style="background:#EAF0FE;color:var(--brand2)">⏳ รอยืนยัน</span>' : '<span class="pill ' + CSScore.TIER[a.tier].cls + '">' + CSScore.TIER[a.tier].nm.split(" ·")[0] + (a.confirmed ? ' ✅' : '') + '</span>') + '</div>'; }).join("") + '</div>' : "") +
     (list.filter(function (a) { return a.barthel; }).length ? '<div class="card"><h3>กิจวัตรประจำวัน (บาร์เธล 0–20)</h3>' + list.filter(function (a) { return a.barthel; }).slice(-6).reverse().map(function (a) {
       var bd = CSAssess.band(a.barthel.total); return '<div class="hist"><span>' + thDate(a.date) + '</span><b>' + a.barthel.total + '/20 · ' + esc(bd.short) + '</b></div>'; }).join("") + '</div>' : '') +
-    (falls.length ? '<div class="card"><h3>บันทึกการล้ม</h3>' + falls.slice().reverse().map(function (f) { return '<div class="hist"><span>' + thDate(f.date) + ' · ' + esc(f.where) + '</span><span>' + esc(f.injury) + '</span></div>'; }).join("") + '</div>' : "") +
+    (falls.length ? '<div class="card"><h3>เหตุที่แจ้ง</h3>' + falls.slice().reverse().map(function (f) { return '<div class="hist" style="cursor:pointer" onclick="S.lastInc=\'' + f.id + '\';go(\'incdone\')"><span>' + thDate(f.date) + ' · <b>' + esc(incKindNm(f)) + '</b>' + (f.severity ? ' <span class="sevc ' + f.severity + '">' + CSIncident.SEV[f.severity].nm + '</span>' : '') + '<br><small style="color:var(--ink2)">' + esc(f.detail ? CSIncident.describe(f.kind, f.detail) : f.where) + '</small></span><span>' + esc(f.detail ? '' : f.injury) + '</span></div>'; }).join("") + '</div>' : "") +
     (list.length ? '<button class="btn sec" onclick="S.last=null;go(\'doc\')">🩺 ใบสรุปทุกครั้ง สำหรับแพทย์</button>' : "") +
     '<button class="btn ghost" onclick="go(\'contacts\')">📞 เบอร์ที่ควรมี และโรงพยาบาลใกล้บ้าน</button>';
 }
 
-/* ---------- บันทึกว่าล้ม ---------- */
+/* ---------- แจ้งเหตุ (ล้ม · เกือบล้ม · อุบัติเหตุ · เข้าโรงพยาบาล · ช่วยเหลือตัวเองแย่ลง) ----------
+   นิยามและการจัดความรุนแรงอยู่ใน cs-incident.js (ใช้ร่วมกับคอนโซลเจ้าหน้าที่และแดชบอร์ด)
+   ส่งถึงทีมดูแลทันที (care_events → เปิด/ยกระดับเคส) · บริษัทประกันไม่ได้รับข้อมูลรายคนจากระบบ
+   ถ้าจะใช้สิทธิ์ตามกรมธรรม์ ครอบครัวส่งใบสรุปเหตุการณ์เอง */
+function localDay() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }   /* วันที่ตามเวลาไทย (toISOString เป็นเวลา UTC — ตี 0–7 จะได้วันก่อนหน้า) */
+function incDraft() { if (!S.inc) S.inc = { kind: null, when_date: localDay(), when_part: null }; return S.inc; }
+function incSet(k, val) { var x = incDraft(); x[k] = (x[k] === val && typeof val !== "boolean") ? null : val; var y = $("view").scrollTop; render(); $("view").scrollTop = y; }
+function incToggle(k) { var x = incDraft(); x[k] = !x[k]; var y = $("view").scrollTop; render(); $("view").scrollTop = y; }
+function incChips(k, map, keys, red) {
+  var x = incDraft(); keys = keys || Object.keys(map);
+  return '<div class="chips2">' + keys.map(function (c) { return '<button class="' + (x[k] === c ? "on" : "") + (red && red.indexOf(c) >= 0 ? " red" : "") + '" onclick="incSet(\'' + k + '\',\'' + c + '\')">' + esc(map[c]) + '</button>'; }).join("") + '</div>';
+}
+function incNeeds(x) {
+  if (!x.kind) return "เลือกก่อนว่าเกิดอะไรขึ้น";
+  if (x.kind === "accident" && !x.acc_type) return "เลือกชนิดของอุบัติเหตุ";
+  if ((x.kind === "fall" || x.kind === "near_fall") && !x.place) return "เลือกสถานที่";
+  if ((x.kind === "fall" || x.kind === "accident") && !x.injury) return "เลือกว่าบาดเจ็บแค่ไหน";
+  if (x.kind === "fall" && !x.getup) return "เลือกว่าลุกเองได้ไหม";
+  if (["fall", "accident", "hospital", "adl_drop"].indexOf(x.kind) >= 0 && !x.impact) return "เลือกผลต่อการใช้ชีวิตประจำวัน";
+  return null;
+}
 function renderFall(v) {
-  head("บันทึกเหตุ", "ผู้สูงอายุล้ม", "บันทึกทันทีที่รู้ ระบบจะนับรวมในการวัดครั้งต่อไป", "home");
-  v.innerHTML = '<div class="warn">ถ้าลุกไม่ได้ ศีรษะกระแทก หมดสติ หรือปวดมาก อย่าเคลื่อนย้าย <b>โทร 1669</b> ทันที</div>' +
-    '<a class="btn danger" href="tel:1669" style="text-align:center;text-decoration:none">📞 โทร 1669</a>' +
-    '<div class="card"><label class="f">ล้มที่ไหน</label><input type="text" id="fWhere" placeholder="เช่น ห้องน้ำ บันได หน้าบ้าน">' +
-    '<label class="f">บาดเจ็บ</label><select id="fInj"><option>ไม่บาดเจ็บ</option><option>ฟกช้ำ แผลเล็กน้อย</option><option>ต้องพบแพทย์</option><option>เข้าโรงพยาบาล</option></select>' +
-    '<label class="f">ลุกเองได้ไหม</label><select id="fUp"><option>ได้ทันที</option><option>ได้แต่ช้า</option><option>ต้องมีคนช่วย</option><option>ลุกเองไม่ได้</option></select>' +
-    '<button class="btn" onclick="saveFall()">บันทึก</button></div>';
+  var I = CSIncident, x = incDraft(), K = x.kind, rf = I.redFlags(x);
+  head("แจ้งเหตุ", "เกิดอะไรขึ้นกับ " + elder().name, "แจ้งทันทีที่รู้ ทีมดูแลจะเห็นและติดต่อกลับตามความรุนแรง", "home");
+  var h = '<div class="warn">ถ้า<b>ศีรษะกระแทก หมดสติ ลุกไม่ได้ หรือปวดมาก</b> อย่าเคลื่อนย้าย <b>โทร 1669</b> ก่อน แล้วค่อยกลับมาแจ้งในแอป</div>' +
+    '<a class="btn danger" href="tel:1669" style="text-align:center;text-decoration:none">📞 โทร 1669</a>';
+  if (rf.length) h += '<div class="redcard"><b>⚠️ ' + esc(rf.join(" · ")) + '</b><br>ควรโทร 1669 หรือพาไปโรงพยาบาลทันที' + '<span class="src">ที่มา: ' + esc(EVID.emerg.src) + '</span></div>';
+  h += '<div class="card"><h3>1. เกิดอะไรขึ้น</h3>' + ["fall", "near_fall", "accident", "hospital", "adl_drop"].map(function (k) {
+    var kd = I.KINDS[k]; return '<button class="kindb' + (K === k ? " on" : "") + '" onclick="incSet(\'kind\',\'' + k + '\')"><span class="e">' + kd.ic + '</span><span><b>' + esc(kd.nm) + '</b><small>' + esc(kd.desc) + '</small></span></button>'; }).join("") + '</div>';
+  if (!K) { v.innerHTML = h; return; }
+  if (K === "accident") h += '<div class="card"><h3>ชนิดของอุบัติเหตุ</h3>' + incChips("acc_type", I.ACC) + '</div>';
+  h += '<div class="card"><h3>2. เมื่อไร' + (K === "hospital" || K === "adl_drop" ? '' : ' และที่ไหน') + '</h3><label class="f">วันที่</label><input type="date" value="' + esc(x.when_date || "") + '" max="' + localDay() + '" onchange="S.inc.when_date=this.value">' +
+    '<label class="f">ช่วงเวลา</label>' + incChips("when_part", I.WHEN);
+  if (K !== "hospital" && K !== "adl_drop") h += '<label class="f">สถานที่</label>' + incChips("place", I.PLACE) + (x.place === "other" || x.place === "away" ? '<input type="text" placeholder="ระบุเพิ่ม เช่น ตลาด วัด" value="' + esc(x.place_note || "") + '" oninput="S.inc.place_note=this.value">' : '');
+  if (K === "fall" || K === "near_fall") h += '<label class="f">ตอนนั้นกำลังทำอะไร (ถ้าทราบ)</label>' + incChips("activity", I.ACTIVITY);
+  h += '</div>';
+  if (K === "fall" || K === "accident" || K === "hospital") {
+    h += '<div class="card"><h3>3. บาดเจ็บแค่ไหน</h3>' + incChips("injury", I.INJURY, K === "hospital" ? ["doctor", "admit", "fracture"] : null, ["fracture"]) +
+      '<div class="chips2" style="margin-top:10px"><button class="red' + (x.head ? " on" : "") + '" onclick="incToggle(\'head\')">ศีรษะกระแทก</button><button class="red' + (x.loc ? " on" : "") + '" onclick="incToggle(\'loc\')">หมดสติ / จำเหตุการณ์ไม่ได้</button></div>';
+    if (K === "fall") {
+      h += '<label class="f">หลังล้ม ลุกเองได้ไหม</label>' + incChips("getup", I.GETUP, null, ["cannot"]);
+      if (x.getup && x.getup !== "self_now") h += '<label class="f">นอนอยู่บนพื้นนานแค่ไหน</label>' + incChips("lie", I.LIE, null, ["gt60"]);
+    }
+    if (["doctor", "admit", "fracture"].indexOf(x.injury) >= 0 || K === "hospital") h += '<label class="f">โรงพยาบาล (ถ้ามี)</label><input type="text" placeholder="ชื่อโรงพยาบาล" value="' + esc(x.hospital_name || "") + '" oninput="S.inc.hospital_name=this.value">';
+    h += '</div>';
+  }
+  if (K !== "near_fall") h += '<div class="card"><h3>' + (K === "adl_drop" ? "3" : "4") + '. ตอนนี้ใช้ชีวิตประจำวันได้แค่ไหน</h3>' + incChips("impact", I.IMPACT, null, ["bedbound"]) + '</div>';
+  h += '<div class="card"><label class="f">รายละเอียดเพิ่ม (ไม่บังคับ)</label><textarea placeholder="เช่น ลื่นน้ำหน้าห้องน้ำ รองเท้าแตะหลุด" oninput="S.inc.note=this.value">' + esc(x.note || "") + '</textarea></div>';
+  var sev = I.severity(x);
+  h += '<p class="sub" style="text-align:center">ระดับความรุนแรงที่ระบบจัดให้: <span class="sevc ' + sev + '">' + I.SEV[sev].nm + '</span></p>' +
+    '<button class="btn" onclick="incSave()">แจ้งเหตุ</button>' +
+    '<p class="sub" style="font-size:12.5px">ข้อมูลนี้ส่งถึงทีมดูแลเพื่อติดต่อกลับ · <b>ไม่ส่งข้อมูลระบุตัวตนให้บริษัทประกัน</b> และไม่ใช้พิจารณาสินไหม ถ้าจะใช้สิทธิ์ตามกรมธรรม์ ส่งใบสรุปเหตุการณ์ให้บริษัทประกันเอง</p>';
+  v.innerHTML = h;
 }
-function saveFall() {
-  D.falls.push({ id: uid(), elderId: elder().id, date: new Date().toISOString(), where: $("fWhere").value.trim() || "ไม่ระบุ", injury: $("fInj").value, getup: $("fUp").value });
-  var f = D.falls[D.falls.length - 1];
-  save(); toast("บันทึกแล้ว · แนะนำวัดซ้ำภายใน 3 วันเมื่อหายเจ็บ"); go("history");
-  if (CSCloud.connected()) CSCloud.reportFall(f).then(function () { f.cloud = true; save(); toast("แจ้งเจ้าหน้าที่แล้ว จะมีคนติดต่อกลับ"); }).catch(function (e) { console.warn(e); });
+function incSave() {
+  var x = incDraft(), miss = incNeeds(x); if (miss) return toast(miss);
+  var I = CSIncident, sev = I.severity(x), det = I.toDetail(x);
+  var rec = { id: uid(), elderId: elder().id, date: new Date().toISOString(), kind: x.kind, severity: sev, detail: det, where: det.where || I.KINDS[x.kind].nm, injury: det.injury || "", getup: det.getup || "" };
+  D.falls.push(rec); save(); S.lastInc = rec.id; S.inc = null; go("incdone");
+  if (CSCloud.connected()) CSCloud.reportIncident(rec).then(function () { rec.cloud = true; save(); if (S.screen === "incdone") render(); toast("ส่งถึงทีมดูแลแล้ว"); })
+    .catch(function (e) { console.warn(e); rec.cloudError = String(e.message || e); save(); if (S.screen === "incdone") render(); });
 }
+function incRecord(id) { return (D.falls || []).filter(function (f) { return f.id === id; })[0] || null; }
+function incKindNm(f) { return CSIncident.KINDS[f.kind || "fall"].nm; }
+function renderIncDone(v) {
+  var f = incRecord(S.lastInc); if (!f) return go("home");
+  var I = CSIncident, d = f.detail || {}, sev = f.severity || "medium", rf = d.red_flags || [], area = I.PLACE_AREA[d.place];
+  head("แจ้งเหตุแล้ว", incKindNm(f), thDate(f.date), "home");
+  var steps = [evidItem("emerg")];
+  if (sev === "high") steps.push(evidItem("multi"));
+  if ((f.kind === "fall" || f.kind === "near_fall") && area) steps.push('<div>ตรวจจุดเสี่ยงบริเวณ' + esc(I.PLACE[d.place]) + ' เช่น พื้นลื่น แสง ราวจับ แล้วแก้ก่อนเกิดซ้ำ <button class="pill" style="border:0;background:var(--surf2)" onclick="S.homeRedo=!!lastHome(elder().id);S.homeAns=null;go(\'homechk\')">สำรวจบ้าน</button><span class="src">ที่มา: ' + esc(CSAssess.SRC.cdcHome) + '</span></div>');
+  if (f.kind === "adl_drop" || (d.impact && d.impact !== "same")) steps.push('<div>เมื่ออาการคงที่ ให้วัดใหม่ในแอป (รวมแบบประเมินกิจวัตรบาร์เธล) เพื่อดูว่าพึ่งพิงมากขึ้นแค่ไหน<span class="src">รอบของโปรแกรม CareSignal — ไม่ใช่คำแนะนำทางการแพทย์</span></div>');
+  else if (f.kind !== "hospital") steps.push('<div>วัดซ้ำภายใน 3 วันเมื่อหายเจ็บ เพื่อดูว่ากำลังขาและการทรงตัวเปลี่ยนไปไหม<span class="src">รอบของโปรแกรม CareSignal — ไม่ใช่คำแนะนำทางการแพทย์</span></div>');
+  v.innerHTML = (rf.length ? '<div class="redcard"><b>⚠️ ' + esc(rf.join(" · ")) + '</b><br>ถ้ายังไม่ได้ไปโรงพยาบาล ควรโทร 1669 หรือไปพบแพทย์ทันที</div><a class="btn danger" href="tel:1669" style="text-align:center;text-decoration:none">📞 โทร 1669</a>' : '') +
+    '<div class="card"><h3>' + esc(incKindNm(f)) + ' <span class="sevc ' + sev + '">' + I.SEV[sev].nm + '</span></h3><p style="margin:0">' + esc(I.describe(f.kind, d) || "—") + '</p>' + (d.note ? '<p class="sub" style="margin:6px 0 0">“' + esc(d.note) + '”</p>' : '') + '</div>' +
+    '<div class="card">' + (f.cloud ? '<b>✅ ส่งถึงทีมดูแลแล้ว</b><p class="sub" style="margin:4px 0 0">ทีมดูแลจะติดต่อกลับตามความรุนแรง (รุนแรง 24 ชม. · ปานกลาง 48 ชม. · เล็กน้อย 72 ชม.)</p>'
+      : CSCloud.connected() ? (f.cloudError ? '<b>ส่งไม่สำเร็จ</b><p class="sub" style="margin:4px 0 0">แอปจะลองส่งใหม่เมื่อเปิดครั้งถัดไป</p>' : '<b>กำลังส่งถึงทีมดูแล…</b>')
+      : '<b>บันทึกไว้ในเครื่องนี้เท่านั้น</b><p class="sub" style="margin:4px 0 0">ยังไม่ได้เชื่อมระบบกลาง ทีมดูแลจึงยังไม่เห็นเหตุนี้</p><button class="btn sec" style="margin:8px 0 0" onclick="go(\'cloud\')">☁️ เชื่อมระบบกลาง</button>') + '</div>' +
+    '<div class="card"><h3>สิ่งที่ควรทำต่อ</h3><div class="steps">' + steps.join("") + '</div></div>' +
+    '<button class="btn sec" onclick="incPrint(\'' + f.id + '\')">📄 ใบสรุปเหตุการณ์ (ส่งบริษัทประกัน / โรงพยาบาลเอง)</button>' +
+    '<button class="btn ghost" onclick="go(\'history\')">ดูเหตุทั้งหมด</button>';
+}
+/* ใบสรุปเหตุการณ์ — ครอบครัวพิมพ์หรือบันทึกเป็น PDF แล้วส่งเองเมื่อจะใช้สิทธิ์ตามกรมธรรม์ */
+function incHTML(f) {
+  var I = CSIncident, d = f.detail || {}, e = elder();
+  function r(k, v) { return v ? '<tr><th style="width:34%">' + k + '</th><td>' + esc(v) + '</td></tr>' : ''; }
+  return '<div class="fdoc"><div class="lh"><img src="./icon-192.png" alt="CareSignal"><div><b>CareSignal</b><small>ใบสรุปเหตุการณ์ที่ครอบครัวแจ้ง</small></div></div>' +
+    '<h1>ใบสรุปเหตุการณ์: ' + esc(incKindNm(f)) + '</h1><table>' +
+    r("ผู้สูงอายุ", e.name + " · อายุ " + e.age + " ปี") + r("วันที่เกิดเหตุ", (d.when_date ? thDate(d.when_date) : thDate(f.date)) + (d.when_part ? " · " + I.WHEN[d.when_part] : "")) +
+    r("ชนิดของเหตุ", incKindNm(f) + (d.acc_type ? " · " + I.ACC[d.acc_type] : "")) + r("สถานที่", d.where) + r("กิจกรรมขณะเกิดเหตุ", d.activity ? I.ACTIVITY[d.activity] : "") +
+    r("การบาดเจ็บ", d.injury) + r("ศีรษะกระแทก / หมดสติ", (d.head ? "ศีรษะกระแทก " : "") + (d.loc ? "หมดสติ" : "")) + r("หลังล้ม", d.getup) + r("นอนบนพื้น", d.lie ? I.LIE[d.lie] : "") +
+    r("ผลต่อชีวิตประจำวัน", d.impact ? I.IMPACT[d.impact] : "") + r("โรงพยาบาล", d.hospital_name) + r("รายละเอียด", d.note) +
+    r("ผู้แจ้ง", (D.caregiver.name || "") + (D.caregiver.phone ? " โทร " + D.caregiver.phone : "")) + r("แจ้งในแอปเมื่อ", new Date(f.date).toLocaleString("th-TH")) + '</table>' +
+    '<p style="font-size:12.5px">ครอบครัวเป็นผู้บันทึกข้อมูลนี้เอง ไม่ใช่เอกสารทางการแพทย์ · ใช้ประกอบการติดต่อบริษัทประกันหรือโรงพยาบาล ร่วมกับเอกสารของโรงพยาบาล · CareSignal ไม่ส่งข้อมูลนี้ให้บริษัทประกันแทนครอบครัว</p></div>';
+}
+function incPrint(id) {
+  var f = incRecord(id); if (!f) return;
+  if (window.top !== window) { var w = window.open(location.pathname, "_blank"); if (!w) toast("เปิดแอปในแท็บใหม่แล้วพิมพ์อีกครั้ง"); return; }
+  $("print").innerHTML = incHTML(f); setTimeout(function () { window.print(); }, 300);
+}
+/* ประวัติล้มในแอป — ช่วยตอบคำถาม "12 เดือนล้มกี่ครั้ง" */
+function fallsInYear(eid) { var t = Date.now() - 365 * 864e5; return (D.falls || []).filter(function (f) { return f.elderId === eid && (f.kind || "fall") === "fall" && new Date((f.detail && f.detail.when_date) || f.date).getTime() >= t; }).length; }
 
 /* ---------- เบอร์และโรงพยาบาล ---------- */
 function renderContacts(v) {

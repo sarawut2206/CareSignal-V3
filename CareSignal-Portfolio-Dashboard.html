@@ -244,7 +244,7 @@ footer{padding:26px 0 40px;color:var(--ink3);font-size:12.5px;text-align:center;
         <div class="body" id="strata"></div></details>
       <details class="more" id="d-signals"><summary>ชนิดสัญญาณที่พบ <span>ใช้เลือกว่าควรลงทุนกับอะไรก่อน</span></summary>
         <div class="body" id="signals"></div></details>
-      <details class="more" id="d-events"><summary>เหตุการณ์ที่สมาชิกและครอบครัวรายงานเข้ามา <span>12 เดือน</span></summary>
+      <details class="more" id="d-events"><summary>การแจ้งเหตุจากสมาชิก (ล้ม · อุบัติเหตุ · เข้าโรงพยาบาล) <span>12 เดือน · ไม่ระบุตัวตน</span></summary>
         <div class="body" id="events"></div></details>
       <details class="more" id="d-change"><summary>การเปลี่ยนระดับความเสี่ยงรายบุคคล <span>เทียบกับตัวเองในอดีต</span></summary>
         <div class="body" id="change"></div></details>
@@ -331,8 +331,9 @@ footer{padding:26px 0 40px;color:var(--ink3);font-size:12.5px;text-align:center;
   ต้นแบบเพื่อการประกวด OIC InsurTech Award 2026
 </div></footer>
 
-<script src="./cs-backend.js?v=213"></script>
-<script src="./cs-demo.js?v=1"></script>
+<script src="./cs-backend.js?v=214"></script>
+<script src="./cs-incident.js?v=1"></script>
+<script src="./cs-demo.js?v=2"></script>
 <script>
 window.CS_AUTH_SCOPE="staff";
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
@@ -465,6 +466,22 @@ function stackChart(host,rows,parts){
 /* ============================================================
    โหลดข้อมูลครั้งเดียว แล้ววาดทุกส่วนจากชุดเดียวกัน
    ============================================================ */
+/* การแจ้งเหตุ (SQL 28 · cs-incident.js) — นับตามชนิด ความรุนแรง และสถานที่ ไม่มีข้อมูลรายบุคคล
+   กลุ่มที่นับได้ 1–2 ครั้งแสดง "<3" กันการเดาตัวบุคคล · ยังไม่รัน migration 28 = แจ้งว่ายังไม่เปิด */
+function incidentBlock(inc){
+  if(!inc) return '<p class="tiny" style="margin-top:8px">รายละเอียดสถานที่และความรุนแรงของเหตุ จะแสดงเมื่อเปิดใช้ migration 28 (การแจ้งเหตุ)</p>';
+  var I=window.CSIncident, sm=I?I.small:function(n){return String(n||0)}, T=inc.total||0;
+  function bars(raw,names){ var obj={}; Object.keys(raw||{}).forEach(function(k){var nm=(names&&names[k])||k; obj[nm]=(obj[nm]||0)+raw[k]}); names=null; var ks=Object.keys(obj).sort(function(a,b){return obj[b]-obj[a]}); if(!ks.length) return '<p class="tiny">ยังไม่มีข้อมูล</p>';
+    var mx=Math.max.apply(null,ks.map(function(k){return obj[k]}));
+    return ks.map(function(k){return '<div class="rbar"><span class="nm">'+esc((names&&names[k])||k)+'</span><span class="tr"><i style="width:'+Math.round(obj[k]/mx*100)+'%;background:var(--c2)"></i></span><span class="vv">'+sm(obj[k])+'</span></div>'}).join("") }
+  var S=inc.serious||{};
+  return '<h4 style="margin:14px 0 6px">แจ้งเหตุทั้งหมด '+sm(T)+' ครั้ง</h4>'+bars(inc.by_kind,I&&Object.keys(I.KINDS).reduce(function(o,k){o[k]=I.KINDS[k].nm;return o},{}))+
+    '<h4 style="margin:14px 0 6px">ความรุนแรง</h4>'+bars(inc.by_severity,{high:"รุนแรง (ติดต่อภายใน 24 ชม.)",medium:"ปานกลาง (48 ชม.)",low:"เล็กน้อย (72 ชม.)"})+
+    '<h4 style="margin:14px 0 6px">ล้มหรือเกือบล้มที่ไหน</h4>'+bars(inc.by_place,I&&I.PLACE)+
+    '<h4 style="margin:14px 0 6px">ผลที่รุนแรง</h4>'+
+    row("นอนโรงพยาบาล / กระดูกหัก",sm(S.admit_or_fracture))+row("ศีรษะกระแทก",sm(S.head))+row("ลุกเองไม่ได้ / นอนบนพื้นนาน",sm(S.long_lie))+row("ต้องพึ่งพิงมากขึ้นหลังเหตุ",sm(S.new_dependency))+
+    '<p class="tiny">ใช้ออกแบบบริการป้องกัน เช่น ถ้าล้มในห้องน้ำมากที่สุด ควรเสนอบริการปรับห้องน้ำก่อน · <b>ไม่ใช่ข้อมูลเคลม และไม่ใช้พิจารณาสินไหมหรือเบี้ยรายบุคคล</b> · กลุ่มที่นับได้ 1–2 ครั้งแสดงเป็น “&lt;3” กันการระบุตัวบุคคล</p>';
+}
 async function load(){
   var o=await CSBackend.insurerOutcomes();
   if(!o){document.getElementById("live").innerHTML='<div class="card"><p class="sub" style="margin:0">อ่านข้อมูลไม่ได้ — บัญชีนี้อาจไม่มีสิทธิ์ดูภาพรวมพอร์ต</p></div>';srcbar(null);return}
@@ -472,7 +489,8 @@ async function load(){
   var st=await CSBackend.insurerStrata()||[];
   var sg=await CSBackend.insurerSignals()||[];
   var mo=[]; try{ if(typeof CSBackend.insurerMonthly==="function") mo=await CSBackend.insurerMonthly()||[] }catch(e){}
-  DATA={o:o,f:f,st:st,sg:sg,mo:mo};
+  var inc=null; try{ if(typeof CSBackend.insurerIncidents==="function") inc=await CSBackend.insurerIncidents(365) }catch(e){}
+  DATA={o:o,f:f,st:st,sg:sg,mo:mo,inc:inc};
   srcbar(o);
   if(!o.n_members){emptyState();return}
   document.getElementById("emptyState").hidden=true;
@@ -686,6 +704,7 @@ function renderDetails(){
     row("เข้าโรงพยาบาล / ห้องฉุกเฉิน",per(o.ev_hospital))+
     row("กิจวัตรประจำวันลดลง",per(o.ev_adl_drop||0))+
     row("มีการปรับยา",per(o.ev_med_change))+
+    incidentBlock(DATA.inc)+
     '<p class="tiny">'+(rateOK?"คิดเป็นอัตราต่อ 100 คน-ปี (ฐานเวลา "+py.toFixed(2)+" คน-ปี)":"ฐานเวลายังน้อยเกินกว่าจะคิดเป็นอัตรา จึงแสดงเป็นจำนวนครั้ง")+
     ' · มาจากที่สมาชิกและครอบครัวรายงานเข้ามาเอง <b>ไม่ใช่ข้อมูลเคลม</b></p>';
 

@@ -539,8 +539,9 @@ td.num{font-family:var(--mono);white-space:nowrap}
 </div>
 
 <script>window.CS_AUTH_SCOPE="staff";/* แอปเจ้าหน้าที่ใช้ช่อง session แยกจากแอปสมาชิกเสมอ */</script>
-<script src="./cs-backend.js?v=5"></script>
-<script src="./cs-demo.js?v=2"></script>
+<script src="./cs-backend.js?v=6"></script>
+<script src="./cs-incident.js?v=1"></script>
+<script src="./cs-demo.js?v=3"></script>
 <script src="./cs-referral-forms.js?v=1"></script>
 <script src="./cs-teleconsult.js?v=1"></script>
 <script src="./cs-meds.js?v=4"></script>
@@ -1821,9 +1822,12 @@ async function caseDetailV(caseId,userId){
     (medRows?'<div class="card"><h3>ยาที่ใช้ประจำ</h3>'+medRows+
       (c.med_review_open?'<p class="tiny" style="color:var(--c3)">มีคำขอทบทวนยารอเภสัชกรอยู่ — ดูที่แท็บ "ทบทวนยา"</p>':'')+'</div>':'')+
 
-    '<div class="card"><h3>เหตุการณ์ที่รายงานเข้ามา</h3>'+
+    '<div class="card"><h3>เหตุที่ครอบครัวแจ้ง</h3>'+
       ((d.events||[]).length?d.events.map(function(e){
-        return '<div class="rowline"><span class="k">'+esc(EV_NM[e.kind]||e.kind)+'</span><span class="v">'+thDate(e.created_at)+'</span></div>'}).join("")
+        /* การแจ้งเหตุ (cs-incident.js): ชนิด · ความรุนแรง · สถานที่ บาดเจ็บ ลุกได้ไหม ผลต่อชีวิตประจำวัน */
+        var sv=EV_SEV[e.severity]||null, ds=window.CSIncident?CSIncident.describe(e.kind,e.detail||{}):"";
+        return '<div class="rowline" style="align-items:flex-start"><span class="k"><b>'+esc(EV_NM[e.kind]||e.kind)+'</b>'+(sv?' <span style="color:'+sv[1]+';font-weight:700">· '+sv[0]+'</span>':'')+
+          (ds?'<br><span class="tiny" style="color:var(--ink2)">'+esc(ds)+'</span>':'')+(e.detail&&e.detail.note?'<br><span class="tiny">“'+esc(e.detail.note)+'”</span>':'')+'</span><span class="v">'+thDate(e.created_at)+'</span></div>'}).join("")
        :'<div class="empty" style="padding:10px">ยังไม่มีเหตุการณ์</div>')+'</div>'+
 
     '<div class="card"><h3>ไทม์ไลน์เคส</h3><p class="sub" style="margin:0 0 6px">ทุกเหตุการณ์จากทุกตาราง เรียงตามเวลา</p><div id="tlHost"><div class="empty" style="padding:8px">กำลังโหลด…</div></div></div>'+
@@ -1914,7 +1918,8 @@ async function caseDetailV(caseId,userId){
     var h=document.getElementById("tlHost"); if(h) h.innerHTML=timelineHTML(rows);
   }).catch(function(){});
 }
-var EV_NM={fall:"หกล้ม",near_fall:"เกือบล้ม",med_change:"ปรับยา",dizzy:"เวียนหัว",hospital:"เข้าโรงพยาบาล",adl_drop:"กิจวัตรลดลง"};
+var EV_NM={fall:"หกล้ม",near_fall:"เกือบล้ม",accident:"อุบัติเหตุ",med_change:"ปรับยา",dizzy:"เวียนหัว",hospital:"เข้าโรงพยาบาล",adl_drop:"ช่วยเหลือตัวเองแย่ลง"};
+var EV_SEV={high:["รุนแรง","var(--c1)"],medium:["ปานกลาง","var(--c3)"],low:["เล็กน้อย","var(--ink3)"]};
 var FU_NM={checkin_7d:"โทรติดตาม 7 วัน",review_30d:"ทบทวน 30 วัน",reassess:"ประเมินซ้ำ",referral_check:"ตามผลการส่งต่อ"};
 function refNm2(k){var m={pending:"รอยืนยัน",approved:"ยืนยันแล้ว",acknowledged:"ผู้ใช้รับทราบ",booked:"นัดหมายแล้ว",
   completed:"ไปพบแล้ว",outcome_recorded:"บันทึกผลแล้ว",declined:"ปฏิเสธ",unreachable:"ติดต่อไม่ได้"};return m[k]||k}

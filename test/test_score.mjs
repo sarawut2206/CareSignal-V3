@@ -162,7 +162,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("ปิดแถบชวนติดตั้งแล้วจำไว้", /localStorage\.setItem\(A2HS\.key, "no"\)/.test(app));
   ok("ทางลัด ?go= เปิดหน้าที่ต้องการได้", /\["fall", "test", "history", "meds", "video", "appts"\]\.indexOf\(goto\)/.test(app));
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
-  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-21/.test(sw));
+  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-22/.test(sw));
 }
 
 /* ใบส่งต่อแบบเอกสารทางการ: ทุกสัญญาณต้องมีเกณฑ์ เหตุผล และเอกสารอ้างอิง */
@@ -286,6 +286,32 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("ส่งขึ้นระบบกลางในชื่อฟิลด์ที่ใบส่งต่ออ่าน: detail.barthel.total/band · home_detail.hazards/helper", p.detail.barthel.total === 15 && p.detail.barthel.band === "ติดสังคม" && p.homeDetail.hazards.length === 3 && p.homeDetail.helper === "alone" && p.detail.adl === 1);
   ok("แอป: ถามบาร์เธลแยก 10 ข้อ (ตัดคำถามกิจวัตรข้อเดียวเดิม) · มีหน้าบ้านปลอดภัยบนหน้าแรก · ใบส่งต่อมีทั้งสองส่วน",
      !/\{ k: "adl", q:/.test(app) && /function renderAdl/.test(app) && /function renderHomeChk/.test(app) && /go\('homechk'\)/.test(app) && /ดัชนีบาร์เธลเอดีแอล ฉบับภาษาไทย\)<\/b>/.test(app) && /สำรวจความปลอดภัยในบ้าน<\/b>/.test(app) && /cs-assess\.js/.test(readFileSync(new URL("../sw.js", import.meta.url), "utf8")));
+}
+
+/* แจ้งเหตุ (cs-incident.js · SQL 28) */
+{
+  const I = require("../cs-incident.js");
+  const app = readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8"), sql = readFileSync(new URL("../supabase/28_incidents.sql", import.meta.url), "utf8");
+  const cl = readFileSync(new URL("../cs-cloud.js", import.meta.url), "utf8"), mf = JSON.parse(readFileSync(new URL("../manifest.json", import.meta.url), "utf8"));
+  ok("แจ้งได้ 5 ชนิด: ล้ม · เกือบล้ม · อุบัติเหตุอื่น · เข้าโรงพยาบาล · ช่วยเหลือตัวเองแย่ลงทันที", ["fall", "near_fall", "accident", "hospital", "adl_drop"].every((k) => I.KINDS[k] && new RegExp('"' + k + '"').test(app)));
+  ok("ความรุนแรง: บาดเจ็บต้องพบแพทย์/ศีรษะกระแทก/ลุกไม่ได้/นอนพื้นนาน/ติดเตียง/เข้าโรงพยาบาล = รุนแรง",
+     ["doctor", "admit", "fracture"].every((j) => I.severity({ kind: "fall", injury: j }) === "high") && I.severity({ kind: "fall", injury: "minor", head: true }) === "high" &&
+     I.severity({ kind: "fall", injury: "none", getup: "cannot" }) === "high" && I.severity({ kind: "fall", injury: "none", lie: "gt60" }) === "high" &&
+     I.severity({ kind: "adl_drop", impact: "bedbound" }) === "high" && I.severity({ kind: "hospital" }) === "high");
+  ok("ล้มไม่บาดเจ็บลุกได้ทันที = ปานกลาง (ยังต้องติดต่อ) · เกือบล้มไม่บาดเจ็บ = เล็กน้อย", I.severity({ kind: "fall", injury: "none", getup: "self_now", impact: "same" }) === "medium" && I.severity({ kind: "near_fall" }) === "low");
+  ok("ศีรษะกระแทก / หมดสติ / ลุกไม่ได้ / กระดูกหัก → เตือนโทร 1669", I.redFlags({ head: true, loc: true, getup: "cannot", injury: "fracture" }).length === 4 && I.redFlags({ injury: "minor" }).length === 0);
+  const det = I.toDetail({ kind: "fall", place: "bathroom", injury: "doctor", getup: "helped", head: true });
+  ok("ข้อมูลที่ส่ง: มีทั้งรหัส (ใช้นับ) และข้อความไทยที่ทริกเกอร์เดิมอ่าน (where/injury)", det.place === "bathroom" && det.where === "ห้องน้ำ" && det.injury_code === "doctor" && det.injury === "ต้องพบแพทย์" && det.red_flags.indexOf("ศีรษะกระแทก") >= 0);
+  const ev = [{ kind: "fall", severity: "high", detail: { place: "bathroom", injury_code: "fracture", head: true }, created_at: new Date().toISOString(), user_id: "u1" },
+    { kind: "fall", severity: "medium", detail: { place: "bathroom" }, created_at: new Date().toISOString(), user_id: "u2" },
+    { kind: "accident", severity: "low", detail: {}, created_at: new Date(Date.now() - 400 * 864e5).toISOString(), user_id: "u3" }];
+  const sm = I.summarize(ev, 365);
+  ok("ภาพรวมบริษัทประกัน: นับตามชนิด/สถานที่/ผลรุนแรง ไม่มี user_id · กลุ่ม 1–2 ครั้งแสดง <3 · ตัดข้อมูลเกิน 12 เดือน",
+     sm.total === 2 && sm.by_place.bathroom === 2 && sm.serious.admit_or_fracture === 1 && !/u1|u2|user_id/.test(JSON.stringify(sm)) && I.small(2) === "<3" && I.small(5) === "5");
+  ok("migration 28: เปิดเคสทุกชนิดเหตุ · เข้าโรงพยาบาล/รุนแรง = 24 ชม. · ภาพรวมเฉพาะผู้ยินยอม ตรวจบทบาท",
+     /'fall','near_fall','accident','hospital','adl_drop'/.test(sql) && /new\.kind = 'hospital' or sev = 'high' then 'urgent'/.test(sql) && /share_pool = true/.test(sql) && /cs_role\(\) in \('insurer','care_manager','admin'\)/.test(sql) && /revoke all on function public\.insurer_incident_summary/.test(sql));
+  ok("แอป: ส่งถึงทีมดูแล (reportIncident) · ไม่ส่งข้อมูลรายคนให้บริษัทประกัน · มีใบสรุปให้ครอบครัวส่งเอง · ทางลัดแจ้งเหตุ",
+     /async function reportIncident/.test(cl) && /CSCloud\.reportIncident\(rec\)/.test(app) && /ไม่ส่งข้อมูลระบุตัวตนให้บริษัทประกัน/.test(app) && /function incHTML/.test(app) && /when_date: localDay\(\)/.test(app) && !/toISOString\(\)\.slice\(0, 10\)/.test(app) && mf.shortcuts.some((x) => /go=fall/.test(x.url) && /แจ้งเหตุ/.test(x.name)));
 }
 
 /* อ่านชื่อยาจากรูปแผงยา — ตัวอย่างจากรูปจริงของผู้ใช้ (แผง BESIX) */
