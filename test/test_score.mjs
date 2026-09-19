@@ -145,13 +145,24 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("รูปแชร์ชี้ไปที่ V3 ไม่ใช่ V2", /og:image" content="https:\/\/sarawut2206\.github\.io\/CareSignal-V3\/icon-512\.png/.test(idx) && !/CareSignal-V2\/icon-512/.test(idx));
   ok("แอปมีปุ่มติดตั้งบนหน้าแรก", /installApp\(\)">📲 ติดตั้งลงหน้าจอมือถือ/.test(app));
   ok("รับ beforeinstallprompt แล้วเรียกหน้าต่างติดตั้งเอง", /addEventListener\("beforeinstallprompt"/.test(app) && /A2HS\.defer\.prompt\(\)/.test(app));
-  ok("บอกวิธีติดตั้งครบทุกทาง: iPhone · Android · เบราว์เซอร์ในแอปแชท · คอมพิวเตอร์",
-     ["ติดตั้งบน iPhone / iPad", "ติดตั้งบน Android", "เปิดในเบราว์เซอร์ก่อน", "ติดตั้งบนคอมพิวเตอร์"].every((k) => app.includes(k)) && /FB_IAB|FBAN/.test(app));
+  {
+    const I = require("../cs-install.js"), G = (ua) => I.guide(ua);
+    const UA = { ios26: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 Mobile/15E148 Safari/604.1",
+      ios17: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
+      crios: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/140.0 Mobile/15E148 Safari/604.1",
+      line: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Safari Line/15.10.0",
+      fb: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 [FBAN/FBIOS;FBAV/480.0]",
+      and: "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/140 Mobile Safari/537.36", pc: "Mozilla/5.0 (Windows NT 10.0) Chrome/140" };
+    ok("iPhone iOS 26: ปุ่มแชร์อยู่ในเมนู ••• · ชื่อเมนูไทยถูก · เตือนให้เปิดสวิตช์เปิดเป็นเว็บแอป", /จุดสามจุด/.test(G(UA.ios26).html) && /เพิ่มไปยังหน้าจอโฮม/.test(G(UA.ios26).html) && /เปิดเป็นเว็บแอป/.test(G(UA.ios26).html) && !/•••<\/b> ที่มุม/.test(G(UA.ios17).html));
+    ok("Chrome บน iPhone ติดตั้งได้ (iOS 16.4+) ไม่บังคับให้ย้ายไป Safari", /Chrome/.test(G(UA.crios).title) && /เพิ่มไปยังหน้าจอโฮม/.test(G(UA.crios).html));
+    ok("LINE มีปุ่มเปิดในเบราว์เซอร์ (openExternalBrowser=1) · Facebook มีปุ่มคัดลอกลิงก์", /openExternalBrowser=1/.test(G(UA.line).action.href) && G(UA.fb).action.copy && /ติดตั้งบน Android/.test(G(UA.and).title) && /คอมพิวเตอร์/.test(G(UA.pc).title));
+    ok("แอปและหน้าเว็บใช้คู่มือติดตั้งชุดเดียวกัน · แอปมีไอคอนและแท็ก iPhone", /cs-install\.js/.test(app) && /cs-install\.js/.test(idx) && /CSInstall\.guide\(\)/.test(app) && /CSInstall\.guide\(\)/.test(idx) && /rel="apple-touch-icon"/.test(app) && /apple-mobile-web-app-capable/.test(app));
+  }
   ok("ติดตั้งแล้วหรืออยู่ในกรอบเว็บ ไม่ชวนติดตั้งซ้ำ", /function installedApp/.test(app) && /if \(embedded\(\) \|\| installedApp\(\)/.test(app));
   ok("ปิดแถบชวนติดตั้งแล้วจำไว้", /localStorage\.setItem\(A2HS\.key, "no"\)/.test(app));
   ok("ทางลัด ?go= เปิดหน้าที่ต้องการได้", /\["fall", "test", "history", "meds", "video", "appts"\]\.indexOf\(goto\)/.test(app));
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
-  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-18/.test(sw));
+  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-19/.test(sw));
 }
 
 /* ใบส่งต่อแบบเอกสารทางการ: ทุกสัญญาณต้องมีเกณฑ์ เหตุผล และเอกสารอ้างอิง */

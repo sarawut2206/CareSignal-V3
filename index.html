@@ -42,6 +42,7 @@
 </script>
 <meta name="theme-color" content="#0F2A5C">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<script src="./cs-install.js"></script>
 <link rel="icon" href="./favicon-64.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -965,14 +966,16 @@ fromHash();
     catch (e) { return false; }
   }
 
-  function sheet(title, body){
+  function sheet(title, body, action){
     var o = document.createElement("div");
     o.className = "isheet";
     o.innerHTML = '<div class="isheet-card" role="dialog" aria-modal="true">' +
       '<h3>' + title + '</h3><div class="isheet-body">' + body + '</div>' +
-      '<button type="button" class="isheet-ok">เข้าใจแล้ว</button></div>';
+      (action ? '<button type="button" class="isheet-ok isheet-act" style="margin-bottom:8px">' + action.label + '</button>' : '') +
+      '<button type="button" class="isheet-ok isheet-close">เข้าใจแล้ว</button></div>';
     document.body.appendChild(o);
-    var ok = o.querySelector(".isheet-ok");
+    var ok = o.querySelector(".isheet-close");
+    if (action) o.querySelector(".isheet-act").addEventListener("click", function(){ CSInstall.runAction(action, function(m){ o.querySelector(".isheet-act").textContent = "✓ " + m; }); });
     function close(){ o.remove(); document.removeEventListener("keydown", esc); try { btn.focus(); } catch (e) {} }
     function esc(e){ if (e.key === "Escape") close(); }
     ok.addEventListener("click", close);
@@ -986,28 +989,9 @@ fromHash();
     if (installed())
       return sheet("ติดตั้งไว้แล้ว",
         "ตอนนี้คุณกำลังเปิดจากแอปที่ติดตั้งไว้อยู่แล้ว ใช้งานได้แม้ไม่มีอินเทอร์เน็ต");
-    if (inApp)
-      return sheet("เปิดในเบราว์เซอร์ก่อน",
-        "หน้านี้เปิดอยู่ในเบราว์เซอร์ที่ฝังมากับแอปแชท ซึ่ง<b>ติดตั้งแอปไม่ได้</b>" +
-        "<ol><li>แตะปุ่ม <b>⋯</b> หรือ <b>⋮</b> ที่มุมขวาบน</li>" +
-        "<li>เลือก <b>เปิดในเบราว์เซอร์</b> (Chrome หรือ Safari)</li>" +
-        "<li>กด <b>ติดตั้งเป็นแอป</b> อีกครั้งในหน้านั้น</li></ol>");
-    if (isIOS)
-      return sheet("ติดตั้งบน iPhone / iPad",
-        "<ol><li>แตะปุ่ม <b>แชร์</b> (สี่เหลี่ยมมีลูกศรชี้ขึ้น) ที่แถบล่างของ Safari</li>" +
-        "<li>เลื่อนลงหา <b>เพิ่มลงในหน้าจอโฮม</b></li>" +
-        "<li>แตะ <b>เพิ่ม</b> — ไอคอน CareSignal จะอยู่บนหน้าจอเหมือนแอปทั่วไป</li></ol>" +
-        '<p class="isheet-note">iPhone ติดตั้งเว็บแอปได้จาก Safari เท่านั้น ถ้าเปิดอยู่ด้วย Chrome ให้เปลี่ยนมาเปิดใน Safari ก่อน</p>');
-    if (isAndroid)
-      return sheet("ติดตั้งบน Android",
-        "<ol><li>แตะปุ่ม <b>⋮</b> ที่มุมขวาบนของ Chrome</li>" +
-        "<li>เลือก <b>ติดตั้งแอป</b> หรือ <b>เพิ่มลงในหน้าจอหลัก</b></li>" +
-        "<li>แตะ <b>ติดตั้ง</b></li></ol>" +
-        '<p class="isheet-note">ถ้ายังไม่เห็นเมนูนี้ ให้เปิดหน้านี้ค้างไว้สักครู่แล้วลองใหม่ — Chrome จะเสนอให้ติดตั้งเมื่ออยู่บนเว็บนานพอ</p>');
-    return sheet("ติดตั้งบนคอมพิวเตอร์",
-      "<ol><li>ดูที่แถบที่อยู่เว็บด้านบน จะมีไอคอนรูปจอที่มีลูกศรลง หรือเครื่องหมาย <b>+</b></li>" +
-      "<li>คลิกแล้วเลือก <b>ติดตั้ง</b></li></ol>" +
-      '<p class="isheet-note">ใช้ได้กับ Chrome และ Edge · Firefox กับ Safari บนคอมพิวเตอร์ยังไม่รองรับการติดตั้งเว็บแอป</p>');
+    /* ขั้นตอนตามเครื่องจริง (iPhone iOS 26 / Chrome บน iPhone / LINE / Android) — cs-install.js ใช้ร่วมกับตัวแอป */
+    var gd = CSInstall.guide();
+    return sheet(gd.title, gd.html.replace(/class="note"/g, 'class="isheet-note"'), gd.action);
   }
 
   btn.addEventListener("click", function(){

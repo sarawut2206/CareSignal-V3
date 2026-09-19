@@ -7,6 +7,12 @@
 <meta name="description" content="ลูกหลานจับเวลาแบบทดสอบลุกนั่ง ลุกเดิน และทรงตัวให้ผู้สูงอายุที่บ้าน รู้ผลทันที ดูแนวโน้ม พกใบสรุปไปพบแพทย์ — จับเวลาเอง หรือให้กล้องช่วยนับก็ได้">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="./icon-192.png">
+<!-- iPhone: ไอคอนและชื่อบนหน้าจอโฮม + เปิดเต็มจอแบบแอป (Safari อ่านแท็กเหล่านี้ตอน "เพิ่มไปยังหน้าจอโฮม") -->
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CareSignal V3">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#F4F6F8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600&family=Sarabun:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -91,6 +97,7 @@ textarea{min-height:70px}
 .isheet h3{margin:0 0 8px;font-size:19px}
 .isheet ol{margin:0;padding-left:20px;font-size:15px;line-height:1.9;color:var(--ink2)}
 .isheet p{font-size:13.5px;color:var(--ink3);line-height:1.7;margin:10px 0 0}
+.isheet p.note{background:var(--surf2);border-radius:12px;padding:8px 12px;color:var(--ink2)}
 .a2hs{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));z-index:55;
   display:flex;gap:8px;align-items:center;background:var(--brand2);color:#fff;border-radius:99px;padding:8px 10px 8px 16px;
   font-size:13.5px;white-space:nowrap;box-shadow:0 12px 30px rgba(15,27,51,.35);max-width:94vw}
@@ -263,6 +270,7 @@ body{font-size:18px}
 <script src="./cs-cloud.js"></script>
 <script src="./cs-teleconsult.js"></script>
 <script src="./cs-camera.js"></script>
+<script src="./cs-install.js"></script>
 <script>
 /* ============================================================
    CareSignal V3 — ลูกหลานเป็นผู้วัด · จับเวลาเอง หรือให้กล้องช่วยนับ (cs-camera.js ยกมาจาก V2) · ข้อมูลอยู่ในเครื่องนี้
@@ -483,7 +491,7 @@ function wipe() { if (confirm("ลบข้อมูลทุกอย่าง�
 /* ============================================================
    ติดตั้งลงหน้าจอมือถือ (PWA)
    กดแล้วต้องได้คำตอบเสมอ — Android เรียกหน้าต่างติดตั้งของ Chrome ได้เลย
-   iPhone ติดตั้งได้จาก Safari เท่านั้น และเบราว์เซอร์ที่ฝังมากับ LINE หรือ Facebook
+   iPhone ไม่มีปุ่มติดตั้งอัตโนมัติ ต้องทำจากเมนูแชร์ (ขั้นตอนตามรุ่น iOS อยู่ใน cs-install.js) และเบราว์เซอร์ที่ฝังมากับ LINE หรือ Facebook
    ติดตั้งไม่ได้เลย ซึ่งเป็นทางที่คนไทยเปิดลิงก์กันมากที่สุด จึงต้องบอกให้ไปเปิด
    ในเบราว์เซอร์จริงก่อน ไม่ใช่ปล่อยให้กดแล้วเงียบ
    ============================================================ */
@@ -492,19 +500,18 @@ function embedded() { return window.top !== window; }
 function installedApp() {
   try { return matchMedia("(display-mode: standalone)").matches || navigator.standalone === true; } catch (e) { return false; }
 }
-function iSheet(title, body) {
+function iSheet(title, body, action) {
   var o = document.createElement("div");
   o.className = "isheet";
   o.innerHTML = '<div class="cd" role="dialog" aria-modal="true"><h3>' + title + '</h3>' + body +
-    '<button class="btn" style="margin-top:14px">เข้าใจแล้ว</button></div>';
+    (action ? '<button class="btn act" style="margin-top:14px">' + esc(action.label) + '</button>' : '') +
+    '<button class="btn ok' + (action ? ' sec' : '') + '" style="margin-top:' + (action ? 8 : 14) + 'px">เข้าใจแล้ว</button></div>';
   document.querySelector(".phone").appendChild(o);
-  o.querySelector("button.btn").addEventListener("click", function () { o.remove(); });
+  o.querySelector("button.ok").addEventListener("click", function () { o.remove(); });
+  if (action) o.querySelector("button.act").addEventListener("click", function () { CSInstall.runAction(action, toast); });
   o.addEventListener("click", function (e) { if (e.target === o) o.remove(); });
 }
 function installApp() {
-  var ua = navigator.userAgent;
-  var inApp = /\bLine\/|FB_IAB|FBAN|FBAV|Instagram|Messenger|MicroMessenger|TikTok/i.test(ua);
-  var isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
   var a2 = document.querySelector(".a2hs"); if (a2) a2.remove();
   if (installedApp())
     return iSheet("ติดตั้งไว้แล้ว", '<p style="font-size:15px;color:var(--ink2)">ตอนนี้เปิดจากไอคอนที่ติดตั้งไว้อยู่แล้ว ใช้วัดได้แม้ไม่มีอินเทอร์เน็ต ผลจะส่งขึ้นระบบกลางให้เองเมื่อกลับมาออนไลน์</p>');
@@ -515,13 +522,9 @@ function installApp() {
   }
   if (embedded())
     return iSheet("เปิดแอปเต็มจอก่อน", '<ol><li>แตะ <b>เปิดแอปเต็มจอ</b> หรือเปิดลิงก์ของแอปในแท็บใหม่</li><li>แล้วกด <b>ติดตั้งลงหน้าจอมือถือ</b> อีกครั้ง</li></ol><p>ตอนนี้แอปแสดงอยู่ในกรอบของหน้าเว็บ ซึ่งติดตั้งไม่ได้</p>');
-  if (inApp)
-    return iSheet("เปิดในเบราว์เซอร์ก่อน", '<ol><li>แตะปุ่ม <b>⋯</b> หรือ <b>⋮</b> ที่มุมขวาบน</li><li>เลือก <b>เปิดในเบราว์เซอร์</b> (Chrome หรือ Safari)</li><li>กด <b>ติดตั้งลงหน้าจอมือถือ</b> อีกครั้ง</li></ol><p>หน้านี้เปิดอยู่ในเบราว์เซอร์ที่ฝังมากับแอปแชท ซึ่งติดตั้งแอปไม่ได้</p>');
-  if (isIOS)
-    return iSheet("ติดตั้งบน iPhone / iPad", '<ol><li>แตะปุ่ม <b>แชร์</b> (สี่เหลี่ยมมีลูกศรชี้ขึ้น) ที่แถบล่างของ Safari</li><li>เลื่อนลงหา <b>เพิ่มลงในหน้าจอโฮม</b></li><li>แตะ <b>เพิ่ม</b></li></ol><p>iPhone ติดตั้งเว็บแอปได้จาก Safari เท่านั้น ถ้าเปิดด้วย Chrome ให้เปลี่ยนมาเปิดใน Safari ก่อน</p>');
-  if (/Android/.test(ua))
-    return iSheet("ติดตั้งบน Android", '<ol><li>แตะปุ่ม <b>⋮</b> ที่มุมขวาบนของ Chrome</li><li>เลือก <b>ติดตั้งแอป</b> หรือ <b>เพิ่มลงในหน้าจอหลัก</b></li><li>แตะ <b>ติดตั้ง</b></li></ol><p>ถ้ายังไม่เห็นเมนูนี้ ให้เปิดหน้านี้ค้างไว้สักครู่แล้วลองใหม่</p>');
-  return iSheet("ติดตั้งบนคอมพิวเตอร์", '<ol><li>ดูที่แถบที่อยู่เว็บด้านบน จะมีไอคอนรูปจอที่มีลูกศรลง หรือเครื่องหมาย <b>+</b></li><li>คลิกแล้วเลือก <b>ติดตั้ง</b></li></ol><p>ใช้ได้กับ Chrome และ Edge</p>');
+  /* iPhone / แอปแชท / Android / คอม: วิธีตามเครื่องจริง จาก cs-install.js (ใช้ร่วมกับหน้าเว็บ) */
+  var gd = CSInstall.guide();
+  return iSheet(gd.title, gd.html, gd.action);
 }
 function a2hsBar() {
   if (embedded() || installedApp() || document.querySelector(".a2hs")) return;
