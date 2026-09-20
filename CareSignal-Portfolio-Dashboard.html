@@ -149,6 +149,21 @@ details.more>summary::before{content:"›";color:var(--brand);font-size:19px;lin
 details.more[open]>summary::before{transform:rotate(90deg)}
 details.more>summary span{margin-left:auto;font-weight:500;font-size:12.5px;color:var(--ink3)}
 details.more .body{padding:0 18px 16px}
+.roi{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 14px;margin:6px 0 14px}
+.roi label{display:block;font-size:12.5px;color:var(--ink2);margin-bottom:4px}
+.roi input{width:100%;border:1.5px solid var(--line);background:var(--surf);color:var(--ink);border-radius:10px;padding:9px 11px;font:inherit;font-size:15px;font-variant-numeric:tabular-nums}
+.roi input:focus{outline:2px solid var(--brand);outline-offset:1px;border-color:transparent}
+.roi small{display:block;font-size:11.5px;color:var(--ink3);margin-top:3px;line-height:1.45}
+.roiout{border-radius:14px;padding:14px 16px;margin-top:6px;background:var(--surf2);border:1px solid var(--line)}
+.roiout.ok{background:#EAF7EF;border-color:var(--c4)}
+.roiout.no{background:#FEF3E7;border-color:var(--c2)}
+.roiout .big{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.25}
+.roiout.ok .big{color:#116B33}.roiout.no .big{color:#B4460C}
+.roiline{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line2);font-size:14.5px}
+.roiline:last-child{border-bottom:0}.roiline b{font-variant-numeric:tabular-nums;text-align:right}
+.roipre{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 12px}
+.roipre button{border:1.5px solid var(--line);background:var(--surf);color:var(--ink);border-radius:99px;padding:7px 13px;font:inherit;font-size:13.5px;cursor:pointer}
+.roipre button:hover{border-color:var(--brand);background:var(--brandt)}
 
 /* ---------- สถานะว่าง / หมายเหตุ ---------- */
 .empty{background:var(--surf);border:1.5px dashed #C2CFE3;border-radius:12px;padding:26px 24px;text-align:center}
@@ -248,6 +263,20 @@ footer{padding:26px 0 40px;color:var(--ink3);font-size:12.5px;text-align:center;
         <div class="body" id="events"></div></details>
       <details class="more" id="d-change"><summary>การเปลี่ยนระดับความเสี่ยงรายบุคคล <span>เทียบกับตัวเองในอดีต</span></summary>
         <div class="body" id="change"></div></details>
+      <details class="more" id="d-roi" open><summary>เครื่องคำนวณจุดคุ้มทุนของบริการป้องกัน <span>ใส่ตัวเลขพอร์ตของบริษัทเอง</span></summary>
+        <div class="body">
+          <p class="tiny" style="margin:0 0 10px">ทุกช่องแก้ได้ · ค่าตั้งต้นของอัตราการเกิดเหตุมาจากข้อมูลกรมควบคุมโรคปี 2567 ส่วนค่าสินไหมเป็นตัวเลขที่บริษัทใส่เอง
+            <b>เครื่องมือนี้ไม่ได้บอกว่าคุ้มหรือไม่คุ้ม</b> แต่บอกว่าต้องได้ผลแค่ไหนจึงจะเท่าทุน</p>
+          <div class="roipre">
+            <button data-roi="base">พอร์ตทั่วไป (ค่าตั้งต้น)</button>
+            <button data-roi="high">พอร์ตกลุ่มเสี่ยงสูง</button>
+            <button data-roi="basic">แพ็ก Basic 49 บาท</button>
+            <button data-roi="gov">ใช้ค่ารักษาที่รัฐเบิกจริง</button>
+          </div>
+          <div class="roi" id="roiIn"></div>
+          <div id="roiOut"></div>
+          <p class="tiny" id="roiSrc" style="margin-top:10px"></p>
+        </div></details>
       <details class="more" id="d-ops"><summary>ตัวชี้วัดการดำเนินงาน <span>ทบทวนยา · แผนดูแล · การติดตาม</span></summary>
         <div class="body" id="ops"></div></details>
 
@@ -333,6 +362,7 @@ footer{padding:26px 0 40px;color:var(--ink3);font-size:12.5px;text-align:center;
 
 <script src="./cs-backend.js?v=214"></script>
 <script src="./cs-incident.js?v=1"></script>
+<script src="./cs-roi.js?v=1"></script>
 <script src="./cs-demo.js?v=2"></script>
 <script>
 window.CS_AUTH_SCOPE="staff";
@@ -482,6 +512,59 @@ function incidentBlock(inc){
     row("นอนโรงพยาบาล / กระดูกหัก",sm(S.admit_or_fracture))+row("ศีรษะกระแทก",sm(S.head))+row("ลุกเองไม่ได้ / นอนบนพื้นนาน",sm(S.long_lie))+row("ต้องพึ่งพิงมากขึ้นหลังเหตุ",sm(S.new_dependency))+
     '<p class="tiny">ใช้ออกแบบบริการป้องกัน เช่น ถ้าล้มในห้องน้ำมากที่สุด ควรเสนอบริการปรับห้องน้ำก่อน · <b>ไม่ใช่ข้อมูลเคลม และไม่ใช้พิจารณาสินไหมหรือเบี้ยรายบุคคล</b> · กลุ่มที่นับได้ 1–2 ครั้งแสดงเป็น “&lt;3” กันการระบุตัวบุคคล</p>';
 }
+/* ---------- เครื่องคำนวณจุดคุ้มทุน (cs-roi.js) ----------
+   ทำงานฝั่งหน้าเว็บล้วน ไม่ต้องมีข้อมูลในระบบ จึงสาธิตบนเวทีได้แม้ยังไม่มีสมาชิก */
+var ROI_F = [
+  ["members", "จำนวนผู้เอาประกันในโครงการ", "คน", ""],
+  ["pmpm", "ค่าบริการต่อคนต่อเดือน", "บาท", "แพ็ก 49 / 99 / 149"],
+  ["admitPer1000", "ล้มแล้วต้องนอนโรงพยาบาล", "ราย ต่อ 1,000 คน/ปี", "ค่าตั้งต้น 6.6 — กรมควบคุมโรค 2567"],
+  ["costAdmit", "ค่าสินไหมเฉลี่ยต่อการนอนโรงพยาบาล", "บาท", "ใส่ของพอร์ตจริง"],
+  ["opdPer1000", "ล้มแล้วรักษาแบบผู้ป่วยนอก", "ครั้ง ต่อ 1,000 คน/ปี", "ค่าตั้งต้น 32.8 — กรมควบคุมโรค 2567"],
+  ["costOpd", "ค่าสินไหมเฉลี่ยต่อครั้ง (ผู้ป่วยนอก)", "บาท", ""],
+  ["effect", "สมมติฐานลดอัตราการล้ม", "%", "23% เป็นผลของโปรแกรมออกกำลังกาย (Cochrane 2019)"],
+  ["reach", "สมาชิกที่ใช้บริการจริงและทำตามคำแนะนำ", "%", "เกณฑ์ภายในโปรแกรม"]
+];
+var ROI_PRESET = {
+  base: {}, high: { admitPer1000: 25, costAdmit: 250000, opdPer1000: 90 },
+  basic: { pmpm: 49 }, gov: { costAdmit: 23410, costOpd: 1500 }
+};
+function roiVals(){
+  var v = {}; ROI_F.forEach(function(f){ var el = document.getElementById("roi_" + f[0]); if (el) v[f[0]] = el.value; });
+  return v;
+}
+function roiRender(preset){
+  var host = document.getElementById("roiIn"); if (!host || !window.CSRoi) return;
+  var cur = host.children.length ? roiVals() : {};
+  if (preset) cur = Object.assign({}, CSRoi.DEF, ROI_PRESET[preset] || {});
+  host.innerHTML = ROI_F.map(function(f){
+    var val = cur[f[0]] != null && cur[f[0]] !== "" ? cur[f[0]] : CSRoi.DEF[f[0]];
+    return '<div><label for="roi_' + f[0] + '">' + esc(f[1]) + ' <span style="opacity:.6">(' + esc(f[2]) + ')</span></label>' +
+      '<input id="roi_' + f[0] + '" type="number" min="0" step="any" value="' + esc(String(val)) + '">' + (f[3] ? '<small>' + esc(f[3]) + '</small>' : '') + '</div>';
+  }).join("");
+  host.querySelectorAll("input").forEach(function(i){ i.addEventListener("input", roiCalc); });
+  document.getElementById("roiSrc").innerHTML = "ที่มา: " + esc(CSRoi.SRC.rate) + "<br>" + esc(CSRoi.SRC.effect) + "<br>" + esc(CSRoi.SRC.cost);
+  roiCalc();
+}
+function roiCalc(){
+  var r = CSRoi.calc(roiVals()), b = function(n){ return Math.round(n).toLocaleString("th-TH"); };
+  document.getElementById("roiOut").innerHTML =
+    '<div class="roiout ' + (r.breakeven ? "ok" : "no") + '"><div class="big">' + (r.breakeven ? "เท่าทุนแล้ว " + (Math.round(r.ratio * 100) / 100) + " เท่า" : "ยังไม่เท่าทุนด้วยค่าสินไหมอย่างเดียว") + '</div>' +
+      '<p style="margin:6px 0 0;font-size:14.5px">' + esc(r.verdict) + '</p></div>' +
+    '<div style="margin-top:10px">' +
+      '<div class="roiline"><span>ค่าบริการที่บริษัทจ่ายต่อปี</span><b>' + b(r.fee) + ' บาท</b></div>' +
+      '<div class="roiline"><span>เหตุที่คาดว่าจะเกิดใน 1 ปี</span><b>นอนโรงพยาบาล ' + (Math.round(r.admits * 10) / 10) + ' ราย · ผู้ป่วยนอก ' + (Math.round(r.opds * 10) / 10) + ' ครั้ง</b></div>' +
+      '<div class="roiline"><span>เหตุที่ป้องกันได้ตามสมมติฐาน</span><b>นอนโรงพยาบาล ' + (Math.round(r.cutAdmits * 10) / 10) + ' ราย · ผู้ป่วยนอก ' + (Math.round(r.cutOpds * 10) / 10) + ' ครั้ง</b></div>' +
+      '<div class="roiline"><span>ค่าสินไหมที่ประหยัดได้</span><b>' + b(r.saved) + ' บาท</b></div>' +
+      '<div class="roiline"><span>ส่วนต่าง (ประหยัด − ค่าบริการ)</span><b style="color:' + (r.net >= 0 ? "#116B33" : "#B4460C") + '">' + b(r.net) + ' บาท</b></div>' +
+      (r.needEffect != null ? '<div class="roiline"><span>ต้องลดเหตุได้กี่ % จึงเท่าทุน</span><b>' + (Math.round(r.needEffect * 10) / 10) + '%</b></div>' : '') +
+      (r.needCostAdmit != null && r.needCostAdmit > 0 ? '<div class="roiline"><span>หรือค่าสินไหมต่อการนอนโรงพยาบาลต้องถึง</span><b>' + b(r.needCostAdmit) + ' บาท</b></div>' : '') +
+    '</div>' +
+    '<p class="tiny" style="margin-top:8px">ตัวเลขนี้คิดเฉพาะ<b>ค่าสินไหมที่ลดได้</b> ยังไม่รวมมูลค่าด้านการรักษาลูกค้า การขายเพิ่ม และการชะลอภาวะพึ่งพิงซึ่งมีค่าใช้จ่ายระยะยาวสูงกว่าการล้มครั้งเดียว</p>';
+}
+document.addEventListener("click", function(e){
+  var b = e.target.closest ? e.target.closest("[data-roi]") : null; if (b) roiRender(b.dataset.roi);
+});
+
 async function load(){
   var o=await CSBackend.insurerOutcomes();
   if(!o){document.getElementById("live").innerHTML='<div class="card"><p class="sub" style="margin:0">อ่านข้อมูลไม่ได้ — บัญชีนี้อาจไม่มีสิทธิ์ดูภาพรวมพอร์ต</p></div>';srcbar(null);return}
@@ -492,6 +575,7 @@ async function load(){
   var inc=null; try{ if(typeof CSBackend.insurerIncidents==="function") inc=await CSBackend.insurerIncidents(365) }catch(e){}
   DATA={o:o,f:f,st:st,sg:sg,mo:mo,inc:inc};
   srcbar(o);
+  roiRender("base");
   if(!o.n_members){emptyState();return}
   document.getElementById("emptyState").hidden=true;
   document.getElementById("live").hidden=false;
