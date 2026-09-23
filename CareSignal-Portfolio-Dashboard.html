@@ -29,58 +29,97 @@
    การพิจารณารับประกัน หรือการตัดสินสินไหม และไม่มีข้อมูลรายบุคคล
    ============================================================ */
 :root{
-  --bg:#F4F6FA; --surf:#fff; --surf2:#F7F9FC; --ink:#16233B; --ink2:#4F5F78; --ink3:#7B8AA1;
-  --line:#D9E1EC; --line2:#EAEFF5; --brand:#1D4E9A; --brand2:#143A74; --brandt:#E8F0FB;
+  --bg:#EEF2F7; --surf:#fff; --surf2:#F5F8FB; --ink:#16233B; --ink2:#4F5F78; --ink3:#7B8AA1;
+  --line:#E3E9F1; --line2:#EDF1F6; --brand:#1D4E9A; --brand2:#143A74; --brandt:#E8F0FB;   /* โทนเดียวกับคอนโซลเจ้าหน้าที่ (X-126) */
+  --side:#FFFFFF; --r:18px;
   /* สีสถานะ — สงวนไว้สำหรับระดับความเสี่ยงเท่านั้น ไม่เอาไปใช้เป็นสีชุดข้อมูล */
   --c4:#16A34A; --c3:#D97706; --c2:#EA580C; --c1:#DC2626;
   /* สีชุดข้อมูลของกราฟเส้น — ผ่านการตรวจระยะห่างสำหรับตาบอดสี (ΔE 22.8 protan) */
   --s1:#1D4E9A; --s2:#B45309;
   --sans:"Prompt","Noto Sans Thai",system-ui,sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,monospace;
-  --sh:0 1px 2px rgba(22,35,59,.06);
+  --sh:0 2px 12px rgba(22,35,59,.05);
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
-.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+.wrap{max-width:1360px;margin:0 auto;padding:0}
 a{color:var(--brand)}
 
-/* ---------- หัวและแถบเครื่องมือ ---------- */
-header{background:var(--surf);color:var(--ink);padding:18px 0 0;border-bottom:3px solid var(--brand)}
-.kick{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--brand);font-weight:700}
-h1{font-size:24px;letter-spacing:-.02em;margin:5px 0 6px;line-height:1.25;color:var(--brand2)}
-header p{color:var(--ink2);font-size:14px;margin:0 0 14px;max-width:760px}
-.srcbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;padding:9px 0;border-top:1px solid var(--line2);font-size:13px;color:var(--ink2)}
-.srcbar .live{display:inline-flex;align-items:center;gap:6px;font-weight:600;color:var(--ink)}
-.srcbar .live i{width:9px;height:9px;border-radius:99px;background:var(--c4);display:inline-block}
-.srcbar .demo{background:#7C2D12;color:#fff;border-radius:5px;padding:2px 9px;font-weight:700;font-size:12px;letter-spacing:.02em}
-.srcbar .sp{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+/* ---------- โครงหน้าแบบแอป: แถบข้างซ้าย · แถบบน · เนื้อหา ---------- */
+.app{display:flex;min-height:100vh}
+.side{width:248px;flex:none;background:var(--side);border-right:1px solid var(--line);padding:22px 16px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh;overflow:auto}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.02em;padding:2px 8px 18px}
+.logo .mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--brand),#3B82F6);display:inline-grid;place-items:center;color:#fff;font-size:15px;flex:none}
+.logo small{display:block;font-size:11px;font-weight:600;color:var(--ink3);letter-spacing:.1em;text-transform:uppercase;line-height:1.2}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:12px;color:var(--ink2);text-decoration:none;font-size:14.5px;font-weight:500;line-height:1.3}
+.nav a svg{width:19px;height:19px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.nav a:hover{background:var(--surf2);color:var(--ink)}
+.nav a.on{background:var(--brandt);color:var(--brand2);font-weight:700}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:12px;padding-top:14px}
+.who{display:flex;align-items:center;gap:10px;padding:8px 8px 0}
+.who .av{width:40px;height:40px;border-radius:50%;background:var(--brandt);color:var(--brand2);display:grid;place-items:center;font-weight:800;font-size:15px;flex:none}
+.who b{display:block;font-size:14px;line-height:1.3}
+.who small{display:block;font-size:11.5px;color:var(--ink3)}
+.promo{background:linear-gradient(160deg,#E8F0FB,#F4F8FD);border:1px solid #C9DAF3;border-radius:16px;padding:14px 14px 12px}
+.promo b{display:block;font-size:14px;margin-bottom:4px}
+.promo p{margin:0 0 10px;font-size:12px;color:var(--ink2);line-height:1.55}
+.promo a{display:block;text-align:center;background:var(--ink);color:#fff;text-decoration:none;border-radius:11px;padding:9px 10px;font-size:13px;font-weight:700}
+.main{flex:1;min-width:0;padding:18px 26px 0}
+.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:12px 18px;box-shadow:var(--sh)}
+.top .ttl{min-width:0}
+.kick{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--brand);font-weight:700}
+h1{font-size:22px;letter-spacing:-.02em;margin:1px 0 0;line-height:1.25;color:var(--ink)}
+.lead{color:var(--ink2);font-size:13.5px;margin:14px 0 4px;max-width:900px;line-height:1.6}
+.srcbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-left:auto;font-size:12.5px;color:var(--ink2)}
+.srcbar>span{display:inline-flex;align-items:center;gap:6px;background:var(--surf2);border:1px solid var(--line);border-radius:99px;padding:7px 12px;white-space:nowrap}
+.srcbar .live{font-weight:600;color:var(--ink)}
+.srcbar .live i{width:9px;height:9px;border-radius:99px;background:var(--c4);display:inline-block;box-shadow:0 0 0 3px #DCFCE7}
+.srcbar .demo{background:#7C2D12;border-color:#7C2D12;color:#fff;font-weight:700;letter-spacing:.02em}
+.srcbar .sp{background:none;border:0;padding:0;gap:8px}
 .tbtn{border:1px solid var(--line);background:var(--surf);color:var(--ink);font-family:inherit;font-size:13px;font-weight:600;
-  border-radius:7px;padding:6px 12px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+  border-radius:99px;padding:8px 14px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;line-height:1.2}
 .tbtn:hover{border-color:var(--brand);color:var(--brand)}
-.tbtn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.tbtn.pri{background:var(--brand);border-color:var(--brand);color:#fff;box-shadow:0 4px 12px rgba(29,78,154,.25)}
 .tbtn.pri:hover{background:var(--brand2);color:#fff}
+@media(max-width:960px){
+  .app{display:block}
+  .side{width:auto;height:auto;position:static;flex-direction:row;align-items:center;gap:10px;padding:10px 14px;border-right:0;border-bottom:1px solid var(--line);overflow-x:auto}
+  .logo{padding:0 6px 0 0}.logo small{display:none}
+  .nav{flex-direction:row;gap:4px}.nav a{padding:8px 10px;font-size:13px;white-space:nowrap}.nav a svg{display:none}
+  .side-foot{display:none}
+  .main{padding:14px 14px 0}
+}
 
-section{padding:22px 0}
-h2{font-size:19px;letter-spacing:-.01em;margin:0 0 3px}
+section{padding:14px 0 10px}
+h2{font-size:18px;letter-spacing:-.01em;margin:0 0 3px;scroll-margin-top:16px}
 .sub{color:var(--ink2);font-size:13.5px;margin:0 0 14px;max-width:840px}
-.card{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:16px 18px;box-shadow:var(--sh)}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;box-shadow:var(--sh)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .grid2.wide{grid-template-columns:1.25fr .75fr}
 @media(max-width:900px){.grid2,.grid2.wide{grid-template-columns:1fr}}
 
-/* ---------- ชั้นที่ 1: การ์ดตัวเลข ---------- */
-.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-@media(max-width:1000px){.kpis{grid-template-columns:repeat(3,1fr)}}
+/* ---------- ชั้นที่ 1: การ์ดตัวเลข — ไอคอนมุมขวา ตัวเลขใหญ่ แถบขีดแสดงสัดส่วน ---------- */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:14px}
+@media(max-width:1240px){.kpis{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:640px){.kpis{grid-template-columns:repeat(2,1fr)}}
-.kpi{background:var(--surf);border:1px solid var(--line);border-top:3px solid var(--brand);border-radius:10px;
-  padding:12px 14px 10px;box-shadow:var(--sh);display:flex;flex-direction:column;min-width:0}
-.kpi.alert{border-top-color:var(--c1)}
-.kpi.warn{border-top-color:var(--c3)}
-.kpi .l{font-size:12.5px;color:var(--ink2);font-weight:600;line-height:1.4}
-.kpi .n{font-size:30px;font-family:var(--mono);font-weight:700;letter-spacing:-.03em;margin:3px 0 0;color:var(--ink);line-height:1.15}
+.kpi{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:16px 16px 12px;box-shadow:var(--sh);display:flex;flex-direction:column;min-width:0;position:relative}
+.kpi .kh{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.kpi .l{font-size:12.5px;color:var(--ink2);font-weight:600;line-height:1.4;padding-top:4px}
+.kpi .ic{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surf);display:grid;place-items:center;flex:none;color:var(--ink)}
+.kpi .ic svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.kpi.alert .ic{color:var(--c1);border-color:#FECACA;background:#FEF2F2}
+.kpi.warn .ic{color:var(--c3);border-color:#FDE68A;background:#FFFBEB}
+.kpi .n{font-size:32px;font-weight:700;letter-spacing:-.03em;margin:2px 0 0;color:var(--ink);line-height:1.15;font-variant-numeric:tabular-nums}
 .kpi.alert .n{color:var(--c1)}
-.kpi .u{font-size:12.5px;color:var(--ink3);font-weight:500;margin-left:3px;font-family:var(--sans)}
-.kpi .d{font-size:12px;color:var(--ink3);line-height:1.5;margin-top:2px}
+.kpi .u{font-size:12.5px;color:var(--ink3);font-weight:500;margin-left:4px}
+.kpi .strip{margin:10px 0 4px}
+.kpi .sl,.kpi .sv{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink3);line-height:1.3}
+.kpi .sv{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink2);margin-top:3px}
+.kpi .bars{display:flex;gap:2px;height:26px;align-items:stretch;margin-top:5px}
+.kpi .bars i{flex:1;border-radius:2px;background:var(--line);min-width:1px}
+.kpi .bars i.f{background:var(--k,var(--brand))}
+.kpi .d{font-size:12px;color:var(--ink3);line-height:1.5;margin-top:4px}
 .kpi .delta{font-size:12px;font-weight:600;margin-top:4px;display:inline-flex;align-items:center;gap:4px}
 .kpi .delta.up{color:var(--c4)}.kpi .delta.dn{color:var(--c1)}.kpi .delta.flat{color:var(--ink3)}
 .kpi .go{margin-top:auto;padding-top:8px;font-size:12.5px;font-weight:600;color:var(--brand);
@@ -128,9 +167,9 @@ h3{margin:0 0 10px;font-size:15.5px}
 .chart .gridline{stroke:var(--line2);stroke-width:1}
 .chart .axis{fill:var(--ink3);font-size:11px;font-family:var(--sans)}
 .chart .lbl{fill:var(--ink2);font-size:11.5px;font-weight:600;font-family:var(--sans)}
-.rng{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
-.rng button{border:0;background:var(--surf);color:var(--ink2);font-family:inherit;font-size:12.5px;font-weight:600;padding:5px 11px;cursor:pointer}
-.rng button[aria-pressed="true"]{background:var(--brand);color:#fff}
+.rng{display:inline-flex;border:1px solid var(--line);border-radius:99px;overflow:hidden;background:var(--surf2);padding:3px;gap:2px}
+.rng button{border:0;background:transparent;color:var(--ink2);font-family:inherit;font-size:12.5px;font-weight:600;padding:5px 12px;cursor:pointer;border-radius:99px}
+.rng button[aria-pressed="true"]{background:var(--surf);color:var(--ink);box-shadow:0 1px 3px rgba(22,35,59,.12)}
 
 /* ---------- ชั้นที่ 4: ตารางวงจร ---------- */
 table{width:100%;border-collapse:collapse;font-size:13.5px}
@@ -142,13 +181,13 @@ tbody tr:hover td{background:var(--surf2)}
 .stagebar{display:inline-block;height:8px;border-radius:99px;background:var(--brand);vertical-align:middle}
 
 /* ---------- รายละเอียดที่พับไว้ ---------- */
-details.more{background:var(--surf);border:1px solid var(--line);border-radius:10px;box-shadow:var(--sh);margin-bottom:10px}
-details.more>summary{cursor:pointer;list-style:none;padding:13px 18px;font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:9px}
+details.more{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);margin-bottom:12px}
+details.more>summary{cursor:pointer;list-style:none;padding:15px 20px;font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:10px}
 details.more>summary::-webkit-details-marker{display:none}
 details.more>summary::before{content:"›";color:var(--brand);font-size:19px;line-height:1;transition:transform .15s}
 details.more[open]>summary::before{transform:rotate(90deg)}
 details.more>summary span{margin-left:auto;font-weight:500;font-size:12.5px;color:var(--ink3)}
-details.more .body{padding:0 18px 16px}
+details.more .body{padding:0 20px 18px}
 .roi{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 14px;margin:6px 0 14px}
 .roi label{display:block;font-size:12.5px;color:var(--ink2);margin-bottom:4px}
 .roi input{width:100%;border:1.5px solid var(--line);background:var(--surf);color:var(--ink);border-radius:10px;padding:9px 11px;font:inherit;font-size:15px;font-variant-numeric:tabular-nums}
@@ -166,7 +205,7 @@ details.more .body{padding:0 18px 16px}
 .roipre button:hover{border-color:var(--brand);background:var(--brandt)}
 
 /* ---------- สถานะว่าง / หมายเหตุ ---------- */
-.empty{background:var(--surf);border:1.5px dashed #C2CFE3;border-radius:12px;padding:26px 24px;text-align:center}
+.empty{background:var(--surf);border:1.5px dashed #C2CFE3;border-radius:var(--r);padding:30px 24px;text-align:center}
 .empty h3{font-size:17px;margin:0 0 6px}
 .empty p{color:var(--ink2);font-size:14px;max-width:560px;margin:0 auto 14px}
 .empty .acts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
@@ -175,7 +214,7 @@ details.more .body{padding:0 18px 16px}
 .pending{border:1.5px dashed #C2CFE3;background:#F7FAFF;border-radius:12px;padding:16px 18px}
 /* ---------- ฐานข้อมูลการดูแลก่อนเกิดเคลม ---------- */
 .chain{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
-.chain .stp{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:13px 14px;box-shadow:var(--sh);position:relative}
+.chain .stp{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;box-shadow:var(--sh);position:relative}
 .chain .stp .no{font-family:var(--mono);font-size:11.5px;font-weight:700;color:var(--brand)}
 .chain .stp b{display:block;font-size:14px;margin:2px 0 4px;line-height:1.35}
 .chain .stp p{margin:0 0 9px;font-size:12.5px;color:var(--ink2);line-height:1.55}
@@ -194,22 +233,41 @@ details.more .body{padding:0 18px 16px}
 .tag{display:inline-block;font-size:11.5px;font-weight:700;padding:3px 11px;border-radius:99px}
 .tag.wait{background:#E4EBF6;color:#3A4A66}
 .tiny{font-size:12px;color:var(--ink3);margin:8px 0 0;line-height:1.6}
-.login{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:20px;box-shadow:var(--sh);max-width:460px}
+.login{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--sh);max-width:460px;margin-top:16px}
 .login input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:15px;margin-bottom:10px}
-.btn{border:0;border-radius:8px;background:var(--brand);color:#fff;font-family:inherit;font-size:15px;font-weight:700;padding:11px 20px;cursor:pointer}
+.btn{border:0;border-radius:12px;background:var(--brand);color:#fff;font-family:inherit;font-size:15px;font-weight:700;padding:11px 20px;cursor:pointer}
 .btn.lite{background:var(--surf2);color:var(--ink);border:1px solid var(--line)}
-footer{padding:26px 0 40px;color:var(--ink3);font-size:12.5px;text-align:center;line-height:1.8}
+footer{padding:22px 0 30px;color:var(--ink3);font-size:12.5px;text-align:center;line-height:1.8}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
-<header><div class="wrap">
-  <div class="kick">CareSignal · Portfolio Dashboard</div>
-  <h1>ภาพรวมพอร์ต CareSignal</h1>
-  <p>ดูว่ามีใครเข้าร่วม ใครมีสัญญาณเสี่ยง และงานดูแลค้างอยู่ที่ขั้นตอนไหน —
-     หน้านี้ไม่มีการคำนวณเบี้ย ส่วนลด ระยะรอคอย ผลประโยชน์ การพิจารณารับประกัน หรือการตัดสินสินไหม</p>
+<div class="app">
+<aside class="side">
+  <div class="logo"><span class="mark">✚</span><span>CareSignal<small>Portfolio</small></span></div>
+  <nav class="nav" id="nav">
+    <a href="#kpis" class="on"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>ภาพรวม</a>
+    <a href="#s-risk"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg>ความเสี่ยงและงานค้าง</a>
+    <a href="#s-trend"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>แนวโน้ม</a>
+    <a href="#s-cycle"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>วงจรการดูแล</a>
+    <a href="#s-detail"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>รายละเอียด</a>
+    <a href="#d-roi"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5h3.75a1.75 1.75 0 0 1 0 3.5h-2.5a1.75 1.75 0 0 0 0 3.5H14.5"/></svg>จุดคุ้มทุน</a>
+    <a href="#s-value"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>ฐานข้อมูลก่อนเคลม</a>
+  </nav>
+  <div class="side-foot">
+    <div class="who" id="who" hidden></div>
+    <div class="promo"><b>ความเป็นส่วนตัวที่บังคับไว้</b>
+      <p>ทุกตัวเลขเป็นค่ารวมระดับพอร์ต ไม่มีชื่อ ไม่มีคะแนนรายคน · กลุ่มเล็กกว่า 10 คนปิดตัวเลข</p>
+      <a href="#d-usage" data-open="d-usage">ใครเห็นอะไรได้บ้าง</a></div>
+  </div>
+</aside>
+<div class="main">
+<header class="top">
+  <div class="ttl"><div class="kick">CareSignal · Portfolio Dashboard</div><h1>ภาพรวมพอร์ต CareSignal</h1></div>
   <div class="srcbar" id="srcbar" hidden></div>
-</div></header>
+</header>
+<p class="lead">ดูว่ามีใครเข้าร่วม ใครมีสัญญาณเสี่ยง และงานดูแลค้างอยู่ที่ขั้นตอนไหน —
+   หน้านี้ไม่มีการคำนวณเบี้ย ส่วนลด ระยะรอคอย ผลประโยชน์ การพิจารณารับประกัน หรือการตัดสินสินไหม</p>
 
 <section><div class="wrap">
   <div id="gate"></div>
@@ -222,7 +280,7 @@ footer{padding:26px 0 40px;color:var(--ink3);font-size:12.5px;text-align:center;
       <div class="kpis" id="kpis"></div>
 
       <!-- ชั้นที่ 2 -->
-      <h2 style="margin-top:26px">ความเสี่ยงในพอร์ต และงานที่ค้างอยู่</h2>
+      <h2 style="margin-top:26px" id="s-risk">ความเสี่ยงในพอร์ต และงานที่ค้างอยู่</h2>
       <p class="sub">ซ้ายคือใครเสี่ยงแค่ไหนตอนนี้ ขวาคืองานที่มีคนต้องลงมือทำ และค้างอยู่ที่ขั้นไหน</p>
       <div class="grid2 wide">
         <div class="card" id="riskmix"></div>
@@ -253,7 +311,7 @@ footer{padding:26px 0 40px;color:var(--ink3);font-size:12.5px;text-align:center;
       <div class="card tblwrap" id="cycle"></div>
 
       <!-- รายละเอียด -->
-      <h2 style="margin-top:26px">รายละเอียด</h2>
+      <h2 style="margin-top:26px" id="s-detail">รายละเอียด</h2>
       <p class="sub">เปิดดูเมื่อต้องการเจาะลึก — ทุกส่วนคำนวณจากข้อมูลชุดเดียวกับด้านบน</p>
       <details class="more" id="d-strata"><summary>แยกตามกลุ่มประชากร <span>อายุ · เพศ · พื้นที่</span></summary>
         <div class="body" id="strata"></div></details>
@@ -359,6 +417,8 @@ footer{padding:26px 0 40px;color:var(--ink3);font-size:12.5px;text-align:center;
   ไม่คำนวณเบี้ย ไม่พิจารณารับประกัน ไม่กำหนดระยะรอคอย และไม่ตัดสินการจ่ายสินไหม ·
   ต้นแบบเพื่อการประกวด OIC InsurTech Award 2026
 </div></footer>
+</div><!-- /main -->
+</div><!-- /app -->
 
 <script src="./cs-backend.js?v=214"></script>
 <script src="./cs-incident.js?v=1"></script>
@@ -597,7 +657,29 @@ function srcbar(o){
       '<a class="tbtn" href="./index.html" target="_top">← กลับหน้าหลัก</a>'+
     '</span>';
   var c=document.getElementById("csv"); if(c)c.addEventListener("click",exportCSV);
+  /* ผู้ใช้ในแถบข้าง: บทบาทเท่านั้น ไม่มีชื่อผู้เอาประกัน */
+  var w=document.getElementById("who"), RN={insurer:"บริษัทประกัน",care_manager:"ผู้ประสานงานการดูแล",admin:"ผู้ดูแลระบบ"};
+  if(w){w.hidden=false; var rn=demo&&!ROLE?"ผู้ชมโหมดสาธิต":(RN[ROLE]||"เจ้าหน้าที่");
+    w.innerHTML='<span class="av">'+esc(rn.charAt(0))+'</span><span><b>'+esc(rn)+'</b><small>'+(demo?"ข้อมูลสาธิต · ไม่ใช่ผู้เอาประกันจริง":"เข้าสู่ระบบแล้ว · สิทธิ์บังคับที่ฐานข้อมูล")+'</small></span>';}
 }
+/* แถบนำทางซ้าย: ไฮไลต์ตามส่วนที่กำลังอ่าน และเปิดกล่องพับเมื่อกดลิงก์ที่ชี้ไปหากล่องนั้น */
+(function(){
+  var nav=document.getElementById("nav"); if(!nav)return;
+  var links=[].slice.call(nav.querySelectorAll("a"));
+  nav.addEventListener("click",function(e){var a=e.target.closest("a"); if(!a)return; var t=document.getElementById(a.getAttribute("href").slice(1)); if(t&&t.tagName==="DETAILS")t.open=true;});
+  document.addEventListener("click",function(e){var a=e.target.closest("[data-open]"); if(!a)return; var t=document.getElementById(a.dataset.open); if(t&&t.tagName==="DETAILS")t.open=true;});
+  /* แถบ "ข้อมูลสาธิต" ติดด้านบน (cs-demo.js) → เลื่อนแถบข้างลงเท่าความสูงของมัน ไม่ให้ทับกันหรือถูกตัดด้านล่าง */
+  function fitSide(){var db=document.getElementById("csDemoBar"), sd=document.querySelector(".side"); if(!sd)return;
+    if(db&&window.matchMedia("(min-width:961px)").matches){var h=db.offsetHeight||0; sd.style.top=h+"px"; sd.style.height="calc(100vh - "+h+"px)";}
+    else{sd.style.top=""; sd.style.height="";}}
+  fitSide(); window.addEventListener("resize",fitSide);
+  if(!("IntersectionObserver" in window))return;
+  var map={}; links.forEach(function(a){var id=a.getAttribute("href").slice(1); map[id]=a;});
+  var io=new IntersectionObserver(function(en){
+    en.forEach(function(x){ if(x.isIntersecting){ links.forEach(function(a){a.classList.remove("on")}); var a=map[x.target.id]; if(a)a.classList.add("on"); } });
+  },{rootMargin:"-30% 0px -60% 0px"});
+  Object.keys(map).forEach(function(id){var t=document.getElementById(id); if(t)io.observe(t);});
+})();
 
 /* ---------- ยังไม่มีข้อมูล: บอกว่าทำไม และจะเห็นอะไรเมื่อมีข้อมูล ---------- */
 function emptyState(){
@@ -622,9 +704,24 @@ function delta(now,prev,unit){
   if(!d)return '<span class="delta flat">→ เท่าเดือนก่อน</span>';
   return '<span class="delta '+(d>0?"up":"dn")+'">'+(d>0?"↗":"↘")+" "+(d>0?"+":"")+nf(d)+" "+esc(unit||"")+" จากเดือนก่อน</span>";
 }
+var KICON={
+  people:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M15.5 14.5a5 5 0 0 1 6 5"/></svg>',
+  check:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>',
+  pulse:'<svg viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 4 12 2.5-6h5"/></svg>',
+  folder:'<svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
+  clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'
+};
+/* แถบขีด 36 ช่อง: ซ้ายคือส่วนที่ "ทำแล้ว/มีแล้ว" ขวาคือส่วนที่เหลือ — อ่านสัดส่วนได้โดยไม่ต้องอ่านตัวเลข */
+function kpiStrip(st){
+  if(!st)return"";
+  var a=Math.max(0,+st.a||0), b=Math.max(0,+st.b||0), N=36, k=(a+b)?Math.round(a/(a+b)*N):0, bars="";
+  for(var i=0;i<N;i++)bars+='<i'+(i<k?' class="f"':'')+'></i>';
+  return '<div class="strip" style="--k:'+(st.color||"var(--brand)")+'"><div class="sl"><span>'+esc(st.la)+'</span><span>'+esc(st.lb)+'</span></div>'+
+    '<div class="bars">'+bars+'</div><div class="sv"><b>'+nf(a)+'</b><b>'+nf(b)+'</b></div></div>';
+}
 function kpiCard(o){
-  return '<div class="kpi'+(o.cls?" "+o.cls:"")+'"><div class="l">'+esc(o.l)+'</div>'+
-    '<div class="n">'+o.n+(o.u?'<span class="u">'+esc(o.u)+'</span>':'')+'</div>'+
+  return '<div class="kpi'+(o.cls?" "+o.cls:"")+'"><div class="kh"><div class="l">'+esc(o.l)+'</div><span class="ic">'+(KICON[o.ic]||KICON.people)+'</span></div>'+
+    '<div class="n">'+o.n+(o.u?'<span class="u">'+esc(o.u)+'</span>':'')+'</div>'+kpiStrip(o.strip)+
     '<div class="d">'+o.d+'</div>'+(o.delta||"")+
     (o.go?'<button class="go" type="button" data-jump="'+esc(o.go)+'">'+esc(o.goT||"ดูรายละเอียด")+' ›</button>':'')+'</div>';
 }
@@ -633,20 +730,25 @@ function renderKpis(){
   var cur=mo[mo.length-1]||{}, prv=mo[mo.length-2]||null;
   var open=(+o.case_new||0)+(+o.case_working||0);
   document.getElementById("kpis").innerHTML=
-    kpiCard({l:"ผู้มีสิทธิ์ใช้โปรแกรม",n:nf(f.eligible||o.n_members),u:"คน",
+    kpiCard({l:"ผู้มีสิทธิ์ใช้โปรแกรม",n:nf(f.eligible||o.n_members),u:"คน",ic:"people",
+      strip:{a:+f.enrolled||0,b:Math.max(0,(+f.eligible||+o.n_members||0)-(+f.enrolled||0)),la:"เข้าร่วมแล้ว",lb:"ยังไม่เข้าร่วม"},
       d:"ผู้เอาประกันที่เข้าโปรแกรมได้ตามกรมธรรม์"})+
-    kpiCard({l:"เข้าร่วมแล้ว",n:nf(f.enrolled||0),u:"คน",
+    kpiCard({l:"เข้าร่วมแล้ว",n:nf(f.enrolled||0),u:"คน",ic:"check",
+      strip:{a:+f.assessed||0,b:Math.max(0,(+f.enrolled||0)-(+f.assessed||0)),la:"ประเมินแล้ว",lb:"ยังไม่ประเมิน",color:"var(--c4)"},
       d:pct(f.enrolled,f.eligible)+"% ของผู้มีสิทธิ์ · ยินยอมให้ใช้ข้อมูลเชิงกลุ่ม",
       go:"d-strata",goT:"ดูแยกตามกลุ่ม"})+
-    kpiCard({l:"ประเมินแล้วอย่างน้อย 1 ครั้ง",n:nf(f.assessed||0),u:"คน",
+    kpiCard({l:"ประเมินแล้วอย่างน้อย 1 ครั้ง",n:nf(f.assessed||0),u:"คน",ic:"pulse",
+      strip:{a:+o.n_active_30d||0,b:Math.max(0,(+f.assessed||0)-(+o.n_active_30d||0)),la:"ใช้งานใน 30 วัน",lb:"เงียบเกิน 30 วัน"},
       d:pct(f.assessed,f.enrolled)+"% ของผู้เข้าร่วม · ใน 30 วันล่าสุด "+nf(o.n_active_30d)+" คน",
       delta:prv?delta(+cur.n_first_assessments,+prv.n_first_assessments,"คนใหม่"):"",
       go:"s-trend",goT:"ดูแนวโน้ม"})+
-    kpiCard({l:"เคสที่เปิดอยู่",n:nf(open),u:"เคส",cls:open?"warn":"",
+    kpiCard({l:"เคสที่เปิดอยู่",n:nf(open),u:"เคส",cls:open?"warn":"",ic:"folder",
+      strip:{a:+o.case_working||0,b:+o.case_new||0,la:"มีผู้รับผิดชอบ",lb:"รอมอบหมาย",color:"var(--c3)"},
       d:"รอทีมดูแลลงมือ · ปิดแล้วสะสม "+nf((+o.case_closed||0)+(+o.case_stable||0))+" เคส",
       delta:prv?delta(+cur.n_cases_opened,+prv.n_cases_opened,"เคสเปิดใหม่"):"",
       go:"todo",goT:"ดูงานค้าง"})+
-    kpiCard({l:"เกินกำหนดติดต่อ",n:nf(o.case_overdue),u:"เคส",cls:(+o.case_overdue)?"alert":"",
+    kpiCard({l:"เกินกำหนดติดต่อ",n:nf(o.case_overdue),u:"เคส",cls:(+o.case_overdue)?"alert":"",ic:"clock",
+      strip:{a:+o.case_overdue||0,b:Math.max(0,open-(+o.case_overdue||0)),la:"เกินกำหนด",lb:"ยังอยู่ในกำหนด",color:"var(--c1)"},
       d:(+o.case_overdue)?"พ้นเวลาที่ต้องติดต่อตามระดับความเร่งด่วน":"ไม่มีเคสไหนพ้นกำหนด",
       go:"todo",goT:"ดูงานค้าง"});
 }
