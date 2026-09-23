@@ -286,6 +286,7 @@ body{font-size:18px}
 <script src="./cs-cloud.js"></script>
 <script src="./cs-teleconsult.js"></script>
 <script src="./cs-camera.js"></script>
+<script src="./cs-imu.js"></script>
 <script src="./cs-install.js"></script>
 <script src="./cs-assess.js"></script>
 <script src="./cs-incident.js"></script>
@@ -855,15 +856,22 @@ function safetyNext() {
 /* ---------- วิธีวัด: กดจับเวลาเอง หรือให้กล้องช่วยนับ (cs-camera.js) ----------
    ผลจากกล้องไม่ข้ามขั้นตอนของคน: กล้องส่งตัวเลขกลับมาที่หน้าจับเวลาเดิม
    ผู้วัดเห็นค่าแล้วกด "บันทึก" เอง จึงผ่านการตรวจค่าผิดปกติและกฎเดิมทุกข้อ */
-function measureMode() { try { return localStorage.getItem("cs3:measure") === "camera" ? "camera" : "manual"; } catch (e) { return "manual"; } }
-function setMeasureMode(m) { try { localStorage.setItem("cs3:measure", m); } catch (e) {} render(); }
+function measureMode() { try { var m = localStorage.getItem("cs3:measure"); return m === "camera" || m === "imu" ? m : "manual"; } catch (e) { return "manual"; } }
+function setMeasureMode(m) {
+  /* เซ็นเซอร์คาดเอวใช้ Web Bluetooth — Android Chrome/คอมพิวเตอร์เท่านั้น · iPhone (Safari) ยังไม่รองรับ จึงคงกล้องและจับเวลาไว้เสมอ */
+  if (m === "imu" && !(window.CSImu && CSImu.supported())) { toast(window.CSImu && CSImu.isiOS() ? "iPhone ยังเชื่อมต่อเซ็นเซอร์ผ่านเว็บไม่ได้ (Safari ไม่รองรับบลูทูธ) — ใช้กล้องหรือจับเวลาเอง" : "เบราว์เซอร์นี้ไม่รองรับบลูทูธ — ใช้ Chrome บน Android"); m = "manual"; }
+  try { localStorage.setItem("cs3:measure", m); } catch (e) {} render(); }
 function camTag(cam, k) { return cam && cam[k] && !cam[k].manual ? '<span class="camtag">📷 กล้อง</span>' : ""; }
+function imuTag(imu, k) { return imu && imu[k] ? '<span class="camtag">📡 เซ็นเซอร์</span>' : ""; }
 function methodText(r) {
-  var c = r.cam || {}, parts = [];
-  ["ftsst", "tug"].forEach(function (k) { if (c[k] && !c[k].manual) parts.push({ ftsst: "ลุกนั่ง", tug: "ลุกเดิน" }[k]); });
-  if (r.balCam && r.balCam.some(Boolean)) parts.push("ทรงตัว");
-  if (!parts.length) return "ครอบครัวจับเวลาด้วยปุ่มในแอป (ไม่ใช้กล้อง)";
-  return "กล้องมือถือช่วยนับและจับเวลา (" + parts.join(" · ") + ") ประมวลผลในเครื่อง ไม่บันทึกภาพ · ส่วนที่เหลือครอบครัวจับเวลาเอง";
+  var c = r.cam || {}, im = r.imu || {}, parts = [], ip = [], NM = { ftsst: "ลุกนั่ง", tug: "ลุกเดิน" };
+  ["ftsst", "tug"].forEach(function (k) { if (im[k]) ip.push(NM[k]); else if (c[k] && !c[k].manual) parts.push(NM[k]); });
+  if (r.balImu && r.balImu.some(Boolean)) ip.push("ทรงตัว"); else if (r.balCam && r.balCam.some(Boolean)) parts.push("ทรงตัว");
+  var out = [];
+  if (ip.length) out.push("เซ็นเซอร์คาดเอววัดการเคลื่อนไหว (" + ip.join(" · ") + ") ประมวลผลบนอุปกรณ์ ไม่มีภาพ ไม่มีเสียง");
+  if (parts.length) out.push("กล้องมือถือช่วยนับและจับเวลา (" + parts.join(" · ") + ") ประมวลผลในเครื่อง ไม่บันทึกภาพ");
+  if (!out.length) return "ครอบครัวจับเวลาด้วยปุ่มในแอป (ไม่ใช้กล้อง)";
+  return out.join(" · ") + " · ส่วนที่เหลือครอบครัวจับเวลาเอง";
 }
 function camStart(k) {
   if (!window.CSCam || !CSCam.supported()) return toast("เครื่องนี้เปิดกล้องจากเบราว์เซอร์ไม่ได้");
@@ -884,6 +892,21 @@ function camStart(k) {
     onManual: function () { setMeasureMode("manual"); },
     onCancel: function () { render(); } });
 }
+/* เซ็นเซอร์คาดเอว (cs-imu.js · firmware/CareSignal-Waist): ผลกลับมาหน้าจับเวลาเดิมเหมือนกล้อง — ผู้วัดตรวจแล้วกดบันทึกเอง */
+function imuStart(k) {
+  if (!window.CSImu || !CSImu.supported()) return setMeasureMode("imu");
+  var d = S.draft, bi = d.balStages.length;
+  if (S.sw && S.sw.t) { clearInterval(S.sw.t); S.sw.t = null; }
+  CSImu.open({ kind: k, stage: bi, stageNames: BAL_STAGES.map(function (b) { return b.nm; }),
+    onDone: function (res) {
+      if (res.incomplete) { S.sw = { k: k, t: null, t0: 0, val: null }; toast("ทำไม่ครบตามขั้นตอน · วัดใหม่ หรือกดข้ามท่านี้ (ทำไม่ได้)"); render(); return; }
+      S.sw = { k: k, t: null, t0: 0, val: k === "balance" ? res.held : res.sec, imu: res };
+      toast(k === "balance" ? (res.pass ? "เซ็นเซอร์จับเวลาได้ " + res.held.toFixed(1) + " วิ · ยืนยันว่าผ่าน" : "บันทึก " + res.held.toFixed(1) + " วิ · ยืนยันว่าไม่ผ่าน") : "เซ็นเซอร์วัดได้ " + res.sec.toFixed(1) + " วินาที ตรวจแล้วกดบันทึก");
+      render();
+    },
+    onManual: function () { setMeasureMode("manual"); },
+    onCancel: function () { render(); } });
+}
 var SWLABEL = { ftsst: ["ลุกนั่ง 5 ครั้ง", "กดเริ่มพร้อมพูดว่า \"เริ่ม\" · กดหยุดตอนนั่งลงครั้งที่ 5"], tug: ["ลุกเดิน 3 เมตร", "กดเริ่มพร้อมพูดว่า \"เริ่ม\" · กดหยุดตอนกลับมานั่งเรียบร้อย"], balance: ["ทรงตัว", "กดเริ่มเมื่อปล่อยมือ · แอปหยุดเองเมื่อครบ 10 วินาที"] };
 function renderStopwatch(v, k, prog) {
   var vid = VIDEOS.filter(function (x) { return x.k === k; })[0];
@@ -891,19 +914,26 @@ function renderStopwatch(v, k, prog) {
   head("ชุดที่ " + S.step + " จาก 3", k === "balance" ? "ทรงตัว ท่าที่ " + (bi + 1) + " จาก 4 · " + bs.nm : SWLABEL[k][0], SWLABEL[k][1], null, prog);
   var sw = S.sw && S.sw.k === k ? S.sw : (S.sw = { k: k, t: null, t0: 0, val: null });
   var running = !!sw.t, shown = running ? (Date.now() - sw.t0) / 1000 : (sw.val || 0);
-  var cam = measureMode() === "camera", passed = sw.val >= 10 && !(sw.cam && sw.cam.pass === false);
+  var mode = measureMode(), cam = mode === "camera", imu = mode === "imu", passed = sw.val >= 10 && !(sw.cam && sw.cam.pass === false) && !(sw.imu && sw.imu.pass === false);
   var camHint = { ftsst: "ถือมือถือให้เห็นผู้สูงอายุทั้งตัว กล้องนับครั้งและจับเวลาให้ · ยกสองมือ = เริ่ม · กางแขนด้านข้าง = สิ้นสุด · ยกมือข้างเดียว = บันทึก", tug: "ถือมือถือให้เห็นเก้าอี้และทางเดิน กล้องจับเวลาตั้งแต่สัญญาณเริ่มจนกลับมานั่ง · ยกสองมือ = เริ่ม · กางแขนด้านข้าง = สิ้นสุด · ยกมือข้างเดียว = บันทึก", balance: "ให้ผู้สูงอายุยืนหันข้าง ห่าง 2–3 เมตร กล้องดูท่าเท้าและจับเวลา 10 วินาที · ลูกหลานยืนยันผลเอง" }[k];
+  var imuHint = { ftsst: "รัดเซ็นเซอร์ที่เอวด้านหลัง (ระดับเข็มขัด) ให้แน่น · นั่งนิ่ง 1 วินาทีให้ตั้งศูนย์ · กดเริ่ม แล้วลุกนั่ง 5 ครั้ง อุปกรณ์นับและจับเวลาให้", tug: "รัดเซ็นเซอร์ที่เอวด้านหลังให้แน่น · นั่งนิ่ง 1 วินาที · กดเริ่ม แล้วลุกเดิน 3 เมตร หมุนตัว กลับมานั่ง อุปกรณ์แยกช่วงลุก เดิน หมุน นั่งให้", balance: "รัดเซ็นเซอร์ที่เอว · ยืนในท่าที่กำหนด นิ่ง 1 วินาที · กดเริ่ม อุปกรณ์จับเวลา 10 วินาทีและวัดการแกว่งของลำตัว · ลูกหลานยืนยันผลเอง" }[k];
   v.innerHTML =
-    '<div class="mode"><button class="' + (cam ? "" : "on") + '" onclick="setMeasureMode(\'manual\')">⏱ กดจับเวลาเอง</button><button class="' + (cam ? "on" : "") + '" onclick="setMeasureMode(\'camera\')">📷 กล้องช่วยนับ</button></div>' +
+    '<div class="mode"><button class="' + (cam ? "" : "on") + '" onclick="setMeasureMode(\'manual\')">⏱ กดจับเวลาเอง</button><button class="' + (cam ? "on" : "") + '" onclick="setMeasureMode(\'camera\')">📷 กล้องช่วยนับ</button><button class="' + (imu ? "on" : "") + '" onclick="setMeasureMode(\'imu\')">📡 เซ็นเซอร์คาดเอว</button></div>' +
     (k === "balance" ? '<div class="card" style="border:2px solid var(--brand)"><h3>' + (bi + 1) + '. ' + esc(bs.nm) + '</h3><p class="sub" style="margin:0">' + esc(bs.how) + '</p>' +
       (bi ? '<p class="sub" style="margin:6px 0 0">ผลท่าก่อนหน้า: ' + balDetail(S.draft.balStages) + '</p>' : '') + '</div>' : '') +
-    (cam && sw.val == null && !running
+    (imu && sw.val == null && !running
+      ? '<div class="card" style="border:2px solid var(--brand)"><h3>📡 เซ็นเซอร์คาดเอว</h3><p class="sub" style="margin:0 0 10px">' + imuHint + '</p>' +
+        '<button class="btn" style="margin:0" onclick="imuStart(\'' + k + '\')">เชื่อมต่อและวัด</button>' +
+        '<p class="sub" style="font-size:12.5px;margin:8px 0 0">วัดแบบห้องตรวจการเคลื่อนไหว: ช่วงลุก · หมุนตัว · จังหวะก้าว · การแกว่งของลำตัว — ตัวเลขประกอบการพิจารณาของแพทย์/นักกายภาพ ไม่ใช่การวินิจฉัย · ใช้ได้บน Android Chrome</p></div>'
+      : cam && sw.val == null && !running
       ? '<div class="card" style="border:2px solid var(--brand)"><h3>📷 กล้องช่วยนับและจับเวลา</h3><p class="sub" style="margin:0 0 10px">' + camHint + '</p>' +
         (CSCam.supported() ? '<button class="btn" style="margin:0" onclick="camStart(\'' + k + '\')">เปิดกล้อง</button>' : '<div class="warn">เครื่องนี้เปิดกล้องจากเบราว์เซอร์ไม่ได้ ใช้การกดจับเวลาแทน</div>') +
         '<p class="sub" style="font-size:12.5px;margin:8px 0 0">ภาพประมวลผลในเครื่อง ไม่อัปโหลด เก็บเฉพาะตัวเลข · เอนจินรุ่น 3 · สั่งด้วยสัญญาณมือได้ (ลุกนั่ง · ลุกเดิน)</p></div>'
-      : '<div class="card"><div class="big" id="clock">' + shown.toFixed(1) + '<small> วินาที</small>' + (sw.cam && !running ? '<br><span class="camtag">📷 วัดด้วยกล้อง' + (sw.cam.quality ? ' · ความน่าเชื่อถือ' + sw.cam.quality.level : '') + '</span>' + (sw.cam.quality && sw.cam.quality.level === "ต่ำ" ? '<br><small style="font-size:13px;color:var(--c2);font-weight:500;letter-spacing:0">ภาพไม่ชัดหรือเครื่องช้า ควรวัดซ้ำ หรือกดจับเวลาเอง</small>' : '') : '') + '</div>' +
+      : '<div class="card"><div class="big" id="clock">' + shown.toFixed(1) + '<small> วินาที</small>' + (sw.cam && !running ? '<br><span class="camtag">📷 วัดด้วยกล้อง' + (sw.cam.quality ? ' · ความน่าเชื่อถือ' + sw.cam.quality.level : '') + '</span>' + (sw.cam.quality && sw.cam.quality.level === "ต่ำ" ? '<br><small style="font-size:13px;color:var(--c2);font-weight:500;letter-spacing:0">ภาพไม่ชัดหรือเครื่องช้า ควรวัดซ้ำ หรือกดจับเวลาเอง</small>' : '') : '') +
+        (sw.imu && !running ? '<br><span class="camtag">📡 วัดด้วยเซ็นเซอร์คาดเอว' + (sw.imu.quality ? ' · ความน่าเชื่อถือ' + sw.imu.quality.level : '') + '</span>' + (sw.imu.imu && window.CSImu ? '<div style="font-size:12.5px;font-weight:400;letter-spacing:0;text-align:left;line-height:1.5;margin-top:8px;color:var(--ink2)">' + CSImu.briefLines(sw.imu.imu).map(function (l) { return "· " + esc(l); }).join("<br>") + '</div>' : '') : '') + '</div>' +
         '<button class="sw ' + (running ? "stop" : "") + '" onclick="swToggle()">' + (running ? "■ หยุด" : (sw.val != null ? "↻ จับใหม่" : "▶ เริ่ม")) + '</button>' +
-        (cam && !running ? '<button class="btn ghost" style="margin:8px 0 0" onclick="camStart(\'' + k + '\')">📷 วัดด้วยกล้องอีกครั้ง</button>' : '') + '</div>') +
+        (cam && !running ? '<button class="btn ghost" style="margin:8px 0 0" onclick="camStart(\'' + k + '\')">📷 วัดด้วยกล้องอีกครั้ง</button>' : '') +
+        (imu && !running ? '<button class="btn ghost" style="margin:8px 0 0" onclick="imuStart(\'' + k + '\')">📡 วัดด้วยเซ็นเซอร์อีกครั้ง</button>' : '') + '</div>') +
     (sw.val != null && !running ? (k !== "balance" ? '<button class="btn" onclick="swSave()">บันทึก ' + sw.val.toFixed(1) + ' วินาที</button>'
       : passed ? '<button class="btn" onclick="balNext(true)">ผ่าน 10 วินาที · ' + (bi < 3 ? 'ไปท่าที่ ' + (bi + 2) : 'จบการทรงตัว') + '</button>'
       : bi < 3 ? '<div class="warn"><b>' + (sw.val >= 10 ? 'ยืนครบ 10 วินาที แต่ลูกหลานยืนยันว่าไม่ผ่าน (ขยับเท้าหรือต้องจับพยุง)' : 'ท่านี้ยืนได้ ' + sw.val.toFixed(1) + ' วินาที ไม่ครบ 10 วินาที') + '</b><br>แนวทาง CDC ให้หยุดที่ท่านี้ เพราะท่าถัดไปยากกว่าและเสี่ยงล้มมากขึ้น ถ้าจะทำต่อ ต้องมีคนยืนประคองอยู่ข้างผู้สูงอายุตลอด</div>' +
@@ -934,6 +964,7 @@ function swSave() {
   }
   S.draft[k] = val;
   if (sw.cam && !sw.cam.manual) { S.draft.cam = S.draft.cam || {}; S.draft.cam[k] = sw.cam; if (sw.cam.refs) S.draft.camRefs = sw.cam.refs; }
+  if (sw.imu) { S.draft.imu = S.draft.imu || {}; S.draft.imu[k] = sw.imu; }
   S.sw = null; S.step++; render();
 }
 function swSkip() {
@@ -945,11 +976,12 @@ function swSkip() {
    ครบ 10 วินาที → ท่าถัดไป · ไม่ครบ → ผู้วัดเลือกเองว่าจะทำต่อ (ต้องมีคนประคอง) หรือหยุดตาม CDC
    CDC แนะนำให้หยุดเมื่อท่าใดไม่ครบ 10 วินาที แอปจึงถามยืนยันเรื่องคนประคองก่อนไปท่าที่ยากกว่า */
 function balNext(cont) {
-  var v = S.sw.val, d = S.draft, cm = S.sw.cam, ok = v >= 10 && !(cm && cm.pass === false);
+  var v = S.sw.val, d = S.draft, cm = S.sw.cam, im = S.sw.imu, ok = v >= 10 && !(cm && cm.pass === false) && !(im && im.pass === false);
   if (!ok && cont && d.balStages.length < 3 &&
       !confirm("ท่าถัดไปยากกว่าและเสี่ยงล้มมากขึ้น\nยืนยันว่ามีคนยืนประคองอยู่ข้างผู้สูงอายุตลอดการทดสอบ")) return;
   d.balStages.push(v);
   if (cm && !cm.manual) { d.balCam = d.balCam || []; d.balCam[d.balStages.length - 1] = cm; if (cm.pass === false) { d.balFail = d.balFail || []; d.balFail[d.balStages.length - 1] = true; } }
+  if (im) { d.balImu = d.balImu || []; d.balImu[d.balStages.length - 1] = im; if (im.pass === false) { d.balFail = d.balFail || []; d.balFail[d.balStages.length - 1] = true; } }
   S.sw = null;
   if (d.balStages.length >= 4 || !cont) return balDone();
   toast(ok ? "ผ่าน · พักสักครู่แล้วทำท่าถัดไป" : "บันทึกแล้ว · ประคองให้ดีในท่าถัดไป");
@@ -1326,8 +1358,8 @@ function renderConfirm(v, prog) {
   head("ตรวจทาน", "ก่อนบันทึก", "แก้ได้โดยกดย้อนกลับ", null, prog);
   function row(nm, val) { return '<div class="hist"><span>' + nm + '</span><b>' + val + '</b></div>'; }
   v.innerHTML = '<div class="card">' +
-    row("ลุกนั่ง 5 ครั้ง", d.ftsst != null ? d.ftsst.toFixed(1) + " วิ" + camTag(d.cam, "ftsst") : "ข้าม") +
-    row("ลุกเดิน 3 เมตร", d.tug != null ? d.tug.toFixed(1) + " วิ" + camTag(d.cam, "tug") : "ข้าม") +
+    row("ลุกนั่ง 5 ครั้ง", d.ftsst != null ? d.ftsst.toFixed(1) + " วิ" + camTag(d.cam, "ftsst") + imuTag(d.imu, "ftsst") : "ข้าม") +
+    row("ลุกเดิน 3 เมตร", d.tug != null ? d.tug.toFixed(1) + " วิ" + camTag(d.cam, "tug") + imuTag(d.imu, "tug") : "ข้าม") +
     row("ทรงตัว 4 ท่า", d.balPassed != null ? "ผ่าน " + d.balPassed + "/4 ท่า<br><small style=\"color:var(--ink2);font-weight:400\">" + balDetail(d.balStages) + "</small>" : "ข้าม") +
     row("ล้มใน 12 เดือน", d.fallsCount === 9 ? "จำไม่ได้" : d.fallsCount + " ครั้ง") +
     row("กลัวล้ม", d.worried ? "ใช่" : "ไม่") + row("กิจวัตร (บาร์เธล)", adlLine(d)) + row("บ้าน", homeLine(d)) + '</div>' +
@@ -1341,7 +1373,7 @@ function finish() {
   if (fl.level === "urgent" && tier > 2) tier = 2;                 /* ธงแดงดึงลงอย่างน้อยระดับส้ม */
   if (fl.level === "watch" && tier > 3) tier = 3;                  /* มีธงเหลือง ไม่แสดงเขียว — ตรงกับระดับ watch ที่ส่งให้เจ้าหน้าที่ */
   if (tr.some(function (t) { return !t.good; }) && tier > 2) tier = 2; /* แย่ลงจากเดิมชัดเจน */
-  var rec = Object.assign({ id: uid(), score: sc.score, max: sc.max, tier: tier, parts: sc.parts, flags: fl, trend: tr, by: D.caregiver.name, method: (d.cam && Object.keys(d.cam).length) || (d.balCam && d.balCam.length) ? "camera-pose" : "manual" }, d);
+  var rec = Object.assign({ id: uid(), score: sc.score, max: sc.max, tier: tier, parts: sc.parts, flags: fl, trend: tr, by: D.caregiver.name, method: (d.imu && Object.keys(d.imu).length) || (d.balImu && d.balImu.length) ? "imu" : (d.cam && Object.keys(d.cam).length) || (d.balCam && d.balCam.length) ? "camera-pose" : "manual" }, d);
   /* ส้ม/แดง: ยังไม่บอกระดับและคำแนะนำ จนกว่าผู้เชี่ยวชาญยืนยัน */
   rec.pending = tier <= 2;
   if (rec.pending) askNotify();
@@ -1377,7 +1409,7 @@ function flagList(r) {
 function measuredCard(r) {
   function row(nm, val) { return '<div class="hist"><span>' + nm + '</span><b>' + val + '</b></div>'; }
   return '<div class="card"><h3>ค่าที่วัดได้วันนี้</h3>' +
-    row("ลุกนั่ง 5 ครั้ง", r.ftsst != null ? r.ftsst.toFixed(1) + " วินาที" + camTag(r.cam, "ftsst") : "ข้าม") +
+    row("ลุกนั่ง 5 ครั้ง", r.ftsst != null ? r.ftsst.toFixed(1) + " วินาที" + camTag(r.cam, "ftsst") + imuTag(r.imu, "ftsst") : "ข้าม") +
     row("ลุกเดิน 3 เมตร", r.tug != null ? r.tug.toFixed(1) + " วินาที" : "ข้าม") +
     row("ทรงตัว 4 ท่า", balText(r)) + (r.balStages && r.balStages.length ? '<p class="sub" style="margin:4px 0 0;font-size:14px">' + balDetail(r.balStages) + '</p>' : '') +
     (r.barthel ? row("กิจวัตรประจำวัน (บาร์เธล)", adlLine(r)) : '') + (r.home || (r.skipped && r.skipped.home) ? row("จุดเสี่ยงในบ้าน", homeLine(r)) : '') + '</div>';

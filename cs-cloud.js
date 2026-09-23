@@ -68,9 +68,12 @@
     /* วิธีวัดต่อท่า: กล้อง (cs-camera.js ยกจาก V2) หรือกดจับเวลาเอง — โครงสร้างเดียวกับที่ V2 ส่ง */
     var cam = rec.cam || {}, cf = cam.ftsst && !cam.ftsst.manual ? cam.ftsst : null, ct = cam.tug && !cam.tug.manual ? cam.tug : null;
     var anyCam = !!(cf || ct || (rec.balCam && rec.balCam.some(Boolean)));
+    /* เซ็นเซอร์คาดเอว (cs-imu.js): ผลต่อท่า — ส่งเฉพาะตัวเลขคำนวณแล้ว ไม่ส่งสัญญาณดิบ */
+    var im = rec.imu || {}, imF = im.ftsst || null, imT = im.tug || null, imB = rec.balImu && rec.balImu.some(Boolean) ? rec.balImu : null;
+    var anyImu = !!(imF || imT || imB), imAny = imF || imT || (imB ? imB.filter(Boolean)[0] : null);
     return {
-      at: rec.date, method: anyCam ? "camera-pose" : "manual", ftsst: rec.ftsst, tug: rec.tug,
-      reps: rec.ftsst != null ? (cf ? cf.reps : 5) : null, cv: cf ? cf.cv : null, gaps: cf ? cf.gaps : null,
+      at: rec.date, method: anyImu ? "imu" : anyCam ? "camera-pose" : "manual", ftsst: rec.ftsst, tug: rec.tug,
+      reps: rec.ftsst != null ? (cf ? cf.reps : imF ? imF.reps : 5) : null, cv: cf ? cf.cv : imF && imF.imu && imF.imu.ftsst ? imF.imu.ftsst.stsCv : null, gaps: cf ? cf.gaps : null,
       score: rec.score, max: rec.max, tier: rec.tier, parts: rec.parts, verified: false,
       engine: ENGINE, durSec: null,
       safetyGate: { answers: rec.safety || null, verdict: { safe: true, mode: "carer" } },
@@ -78,13 +81,14 @@
       medsDetail: { count: rec.medsCount, n: rec.medsItems ? rec.medsItems.length : null, items: rec.medsItems || null,
                     frid_high: rec.fridHigh == null ? null : rec.fridHigh, frid_total: rec.fridTotal == null ? null : rec.fridTotal },
       homeDetail: rec.home || null, notTested: rec.ftsst == null && rec.tug == null && rec.balance == null,
-      testQuality: { measured_by: "carer", ended_by: ct ? "camera" : "carer", alone: false, alone_skip: false, distance_ok: rec.tug != null ? (ct ? ct.distanceOk : true) : null },
+      testQuality: { measured_by: "carer", ended_by: ct ? "camera" : imT ? "imu" : "carer", alone: false, alone_skip: false, distance_ok: rec.tug != null ? (ct ? ct.distanceOk : imT && imT.distanceOk != null ? !!imT.distanceOk : true) : null },
       detail: {
-        method: anyCam ? "camera-pose" : "manual", measured_by: "carer", carer_name: carerName || null, app: "v3",
+        method: anyImu ? "imu" : anyCam ? "camera-pose" : "manual", measured_by: "carer", carer_name: carerName || null, app: "v3",
         cam_engine: anyCam ? ((cf || ct || {}).quality || {}).engine || "cam-2.0" : null, ftsst_quality: cf ? cf.quality || null : null,
-        methods: { ftsst: cf ? "camera-pose" : "manual", tug: ct ? "camera-pose" : "manual", balance: rec.balCam && rec.balCam.some(Boolean) ? "camera-pose" : "manual" },
+        methods: { ftsst: imF ? "imu" : cf ? "camera-pose" : "manual", tug: imT ? "imu" : ct ? "camera-pose" : "manual", balance: imB ? "imu" : rec.balCam && rec.balCam.some(Boolean) ? "camera-pose" : "manual" },
         steadi: { fell: rec.fallsCount != null && rec.fallsCount >= 1 && rec.fallsCount !== 9, worried: !!rec.worried, unsteady: null },
         tug: ct ? { out: ct.out, back: ct.back, distance_ok: ct.distanceOk, turn_by: "camera", back_by: "camera", ended_by: "camera", mark_turn: false, reach: ct.reaction, drift: ct.drift, gait: ct.gait || null, meters: ct.meters == null ? null : ct.meters, quality: ct.quality || null }
+                : imT ? { out: imT.out, back: imT.back, distance_ok: imT.distanceOk == null ? null : !!imT.distanceOk, turn_by: "imu", back_by: "imu", ended_by: "imu", mark_turn: false, reach: imT.reaction, drift: null, gait: null, meters: null, quality: imT.quality || null }
                 : { out: null, back: null, distance_ok: rec.tug != null ? true : null, turn_by: null, back_by: null, ended_by: "carer", mark_turn: false, reach: null, drift: null },
         balance: { passed: balPassed, seconds: rec.balance,
                    label: balPassed == null ? null : "ทรงตัวผ่าน " + balPassed + " จาก 4 ท่า" + (rec.balance != null ? " · ยืนต่อเท้า " + rec.balance + " วินาที" : ""),
@@ -93,7 +97,10 @@
         adl: rec.adl, pending_expert: !!rec.pending,
         /* บาร์เธล 10 ข้อ — ชื่อฟิลด์ตามที่ใบส่งต่อ (SQL 22 · cs-referral-forms.js) อ่าน: detail.barthel.total / band */
         barthel: rec.barthel ? { total: rec.barthel.total, band: rec.barthel.band, band_key: rec.barthel.band_key, dependent: !!rec.barthel.dependent,
-                                 weak: rec.barthel.weak || [], change: rec.barthel.change || null, items: rec.barthelAns || null, scale: "barthel20_th" } : null
+                                 weak: rec.barthel.weak || [], change: rec.barthel.change || null, items: rec.barthelAns || null, scale: "barthel20_th" } : null,
+        /* เซ็นเซอร์คาดเอว — ใบส่งต่ออ่าน detail.imu (SQL 29 ส่งต่อเป็น package.imu) */
+        imu: anyImu ? { device: "nano33ble-rev2", engine: imAny && imAny.engine || null, fw: imAny && imAny.quality ? imAny.quality.fw || null : null,
+                        ftsst: imF ? imF.imu : null, tug: imT ? imT.imu : null, balance: imB ? imB.map(function (x) { return x ? x.imu : null; }) : null } : null
       }
     };
   }

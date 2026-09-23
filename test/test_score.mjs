@@ -162,7 +162,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("ปิดแถบชวนติดตั้งแล้วจำไว้", /localStorage\.setItem\(A2HS\.key, "no"\)/.test(app));
   ok("ทางลัด ?go= เปิดหน้าที่ต้องการได้", /\["fall", "test", "history", "meds", "video", "appts"\]\.indexOf\(goto\)/.test(app));
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
-  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-23/.test(sw));
+  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-24/.test(sw));
 }
 
 /* ใบส่งต่อแบบเอกสารทางการ: ทุกสัญญาณต้องมีเกณฑ์ เหตุผล และเอกสารอ้างอิง */
@@ -329,7 +329,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
     [...src.matchAll(/<script>([\s\S]*?)<\/script>/g)].forEach((m, i) => { try { new vm.Script(m[1]); } catch (e) { bad.push(f + "#" + i + " " + e.message); } });
     if (/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(src)) bad.push(f + " มีอักขระควบคุมแฝง");
   }
-  ["cs-meds.js", "cs-ocr.js", "cs-camera.js", "cs-install.js"].forEach((f) => { const src = readFileSync(new URL("../" + f, import.meta.url), "utf8"); try { new vm.Script(src); } catch (e) { bad.push(f + " " + e.message); } if (/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(src)) bad.push(f + " มีอักขระควบคุมแฝง"); });
+  ["cs-meds.js", "cs-ocr.js", "cs-camera.js", "cs-install.js", "cs-imu.js", "cs-referral-forms.js", "cs-cloud.js"].forEach((f) => { const src = readFileSync(new URL("../" + f, import.meta.url), "utf8"); try { new vm.Script(src); } catch (e) { bad.push(f + " " + e.message); } if (/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(src)) bad.push(f + " มีอักขระควบคุมแฝง"); });
   ok("สคริปต์ทุกหน้าคอมไพล์ผ่าน และไม่มีอักขระควบคุมแฝง", !bad.length, bad);
 }
 

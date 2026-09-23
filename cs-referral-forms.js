@@ -66,8 +66,8 @@
       bladder: "ยารักษากระเพาะปัสสาวะไว", hypnotic: "ยานอนหลับ", none: "ไม่อยู่ในกลุ่มเสี่ยงหกล้ม", unknown: "ยังจัดกลุ่มไม่ได้" },
     fridLevel: { 2: "หลักฐานเข้ม", 1: "ปานกลาง", 0: "ไม่เสี่ยง" },
     balStage: ["เท้าชิดกัน", "กึ่งต่อเท้า", "ต่อเท้าเป็นเส้นตรง", "ยืนขาเดียว"],
-    endedBy: { human: "ผู้ใช้/ผู้ดูแลกดจบ", gesture: "ผู้ใช้สั่งจบด้วยการยกมือหรือรีโมต", camera: "กล้องเห็นนั่งลง (ต้องยืนยัน)", timeout: "หมดเวลา", carer: "ผู้ดูแลกดจบ" },
-    src: { sys: "จากระบบ", self: "ผู้เอาประกันตอบ", fam: "ครอบครัวรายงาน", pro: "ผู้เชี่ยวชาญกรอก" },
+    endedBy: { human: "ผู้ใช้/ผู้ดูแลกดจบ", gesture: "ผู้ใช้สั่งจบด้วยการยกมือหรือรีโมต", camera: "กล้องเห็นนั่งลง (ต้องยืนยัน)", imu: "เซ็นเซอร์คาดเอวเห็นนั่งลง (ผู้ดูแลตรวจแล้วบันทึก)", timeout: "หมดเวลา", carer: "ผู้ดูแลกดจบ" },
+    src: { sys: "จากระบบ", self: "ผู้เอาประกันตอบ", fam: "ครอบครัวรายงาน", pro: "ผู้เชี่ยวชาญกรอก", imu: "เซ็นเซอร์คาดเอว", prog: "เกณฑ์ภายในโปรแกรม" },
     verdict: { confirm: "ยืนยัน", not_confirm: "ไม่ยืนยัน", need_more_info: "ขอข้อมูลเพิ่ม", advised: "ให้คำแนะนำ", refer_other: "ส่งต่อวิชาชีพอื่น", follow_up: "นัดติดตาม" },
     nextStep: { sufficient: "ข้อมูลเพียงพอ ไม่ต้องทำเพิ่ม", need_more_info: "ขอข้อมูลเพิ่มเติม", book_assessment: "นัดประเมินต่อ", refer_doctor: "ส่งต่อแพทย์", refer_other: "ส่งต่อวิชาชีพอื่น", follow_plan: "ติดตามตามแผน" },
     urgency: { today: "ด่วนวันนี้", h24: "ภายใน 24 ชั่วโมง", h72: "ภายใน 72 ชั่วโมง", routine: "นัดตามปกติ" }
@@ -162,6 +162,7 @@
       method: q.method || m.method || null, verified: q.identity_verified, notTested: !!q.not_tested,
       distanceOk: m.tug && has(m.tug.distance_ok) ? !!m.tug.distance_ok : null, endedBy: m.tug ? m.tug.ended_by : null,
       tugOut: m.tug ? m.tug.out : null, tugBack: m.tug ? m.tug.back : null, tugReaction: m.tug ? m.tug.reaction : null,
+      imu: pkg.imu || m.imu || null,   /* เซ็นเซอร์คาดเอว (SQL 29) */
       safetyVerdict: q.safety_verdict || null,
       level: risk.level || null, tier: risk.tier, score: risk.score, max: risk.max, flags: risk.flags || [],
       nAssess: m.n_assessments || 0, firstAt: m.first_at, lastAt: m.last_at,
@@ -320,9 +321,12 @@
     if (d.flags.length) h += '<div class="box"><b class="t">สัญญาณที่ระบบตั้งธง (ตรวจสอบย้อนหลังได้)</b>' +
       d.flags.map(function (f) { return '<div>• <b>' + esc(f.id || "") + '</b> ' + esc(f.text || "") + (f.why ? ' <span style="color:#7B8AA1">— ' + esc(f.why) + '</span>' : "") + '</div>'; }).join("") + '</div>';
 
+    /* ค่าวัดจากเซ็นเซอร์คาดเอว (ถ้ามี) — ตัวเลขแบบห้องตรวจการเคลื่อนไหวสำหรับแพทย์/นักกายภาพ */
+    if (d.imu) h += imuHTML(d.imu);
+
     /* คุณภาพข้อมูลและความปลอดภัยระหว่างทดสอบ */
     h += bar("คุณภาพข้อมูลและความปลอดภัยระหว่างทดสอบ", "บอกว่าตัวเลขข้างบนเชื่อได้แค่ไหน") + '<div class="rfgrid">' +
-      row("วิธีวัด", d.method === "camera_aruco" ? "กล้อง + ป้ายสัญลักษณ์" : d.method === "camera-pose" || d.method === "camera" ? "กล้อง (ไม่มีป้าย)" : d.method === "manual" ? "จับเวลาด้วยคน" : (d.method || "—"), { src: "sys" }) +
+      row("วิธีวัด", d.method === "camera_aruco" ? "กล้อง + ป้ายสัญลักษณ์" : d.method === "camera-pose" || d.method === "camera" ? "กล้อง (ไม่มีป้าย)" : d.method === "imu" ? "เซ็นเซอร์คาดเอว (บางท่าอาจใช้กล้องหรือจับเวลา)" : d.method === "manual" ? "จับเวลาด้วยคน" : (d.method || "—"), { src: "sys" }) +
       row("ยืนยันระยะ 3 เมตรด้วยป้าย", d.distanceOk === null ? "ไม่ทราบ" : d.distanceOk ? "ยืนยันแล้ว" : "ไม่ได้ยืนยัน — ประมาณจากขนาดตัวในภาพ", { src: "sys", cls: d.distanceOk === false ? "warn" : "" }) +
       row("ใครกดจบ TUG", d.endedBy ? (L.endedBy[d.endedBy] || d.endedBy) : "—", { src: "sys" }) +
       row("มีผู้ดูแลขณะทดสอบ", d.alone ? "ทำคนเดียว" : "มีผู้ดูแลอยู่ข้าง ๆ", { src: "self", cls: d.alone ? "warn" : "" }) +
@@ -526,6 +530,78 @@
     return '<div class="rfdoc" data-dest="' + esc(r.destination) + '">' + body + '</div>';
   }
 
+  /* ============================================================
+     ค่าวัดจากเซ็นเซอร์คาดเอว (cs-imu.js · firmware/CareSignal-Waist)
+     ทุกแถวบอก "ค่า · เกณฑ์/ค่าอ้างอิง · ที่มา" — เกณฑ์ตัวเลขที่งานวิจัยยังไม่ได้กำหนดเป็นสากล
+     ติดป้าย "เกณฑ์ภายในโปรแกรม" ให้ผู้เชี่ยวชาญใช้ดุลยพินิจ ไม่ใช่การวินิจฉัย
+     ============================================================ */
+  var IMU_SRC = {
+    steadi: "CDC STEADI — Timed Up & Go (2017)", wfg: "World Guidelines for Falls Prevention 2022 (ความเร็วเดิน < 0.8 ม./วิ = เสี่ยงสูง)",
+    itug: "Salarian 2010 (iTUG) · Weiss 2011 (instrumented TUG, Physiol Meas)", ists: "Van Lummel 2013 (Gait & Posture) · Millor 2013 (J NeuroEng Rehabil)",
+    isway: "Mancini 2012 — ISway (J NeuroEng Rehabil)", gait: "Moe-Nilssen & Helbostad 2004 (J Biomech)", prog: "เกณฑ์ภายในโปรแกรม CareSignal"
+  };
+  function sec1(ms) { return ms == null ? "—" : (ms / 1000).toFixed(1) + " วิ"; }
+  function imuRows(imu) {
+    var G = [];
+    function grp(nm, sub) { var g = { g: nm, sub: sub, rows: [] }; G.push(g); return g; }
+    function add(g, nm, v, ref, cls, src) { g.rows.push({ nm: nm, v: v, ref: ref, cls: cls || "", src: src || "prog" }); }
+    if (!imu) return G;
+    var F = imu.ftsst, T = imu.tug, B = imu.balance;
+    if (F && F.ftsst) {
+      var f = F.ftsst, g = grp("ลุกนั่ง 5 ครั้ง — instrumented 5×STS", "ช่วงลุกและกำลังจากเซ็นเซอร์ที่เอว");
+      add(g, "เวลารวม (นับจากสัญญาณเริ่ม)", sec1(F.totalMs) + (F.status !== "ok" ? " · ทำไม่ครบ" : ""), "ค่าตัดไทยตามอายุ 10.0 / 11.5 / 12.1 วิ", F.totalMs != null && F.totalMs >= 12000 ? "warn" : "", "sys");
+      add(g, "เวลาตอบสนองหลังสัญญาณเริ่ม", sec1(F.reactionMs), "> 1.0 วิ ควรสังเกต (การได้ยิน ความตั้งใจ การรู้คิด)", F.reactionMs > 1000 ? "warn" : "", "prog");
+      var rm = f.repMs || [];
+      add(g, "เวลาแต่ละครั้ง (1→5)", rm.length ? rm.map(function (m) { return (m / 1000).toFixed(1); }).join(" · ") + " วิ" : "—", "ครั้งท้ายช้ากว่าครั้งแรกเกิน 30% = ล้าเร็ว", rm.length >= 2 && rm[rm.length - 1] > rm[0] * 1.3 ? "warn" : "", "prog");
+      add(g, "ความสม่ำเสมอของแต่ละครั้ง (CV)", f.stsCv == null ? "—" : f.stsCv + " %", "> 20% = ไม่สม่ำเสมอ ควรสังเกตการควบคุมการเคลื่อนไหว", f.stsCv > 20 ? "warn" : "", "prog");
+      add(g, "ช่วงลุกจากเก้าอี้เฉลี่ย (เริ่มก้ม → ยืนสุด)", sec1(f.stsMeanMs), "ยิ่งนานยิ่งบ่งชี้กำลังขา/การควบคุมลดลง · > 2.0 วิ ควรสังเกต", f.stsMeanMs > 2000 ? "warn" : "", "ists");
+      add(g, "ความเร็วก้มลำตัวสูงสุด", f.peakOmega == null ? "—" : f.peakOmega + " องศา/วิ", "< 40 องศา/วิ = ลุกช้า ระมัดระวังตัว", f.peakOmega != null && f.peakOmega < 40 ? "warn" : "", "ists");
+      add(g, "ความเร่งแนวตั้งสูงสุดขณะลุก (ดัชนีกำลัง)", f.peakAv == null ? "—" : f.peakAv.toFixed(2) + " g", "< 0.15 g = กำลังขาลดลง", f.peakAv != null && f.peakAv < 0.15 ? "warn" : "", "ists");
+      add(g, "มุมก้มลำตัวสูงสุด", f.tiltMax == null ? "—" : f.tiltMax + "°", "> 45° = ใช้แรงเหวี่ยงลำตัวชดเชยกำลังขา", f.tiltMax > 45 ? "warn" : "", "prog");
+    }
+    if (T && T.tug) {
+      var t = T.tug, g2 = grp("ลุกเดิน 3 เมตร — instrumented TUG", "แยกช่วงย่อยตามงานวิจัย iTUG");
+      add(g2, "เวลารวม (นับจากสัญญาณเริ่ม)", sec1(T.totalMs) + (T.status !== "ok" ? " · ทำไม่ครบ" : ""), "ตั้งแต่ 12 วิ = เสี่ยงหกล้ม", T.totalMs != null && T.totalMs >= 12000 ? "bad" : "", "steadi");
+      add(g2, "เวลาตอบสนองหลังสัญญาณเริ่ม", sec1(T.reactionMs), "> 1.0 วิ ควรสังเกต", T.reactionMs > 1000 ? "warn" : "", "prog");
+      add(g2, "ลุกจากเก้าอี้ (sit-to-stand)", sec1(t.stsMs), "> 2.0 วิ ควรสังเกต", t.stsMs > 2000 ? "warn" : "", "itug");
+      add(g2, "เดินไป / เดินกลับ", sec1(t.walkOutMs) + " / " + sec1(t.walkBackMs), "ขากลับช้ากว่าขาไปเกิน 30% = ล้าหรือลังเลหลังหมุน", t.walkOutMs != null && t.walkBackMs > t.walkOutMs * 1.3 ? "warn" : "", "itug");
+      add(g2, "หมุนตัวกลับ", t.turnSeen ? sec1(t.turnMs) + (t.turnDeg != null ? " · " + Math.round(t.turnDeg) + "°" : "") + (t.turnPeak != null ? " · เร็วสุด " + Math.round(t.turnPeak) + " องศา/วิ" : "") : "ไม่พบการหมุนชัดเจน", "หมุนนานกว่า 3.0 วิ หรือหมุนทั้งตัวช้า สัมพันธ์กับความเสี่ยงล้ม", !t.turnSeen || t.turnMs > 3000 ? "warn" : "", "itug");
+      add(g2, "หมุนก่อนนั่ง", sec1(t.turn2Ms), "ข้อมูลประกอบ (มักหมุนไม่สุด)", "", "itug");
+      add(g2, "นั่งลง (stand-to-sit)", sec1(t.sitMs), "> 2.0 วิ หรือทิ้งตัวลง (< 0.5 วิ) ควรสังเกต", t.sitMs != null && (t.sitMs > 2000 || t.sitMs < 500) ? "warn" : "", "prog");
+      add(g2, "จำนวนก้าว · จังหวะก้าว", (t.steps || 0) + " ก้าว" + (t.cadence != null ? " · " + Math.round(t.cadence) + " ก้าว/นาที" : ""), "< 90 ก้าว/นาที = เดินช้า", t.cadence != null && t.cadence < 90 ? "warn" : "", "gait");
+      add(g2, "ความสม่ำเสมอของก้าว (CV)", t.stepCv == null ? "—" : t.stepCv + " %", "> 10% = ก้าวไม่สม่ำเสมอ", t.stepCv > 10 ? "warn" : "", "gait");
+      add(g2, "ความเร็วเดินโดยประมาณ (ระยะ 3 ม. × 2)", t.speed == null ? "—" : t.speed.toFixed(2) + " ม./วิ", "< 0.8 ม./วิ = เสี่ยงสูง (ค่ามาตรฐานควรวัดบนทางเดิน 4 ม.)", t.speed != null && t.speed < 0.8 ? "bad" : t.speed != null && t.speed < 1.0 ? "warn" : "", "wfg");
+    }
+    if (B && B.length) {
+      var g3 = grp("ท่าทรงตัว — การแกว่งของลำตัว (accelerometric sway)", "ไม่มีเกณฑ์สากล ให้เทียบกับครั้งก่อนของคนเดียวกัน ค่ามากขึ้น = แกว่งมากขึ้น");
+      B.forEach(function (x, i) {
+        var b = x && x.balance; if (!b) return;
+        add(g3, (i + 1) + ". " + (L.balStage[i] || "ท่าที่ " + (i + 1)), "ยืน " + b.heldSec + " วิ · RMS " + b.rms + " ม./วิ² · แกนหลัก/รอง " + b.major + " / " + b.minor + " · พื้นที่ 95% " + b.area + " · jerk " + b.jerk + " · ความถี่ " + b.freq + " Hz" + (b.stepped ? " · ขยับตัวมาก/ก้าว" : ""),
+          "RMS และพื้นที่วงรีเพิ่มขึ้นเมื่อการควบคุมท่าทางลดลง · ท่ายากขึ้นค่าควรเพิ่มขึ้นตามลำดับ", b.stepped ? "warn" : "", "isway");
+      });
+    }
+    var any = F || T || (B && B.filter(Boolean)[0]);
+    if (any) {
+      var g4 = grp("อุปกรณ์และคุณภาพสัญญาณ", "");
+      var imp = [F, T].concat(B || []).filter(function (x) { return x && x.impact; })[0];
+      if (imp) add(g4, "แรงกระแทกระหว่างทดสอบ", imp.maxG + " g ที่ " + sec1(imp.impactAt), "> 3 g = อาจล้มหรือกระแทก ตรวจสอบเหตุการณ์", "bad", "prog");
+      add(g4, "อุปกรณ์", (imu.device === "nano33ble-rev2" ? "Arduino Nano 33 BLE Sense Rev2 (BMI270) ที่เอว" : (imu.device || "เซ็นเซอร์คาดเอว")) + (imu.fw ? " · " + imu.fw : "") + (any.fsHz ? " · " + any.fsHz + " Hz" : ""), "ค่าที่ได้จากเซ็นเซอร์ตัวเดียวที่บ้าน ยังไม่ผ่านการเทียบกับห้องตรวจการเคลื่อนไหวในกลุ่มผู้สูงอายุไทย", "", "sys");
+    }
+    return G;
+  }
+  function imuHTML(imu) {
+    var G = imuRows(imu); if (!G.length) return "";
+    var h = bar("ค่าวัดจากเซ็นเซอร์คาดเอว (instrumented TUG · 5×STS · การแกว่งขณะยืน)", "ตัวเลขประกอบการพิจารณาของแพทย์/นักกายภาพ — ไม่ใช่การวินิจฉัย · เกณฑ์ที่มีงานวิจัยรองรับระบุที่มาไว้ ที่เหลือเป็นเกณฑ์ภายในโปรแกรม");
+    h += '<div style="padding:0 22px 6px">';
+    G.forEach(function (g) {
+      h += '<table class="rft"><thead><tr><th style="width:30%">' + esc(g.g) + (g.sub ? '<div style="font-weight:400;font-size:11px;color:#7B8AA1">' + esc(g.sub) + '</div>' : "") + '</th><th style="width:28%">ค่าที่วัดได้</th><th>เกณฑ์ / ค่าอ้างอิง</th><th style="width:16%">ที่มา</th></tr></thead><tbody>' +
+        g.rows.map(function (r) { return '<tr class="' + esc(r.cls) + '"><td>' + esc(r.nm) + '</td><td class="num"' + (r.cls === "bad" ? ' style="color:#B91C1C;font-weight:700"' : r.cls === "warn" ? ' style="color:#B45309;font-weight:700"' : "") + '>' + esc(r.v) + '</td><td style="font-size:12px;color:#4F5F78">' + esc(r.ref) + '</td><td style="font-size:11px;color:#7B8AA1">' + esc(IMU_SRC[r.src] || L.src[r.src] || r.src) + '</td></tr>'; }).join("") +
+        '</tbody></table>';
+    });
+    h += '<div style="font-size:11.5px;color:#7B8AA1;margin-top:4px">ค่าเหล่านี้คือสิ่งที่ห้องตรวจการเคลื่อนไหววัดด้วยเซ็นเซอร์ที่เอว (ตำแหน่งใกล้จุดศูนย์ถ่วง) ระบบไม่ใช้ค่าเหล่านี้เปลี่ยนคะแนนความเสี่ยงหลัก — ใช้ให้ผู้เชี่ยวชาญเห็น "ลุกอย่างไร หมุนอย่างไร แกว่งแค่ไหน" นอกเหนือจากเวลารวม</div></div>';
+    return h;
+  }
+
   /* ---------- อ่านค่าจากฟอร์มตอบ → โครงสร้าง ---------- */
   function collect(root, dest) {
     function val(n) { var e = root.querySelector('[name="' + n + '"]'); return e ? String(e.value || "").trim() : ""; }
@@ -645,7 +721,7 @@
 
   root.CSReferralForms = {
     L: L, REASONS: REASONS, TUG_OBS: TUG_OBS, RISK_ROWS: RISK_ROWS, VERDICT_NEXT: VERDICT_NEXT, CSS: CSS,
-    derive: derive, riskPrefill: riskPrefill, docHTML: docHTML, collect: collect, bindOrtho: bindOrtho,
+    derive: derive, riskPrefill: riskPrefill, docHTML: docHTML, collect: collect, bindOrtho: bindOrtho, imuRows: imuRows, imuHTML: imuHTML, IMU_SRC: IMU_SRC,
     summaryHTML: summaryHTML, moduleSummaryHTML: moduleSummaryHTML, reviewDocHTML: reviewDocHTML, orthoAbnormal: orthoAbnormal, injectCSS: injectCSS,
     reasonsFor: function (dest) { return REASONS.filter(function (z) { return z.to.indexOf(dest) >= 0; }); },
     /* เสนอเหตุผลจากชุดข้อมูล — ผู้ประสานงานยังต้องกดเลือกเอง */

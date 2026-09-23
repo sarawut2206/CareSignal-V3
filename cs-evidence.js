@@ -30,6 +30,13 @@
     barthelTh: "ดัชนีบาร์เธลเอดีแอล ฉบับภาษาไทย ที่กระทรวงสาธารณสุขใช้คัดกรองผู้สูงอายุ · กลุ่มติดสังคม (≥12) ติดบ้าน (5–11) ติดเตียง (0–4) ตามระบบการดูแลระยะยาว (Long-Term Care) ของกระทรวงสาธารณสุขและ สปสช.",
     cdcHome: "CDC STEADI. Check for Safety: A Home Fall Prevention Checklist for Older Adults. 2017.",
     cochraneHome: "Gillespie LD, et al. Interventions for preventing falls in older people living in the community. Cochrane Database of Systematic Reviews. 2012;(9):CD007146.",
+    /* เซ็นเซอร์คาดเอว (instrumented tests) — cs-imu.js · firmware/CareSignal-Waist */
+    itug: "Salarian A, Horak FB, Zampieri C, Carlson-Kuhta P, Nutt JG, Aminian K. iTUG, a sensitive and reliable measure of mobility. IEEE Transactions on Neural Systems and Rehabilitation Engineering. 2010;18(3):303–310.",
+    weiss: "Weiss A, Herman T, Plotnik M, Brozgol M, Giladi N, Hausdorff JM. An instrumented timed up and go: the added value of an accelerometer for identifying fall risk in idiopathic fallers. Physiological Measurement. 2011;32(12):2003–2018.",
+    ists: "Van Lummel RC, Ainsworth E, Lindemann U, Zijlstra W, Chiari L, Van Campen P, Hausdorff JM. Automated approach for quantifying the repeated sit-to-stand using one body fixed sensor in young and older adults. Gait & Posture. 2013;38(1):153–156.",
+    millor: "Millor N, Lecumberri P, Gómez M, Martínez-Ramírez A, Izquierdo M. An evaluation of the 30-s chair stand test in older adults: frailty detection based on kinematic parameters from a single inertial unit. Journal of NeuroEngineering and Rehabilitation. 2013;10:86.",
+    isway: "Mancini M, Salarian A, Carlson-Kuhta P, Zampieri C, King L, Chiari L, Horak FB. ISway: a sensitive, valid and reliable measure of postural control. Journal of NeuroEngineering and Rehabilitation. 2012;9:59.",
+    gaitacc: "Moe-Nilssen R, Helbostad JL. Estimation of gait cycle characteristics by trunk accelerometry. Journal of Biomechanics. 2004;37(1):121–126.",
     program: "เกณฑ์ภายในโปรแกรม CareSignal — กำหนดเพื่อการติดตาม ยังไม่ผ่านการทดสอบความแม่นยำทางคลินิก"
   };
 
