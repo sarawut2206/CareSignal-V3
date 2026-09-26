@@ -489,6 +489,45 @@ td.num{font-family:var(--mono);white-space:nowrap}
 .pthead .sp{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .pthead .ghostb{width:auto;margin:0;padding:7px 12px;font-size:13px}
 
+/* ---------- หน้ารายละเอียดเคสแบบแดชบอร์ดผู้ป่วย: หัวเวชระเบียน · การ์ดตัวเลข · กราฟ · แผนที่ร่างกาย · นัดถัดไป ---------- */
+.pthead .av{width:48px;height:48px;border-radius:50%;background:var(--brandt);color:var(--brand2);display:grid;place-items:center;font-weight:800;font-size:19px;flex:none}
+.cdgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}
+@media(max-width:1100px){.cdgrid{grid-template-columns:1fr}}
+.cdtiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+@media(max-width:720px){.cdtiles{grid-template-columns:repeat(2,1fr)}}
+.tile{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;box-shadow:var(--sh);min-width:0}
+.tile .tl{font-size:12px;color:var(--ink2);font-weight:600;line-height:1.3}
+.tile .tv{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.15;margin-top:2px;font-variant-numeric:tabular-nums}
+.tile .tv small{font-size:12px;color:var(--ink3);font-weight:500;margin-left:3px}
+.tile .tv.bad{color:var(--c1)}.tile .tv.warn{color:var(--c3)}
+.tile .td{font-size:11.5px;margin-top:2px;font-weight:600}.tile .td.up{color:var(--c1)}.tile .td.dn{color:var(--c4)}.tile .td.flat{color:var(--ink3)}
+.tile .tb{display:flex;gap:3px;align-items:flex-end;height:30px;margin-top:8px}
+.tile .tb i{flex:1;border-radius:3px 3px 0 0;background:var(--line);min-height:3px}.tile .tb i.on{background:var(--brand)}.tile .tb i.bad{background:var(--c1)}
+.cdtabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 8px}
+.cdtabs button{border:1px solid var(--line);background:var(--surf);color:var(--ink2);font:inherit;font-size:12.5px;padding:6px 12px;border-radius:99px;cursor:pointer}
+.cdtabs button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink);font-weight:600}
+.cdchart svg{width:100%;height:auto;display:block}
+.cdchart .ax{fill:var(--ink3);font-size:11px;font-family:var(--sans)}
+.prof{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+.prof .av{width:56px;height:56px;border-radius:50%;background:var(--brandt);color:var(--brand2);display:grid;place-items:center;font-weight:800;font-size:22px;flex:none}
+.prof b{display:block;font-size:17px;line-height:1.25}.prof small{color:var(--ink3);font-family:var(--mono);font-size:12px}
+.profgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px 12px}
+.profgrid div{font-size:13.5px;min-width:0;overflow-wrap:anywhere}.profgrid span{display:block;font-size:11px;color:var(--ink3);margin-bottom:1px}
+.bodymap{display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:center}
+.bodymap svg{width:100%;height:auto}
+.bodymap .zone{fill:#D6DEE9;stroke:#fff;stroke-width:1.5}.bodymap .zone.on{fill:var(--c1)}.bodymap .zone.warn{fill:var(--c3)}
+.bodymap ul{list-style:none;margin:0;padding:0;font-size:12.5px}
+.bodymap li{display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px dashed var(--line2);line-height:1.4}.bodymap li:last-child{border:0}
+.bodymap li i{width:10px;height:10px;border-radius:50%;background:#D6DEE9;flex:none;margin-top:5px}.bodymap li i.on{background:var(--c1)}.bodymap li i.warn{background:var(--c3)}
+.bodymap li small{display:block;color:var(--ink3);font-size:11.5px}
+.upc{display:flex;flex-direction:column;gap:8px}
+.upc .u{display:grid;grid-template-columns:4px 1fr auto;gap:10px;align-items:center;background:var(--surf2);border-radius:12px;padding:9px 11px}
+.upc .u i{display:block;width:4px;height:100%;min-height:34px;border-radius:99px;background:var(--brand)}
+.upc .u[data-l="late"] i{background:var(--c1)}.upc .u[data-l="soon"] i{background:var(--c2)}.upc .u[data-l="done"] i{background:var(--c4)}
+.upc .u b{display:block;font-size:13.5px;line-height:1.3}.upc .u small{color:var(--ink3);font-size:11.5px}
+.upc .u .t{font-size:12px;color:var(--ink2);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.upc .u[data-l="late"] .t{color:var(--c1);font-weight:700}
+
 /* ---------- จอแคบ: ตารางพับเป็นการ์ด หัวคอลัมน์มาอยู่หน้าค่า ---------- */
 @media(max-width:720px){
   .dtbl thead{display:none}
@@ -1733,6 +1772,83 @@ function spark(vals,color,invert){
     '<polyline points="'+pts+'" fill="none" stroke="'+(worse?"var(--c1)":"var(--c4)")+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'+
     '</svg>';
 }
+/* ---------- ชิ้นส่วนหน้ารายละเอียดเคสแบบแดชบอร์ดผู้ป่วย ---------- */
+function cdNum(A,key){ return A.map(function(x){ var v=key==="tug"?x.tug_seconds:key==="ftsst"?x.ftsst_seconds:key==="score"?x.score:key==="bal"?(x.parts&&x.parts.balance):(x.parts&&x.parts.adl); return v==null?null:+v }) }
+function cdShort(t){ try{ return new Date(t).toLocaleDateString("th-TH",{day:"numeric",month:"short"}) }catch(e){ return "" } }
+/* การ์ดตัวเลข: ค่าล่าสุด · เทียบครั้งก่อน · แท่งย่อ 8 ครั้งหลัง (สูงกว่าเกณฑ์ = แดง) */
+function cdTile(nm,vals,o){
+  var v=vals.filter(function(x){return x!=null}), last=v[v.length-1], prev=v[v.length-2];
+  var bad=o.cut!=null&&last!=null&&last>=o.cut, dcls="flat", dtx="ยังไม่มีครั้งก่อน";
+  if(last!=null&&prev!=null){ var d=last-prev; if(!d){dtx="เท่าครั้งก่อน"} else { var worse=o.higherBetter?d<0:d>0; dcls=worse?"up":"dn"; dtx=(worse?"แย่ลง ":"ดีขึ้น ")+(d>0?"+":"")+(Math.round(d*10)/10)+(o.unit?" "+o.unit:"")+" จากครั้งก่อน"; } }
+  var tail=v.slice(-8), mx=Math.max.apply(null,tail.concat([o.cut||0,1]));
+  var bars=tail.map(function(x,i){ return '<i class="'+(o.cut!=null&&x>=o.cut?"bad":i===tail.length-1?"on":"")+'" style="height:'+Math.max(10,Math.round(x/mx*100))+'%"></i>' }).join("");
+  return '<div class="tile"><div class="tl">'+esc(nm)+'</div><div class="tv'+(bad?" bad":"")+'">'+(last==null?"—":(o.fmt?o.fmt(last):last))+(o.unit?'<small>'+esc(o.unit)+'</small>':'')+'</div>'+
+    '<div class="td '+dcls+'">'+esc(dtx)+'</div>'+(tail.length?'<div class="tb">'+bars+'</div>':'')+(o.cut!=null?'<div class="tiny" style="margin:4px 0 0">เกณฑ์ '+o.cut+' '+esc(o.unit||"")+' — '+esc(o.cutNm||"")+'</div>':'')+'</div>';
+}
+function cdTiles(A){
+  var bal=cdNum(A,"bal");
+  return '<div class="cdtiles">'+
+    cdTile("ลุกเดิน 3 เมตร (TUG)",cdNum(A,"tug"),{unit:"วิ",cut:12,cutNm:"STEADI",fmt:function(x){return x.toFixed(1)}})+
+    cdTile("ลุกนั่ง 5 ครั้ง (FTSST)",cdNum(A,"ftsst"),{unit:"วิ",cut:12,cutNm:"ค่าตัดตามอายุ 10–12.1",fmt:function(x){return x.toFixed(1)}})+
+    cdTile("ทรงตัว 4 ท่า",bal,{unit:"/4 ท่า",higherBetter:true,fmt:function(x){return "ผ่าน "+x}})+
+    cdTile("คะแนนความเสี่ยง",cdNum(A,"score"),{unit:"/12",higherBetter:true})+
+  '</div>';
+}
+/* กราฟเส้นแนวโน้มต่อการประเมิน มีเส้นเกณฑ์ประ (STEADI 12 วิ) */
+function cdChart(A,key){
+  var cfg={tug:{cut:12,cutNm:"เกณฑ์ STEADI 12 วิ"},ftsst:{cut:12,cutNm:"ค่าตัด 12 วิ"},score:{},adl:{},bal:{}}[key]||{};
+  var pts=A.map(function(x){return {t:x.assessed_at,v:cdNum([x],key)[0]}}).filter(function(p){return p.v!=null});
+  if(pts.length<2)return '<div class="empty" style="padding:14px">ต้องประเมินอย่างน้อย 2 ครั้งจึงวาดแนวโน้มได้ (ตอนนี้ '+pts.length+' ครั้ง)</div>';
+  var W=620,H=210,L=38,R=14,T=16,B=34,iw=W-L-R,ih=H-T-B;
+  var vs=pts.map(function(p){return p.v}); if(cfg.cut!=null)vs=vs.concat([cfg.cut]);
+  var mn=Math.min.apply(null,vs), mx=Math.max.apply(null,vs); var pad=(mx-mn)*0.15||1; mn=Math.max(0,mn-pad); mx=mx+pad;
+  var X=function(i){return L+(pts.length>1?i/(pts.length-1):0.5)*iw}, Y=function(v){return T+ih-(v-mn)/(mx-mn)*ih};
+  var g="", k; for(k=0;k<=4;k++){ var yv=mn+(mx-mn)*k/4, yy=Y(yv); g+='<line x1="'+L+'" y1="'+yy.toFixed(1)+'" x2="'+(W-R)+'" y2="'+yy.toFixed(1)+'" stroke="var(--line2)"/><text class="ax" x="'+(L-6)+'" y="'+(yy+4).toFixed(1)+'" text-anchor="end">'+(Math.round(yv*10)/10)+'</text>' }
+  var line=pts.map(function(p,i){return X(i).toFixed(1)+","+Y(p.v).toFixed(1)}).join(" ");
+  var area='M'+X(0).toFixed(1)+','+(T+ih)+' L'+line.replace(/ /g," L")+' L'+X(pts.length-1).toFixed(1)+','+(T+ih)+' Z';
+  var step=Math.max(1,Math.ceil(pts.length/8));
+  var dots=pts.map(function(p,i){ var over=cfg.cut!=null&&p.v>=cfg.cut; return '<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="4.5" fill="'+(over?"var(--c1)":"var(--brand)")+'" stroke="#fff" stroke-width="2"><title>'+esc(cdShort(p.t))+': '+p.v+'</title></circle>'+
+    (i%step===0||i===pts.length-1?'<text class="ax" x="'+X(i).toFixed(1)+'" y="'+(H-10)+'" text-anchor="middle">'+esc(cdShort(p.t))+'</text>':'') }).join("");
+  var cut=cfg.cut!=null?'<line x1="'+L+'" y1="'+Y(cfg.cut).toFixed(1)+'" x2="'+(W-R)+'" y2="'+Y(cfg.cut).toFixed(1)+'" stroke="var(--c1)" stroke-dasharray="5 4" stroke-width="1.2"/><text class="ax" x="'+(W-R)+'" y="'+(Y(cfg.cut)-5).toFixed(1)+'" text-anchor="end" fill="var(--c1)">'+esc(cfg.cutNm)+'</text>':'';
+  return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="แนวโน้ม">'+g+'<path d="'+area+'" fill="var(--brandt)" opacity=".7"/>'+cut+
+    '<polyline points="'+line+'" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>'+dots+'</svg>';
+}
+/* แผนที่ร่างกาย: จุดที่สัญญาณชี้ (ไม่ใช่การวินิจฉัย) — หัว=ยา/หน้ามืด · ลำตัว=ล้ม/บาดเจ็บ · ขา=กำลังขา · เท้า=ทรงตัว */
+function cdBody(c,A,meds,fd,ans){
+  var last=A[A.length-1]||{}, sigs=(c.signals||[]).map(function(x){return x.k});
+  var has=function(k){return sigs.indexOf(k)>=0};
+  var hi=(meds||[]).filter(function(m){return m.frid_level===2}).length, md=(meds||[]).filter(function(m){return m.frid_level===1}).length;
+  var f=last.ftsst_seconds!=null?+last.ftsst_seconds:null, t=last.tug_seconds!=null?+last.tug_seconds:null, b=last.parts&&last.parts.balance!=null?+last.parts.balance:null;
+  var Z=[
+    {k:"head",nm:"ศีรษะ · ยาและอาการหน้ามืด",st:(has("S3")||hi>0||ans.faint>=2)?"on":(md>0||ans.faint>=1)?"warn":"",sub:hi||md?"ยาเสี่ยงหกล้ม "+(hi?hi+" รายการหลักฐานเข้ม":"")+(md?(hi?" · ":"")+md+" ปานกลาง":""):"ไม่พบยาเสี่ยงที่จัดกลุ่มได้"},
+    {k:"trunk",nm:"ลำตัว · ประวัติหกล้ม",st:(has("S1")||has("S2")||fd.injury>=2)?"on":(+fd.count>=1)?"warn":"",sub:fd.count!=null?"ล้ม "+fd.count+" ครั้งใน 12 เดือน"+(fd.injury>=2?" · มีบาดเจ็บ":""):"ไม่มีข้อมูลการล้ม"},
+    {k:"legs",nm:"ขา · กำลังขา",st:(has("S4")||(f!=null&&f>=12)||(t!=null&&t>=12))?"on":(f!=null&&f>=10)?"warn":"",sub:(f!=null?"ลุกนั่ง "+f.toFixed(1)+" วิ":"")+(t!=null?(f!=null?" · ":"")+"ลุกเดิน "+t.toFixed(1)+" วิ":"")||"ยังไม่ได้วัด"},
+    {k:"feet",nm:"เท้า · การทรงตัว",st:(has("S5")||(b!=null&&b<=2))?"on":(b!=null&&b===3)?"warn":"",sub:b!=null?"ผ่าน "+b+" จาก 4 ท่า":"ยังไม่ได้ทดสอบ"}
+  ];
+  var z=function(k){var x=Z.filter(function(q){return q.k===k})[0];return "zone"+(x.st?" "+x.st:"")};
+  return '<div class="card"><h3>จุดที่สัญญาณชี้ให้ดูแล</h3><div class="bodymap">'+
+    '<svg viewBox="0 0 100 220" aria-hidden="true">'+
+      '<circle class="'+z("head")+'" cx="50" cy="22" r="15"/>'+
+      '<rect class="'+z("trunk")+'" x="33" y="41" width="34" height="62" rx="9"/>'+
+      '<rect class="zone" x="17" y="44" width="12" height="56" rx="6"/><rect class="zone" x="71" y="44" width="12" height="56" rx="6"/>'+
+      '<rect class="'+z("legs")+'" x="35" y="106" width="13" height="70" rx="6"/><rect class="'+z("legs")+'" x="52" y="106" width="13" height="70" rx="6"/>'+
+      '<rect class="'+z("feet")+'" x="32" y="179" width="17" height="9" rx="4"/><rect class="'+z("feet")+'" x="51" y="179" width="17" height="9" rx="4"/>'+
+      '<ellipse cx="50" cy="205" rx="34" ry="6" fill="var(--line2)"/></svg>'+
+    '<ul>'+Z.map(function(x){return '<li><i class="'+x.st+'"></i><div>'+esc(x.nm)+'<small>'+esc(x.sub)+'</small></div></li>'}).join("")+'</ul></div>'+
+    '<p class="tiny">แดง = มีสัญญาณ · เหลือง = ควรจับตา · จากกฎที่ประกาศไว้ ไม่ใช่การวินิจฉัยโรค</p></div>';
+}
+/* งานและนัดถัดไปของเคสนี้ เรียงตามเวลา: กำหนดติดต่อ · นัดติดตาม · กำหนดตอบของผู้เชี่ยวชาญ */
+function cdUpcoming(c,fups,refs){
+  var now=Date.now(), it=[];
+  if(!c.contacted_at&&c.due_at)it.push({t:c.due_at,nm:"ติดต่อผู้เอาประกัน/ครอบครัว",sub:"กำหนดตามระดับ "+(LV_NM[c.level]||c.level)});
+  (fups||[]).forEach(function(f){it.push({t:f.due_at,nm:FU_NM[f.kind]||f.kind,sub:"นัดติดตาม",done:f.status==="done"})});
+  (refs||[]).forEach(function(r){if(r.reply_due&&["completed","outcome_recorded","declined"].indexOf(r.status)<0)it.push({t:r.reply_due,nm:"รอ"+(DEST_NM[r.destination]||r.destination)+"ตอบกลับ",sub:"ส่งต่อ · "+refNm2(r.status)})});
+  it.sort(function(a,b){return new Date(a.t)-new Date(b.t)});
+  if(!it.length)return '<div class="card"><h3>นัดและงานถัดไป</h3><div class="empty" style="padding:10px">ยังไม่มีงานที่รอ</div></div>';
+  return '<div class="card"><h3>นัดและงานถัดไป</h3><div class="upc">'+it.slice(0,8).map(function(x){
+    var d=new Date(x.t), l=x.done?"done":d<now?"late":d-now<24*36e5?"soon":"";
+    return '<div class="u" data-l="'+l+'"><i></i><div><b>'+esc(x.nm)+'</b><small>'+esc(x.sub)+'</small></div><div class="t">'+(x.done?"ทำแล้ว":esc(thDate(x.t))+(l==="late"?"<br>เกินกำหนด":""))+'</div></div>'}).join("")+'</div></div>';
+}
 async function caseDetailV(caseId,userId){
   head("รายละเอียดเคส","กำลังโหลด…");
   V.innerHTML='<div class="empty">กำลังโหลด…</div>';
@@ -1774,11 +1890,21 @@ async function caseDetailV(caseId,userId){
 
   /* สามคำถามที่หน้าเคสต้องตอบทันที: พบอะไร · ใครต้องทำอะไร · ภายในเมื่อไร
      วางไว้บนสุดก่อนรายละเอียดทั้งหมด เพื่อไม่ต้องเลื่อนหาว่าต้องทำอะไร */
+  var profCard='<div class="card"><div class="prof"><span class="av">'+esc(String(c.display_name||"?").replace(/^สาธิต\s*/,"").charAt(0))+'</span><div><b>'+esc(c.display_name||"—")+'</b><small>'+esc(c.pseudonym||"—")+'</small></div></div>'+
+    '<div class="profgrid">'+
+      '<div><span>อายุ / เพศ</span>'+(c.age||"—")+' ปี · '+(c.sex==="f"?"หญิง":c.sex==="m"?"ชาย":"—")+'</div>'+
+      '<div><span>โทรศัพท์</span>'+(c.phone?'<a href="tel:'+esc(c.phone)+'" style="color:var(--brand)">'+esc(c.phone)+'</a>':'—')+'</div>'+
+      '<div><span>ผู้ดูแลหลัก</span>'+esc(c.carer_name||"—")+(c.carer_phone?'<br><a href="tel:'+esc(c.carer_phone)+'" style="color:var(--brand)">'+esc(c.carer_phone)+'</a>':'')+'</div>'+
+      '<div><span>พื้นที่</span>'+esc(c.province||"—")+'</div>'+
+      '<div><span>อุปกรณ์ช่วยเดิน</span>'+esc(c.mobility_aid||"ไม่ใช้")+'</div>'+
+      '<div><span>กำหนดติดต่อ</span><b style="color:'+sl.cls+'">'+esc(sl.txt)+'</b></div>'+
+    '</div></div>';
   var pr=PRIO[c.level]||PRIO.watch;
   var topSig=(c.signals||[])[0];
   V.innerHTML=
     /* แถบผู้ป่วยแบบหัวเวชระเบียน: รหัส ชื่อ อายุ/เพศ ระดับ ขั้นตอน กำหนด — เห็นครบก่อนอ่านรายละเอียด */
     '<div class="pthead" style="border-left-color:'+(LV_C[c.level]||"#5B77B4")+'">'+
+      '<span class="av">'+esc(String(c.display_name||"?").replace(/^สาธิต\s*/,"").charAt(0))+'</span>'+
       '<span class="code">'+esc(c.pseudonym||"—")+'</span>'+
       '<span class="nm">'+esc(c.display_name||"—")+'</span>'+
       '<span class="meta">'+(c.age?'<span>อายุ <b>'+c.age+'</b> ปี</span>':'')+(c.sex?'<span>'+(c.sex==="f"?"หญิง":"ชาย")+'</span>':'')+
@@ -1788,6 +1914,8 @@ async function caseDetailV(caseId,userId){
       '<span class="sp">'+prioPill(c.level)+'<button class="ghostb" id="back">← กลับคิวงาน</button></span>'+
     '</div>'+
     stageBar(c.status)+
+    '<div class="cdgrid"><div class="cdmain">'+
+    cdTiles(A)+
     '<div class="card" style="border:1.5px solid '+(LV_C[c.level]||"#5B77B4")+'">'+
       '<div style="margin-bottom:8px">'+prioPill(c.level)+'</div>'+
       '<div class="rowline"><span class="k">พบอะไร</span><span class="v" style="font-family:inherit;font-weight:600;text-align:right">'+
@@ -1804,30 +1932,15 @@ async function caseDetailV(caseId,userId){
         '<button class="ok" data-act="refer" style="flex:1 1 45%">ประสานส่งต่อ</button>'+
       '</div></div>':'')+
 
-    '<div class="card"><h3>ผู้เอาประกัน</h3>'+
-      '<div class="rowline"><span class="k">รหัสสมาชิก</span><span class="v">'+esc(c.pseudonym||"—")+'</span></div>'+
-      '<div class="rowline"><span class="k">ชื่อ</span><span class="v" style="font-family:inherit">'+esc(c.display_name||"—")+'</span></div>'+
-      '<div class="rowline"><span class="k">อายุ / เพศ</span><span class="v">'+(c.age||"—")+' ปี · '+(c.sex==="f"?"หญิง":c.sex==="m"?"ชาย":"—")+'</span></div>'+
-      (c.phone?'<div class="rowline"><span class="k">โทรศัพท์</span><span class="v"><a href="tel:'+esc(c.phone)+'" style="color:var(--gold)">'+esc(c.phone)+'</a></span></div>':'')+
-      (c.carer_name||c.carer_phone?'<div class="rowline"><span class="k">ผู้ดูแลหลัก</span><span class="v" style="font-family:inherit">'+esc(c.carer_name||"—")+
-        (c.carer_phone?' · <a href="tel:'+esc(c.carer_phone)+'" style="color:var(--gold)">'+esc(c.carer_phone)+'</a>':'')+'</span></div>':'')+
-      (c.province?'<div class="rowline"><span class="k">พื้นที่</span><span class="v" style="font-family:inherit">'+esc(c.province)+'</span></div>':'')+
-      (c.mobility_aid?'<div class="rowline"><span class="k">อุปกรณ์ช่วยเดิน</span><span class="v" style="font-family:inherit">'+esc(c.mobility_aid)+'</span></div>':'')+
-      '<div class="rowline"><span class="k">กำหนดติดต่อ</span><span class="v" style="color:'+sl.cls+'">'+esc(sl.txt)+'</span></div>'+
-    '</div>'+
 
     '<div class="card"><h3>สัญญาณที่ทำให้เปิดเคส</h3>'+
       '<div class="rowline"><span class="k">ระดับปัจจุบัน</span><span class="v"><span class="pill" style="background:'+(LV_C[c.level]||"#5B77B4")+'">'+(LV_NM[c.level]||esc(c.level))+'</span></span></div>'+
       sig+'</div>'+
 
-    '<div class="card"><h3>แนวโน้ม</h3>'+
-      '<div class="rowline"><span class="k">ลุกนั่ง 5 ครั้ง (วิ)</span><span class="v">'+A.map(function(x){return x.ftsst_seconds!=null?(+x.ftsst_seconds).toFixed(1):"—"}).join(" → ")+'</span></div>'+
-      spark(A.map(function(x){return x.ftsst_seconds!=null?+x.ftsst_seconds:null}),null,false)+
-      '<div class="rowline"><span class="k">ลุกเดิน 3 เมตร (วิ)</span><span class="v">'+A.map(function(x){return x.tug_seconds!=null?(+x.tug_seconds).toFixed(1):"—"}).join(" → ")+'</span></div>'+
-      spark(A.map(function(x){return x.tug_seconds!=null?+x.tug_seconds:null}),null,false)+
-      '<div class="rowline"><span class="k">กิจวัตรประจำวัน</span><span class="v">'+A.map(function(x){return (x.parts&&x.parts.adl!=null)?x.parts.adl:"—"}).join(" → ")+'</span></div>'+
-      spark(A.map(function(x){return (x.parts&&x.parts.adl!=null)?x.parts.adl:null}),null,true)+
-      '<div class="rowline"><span class="k">คะแนนรวม</span><span class="v">'+A.map(function(x){return x.score!=null?x.score:"—"}).join(" → ")+'</span></div>'+
+    '<div class="card"><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px"><h3 style="margin:0">แนวโน้มต่อการประเมิน</h3><span class="tiny" style="margin:0">'+A.length+' ครั้ง · จากที่ครอบครัววัดที่บ้าน</span></div>'+
+      '<div class="cdtabs" id="cdTabs"><button data-k="tug" aria-pressed="true">ลุกเดิน 3 ม.</button><button data-k="ftsst" aria-pressed="false">ลุกนั่ง 5 ครั้ง</button><button data-k="bal" aria-pressed="false">ทรงตัว</button><button data-k="score" aria-pressed="false">คะแนน</button><button data-k="adl" aria-pressed="false">กิจวัตร</button></div>'+
+      '<div class="cdchart" id="cdChart">'+cdChart(A,"tug")+'</div>'+
+      '<div class="rowline" style="margin-top:6px"><span class="k">ค่าทุกครั้ง (ลุกเดิน · ลุกนั่ง)</span><span class="v">'+A.map(function(x){return (x.tug_seconds!=null?(+x.tug_seconds).toFixed(1):"—")+"/"+(x.ftsst_seconds!=null?(+x.ftsst_seconds).toFixed(1):"—")}).join(" → ")+'</span></div>'+
     '</div>'+
 
     (medRows?'<div class="card"><h3>ยาที่ใช้ประจำ</h3>'+medRows+
@@ -1863,12 +1976,6 @@ async function caseDetailV(caseId,userId){
           return '<button class="ok" data-newref="'+k+'" style="flex:1 1 45%;font-size:12.5px;padding:8px">'+esc(DEST_NM[k])+'</button>'}).join("")+
       '</div></div></div>'+
 
-    '<div class="card"><h3>นัดติดตาม</h3>'+
-      ((d.fups||[]).length?d.fups.map(function(f){
-        var due=new Date(f.due_at), late=f.status==="pending"&&due<new Date();
-        return '<div class="rowline"><span class="k">'+esc(FU_NM[f.kind]||f.kind)+'</span><span class="v" style="color:'+(f.status==="done"?"var(--c4)":late?"var(--c1)":"var(--ink2)")+'">'+
-          (f.status==="done"?"ทำแล้ว":thDate(f.due_at)+(late?" (เกิน)":""))+'</span></div>'}).join("")
-       :'<div class="empty" style="padding:10px">ยังไม่มีนัดติดตาม</div>')+'</div>'+
 
     '<div class="card"><h3>บันทึกการติดต่อ</h3>'+
       '<div class="btnrow" style="flex-wrap:wrap">'+CONTACT_RESULTS.map(function(r){
@@ -1881,9 +1988,15 @@ async function caseDetailV(caseId,userId){
     '<div class="card"><h3>เลื่อนสถานะเคส</h3>'+
       '<div class="btnrow" style="flex-wrap:wrap">'+
         (caseStep(c.status)&&caseStep(c.status).next?'<button class="ok" data-adv="'+caseStep(c.status).next+'" style="flex:1 1 100%">'+esc(caseStep(c.status).btn)+'</button>':'')+
-        '<button class="no" data-close2="1" style="flex:1 1 100%;margin-top:6px">ปิดเคส</button></div></div>';
+        '<button class="no" data-close2="1" style="flex:1 1 100%;margin-top:6px">ปิดเคส</button></div></div>'+
+    '</div><aside class="cdside">'+profCard+cdBody(c,A,d.meds,fd,ans)+cdUpcoming(c,d.fups,d.refs)+'</aside></div>';
 
   document.getElementById("back").addEventListener("click",queueV);
+  /* แท็บกราฟแนวโน้ม */
+  V.querySelectorAll("#cdTabs button").forEach(function(b){b.addEventListener("click",function(){
+    V.querySelectorAll("#cdTabs button").forEach(function(x){x.setAttribute("aria-pressed",x===b?"true":"false")});
+    document.getElementById("cdChart").innerHTML=cdChart(A,b.dataset.k);
+  })});
   V.querySelectorAll("[data-log2]").forEach(function(b){b.addEventListener("click",async function(){
     var note=ask("บันทึกเพิ่มเติม (ไม่บังคับ)");
     b.disabled=true;
