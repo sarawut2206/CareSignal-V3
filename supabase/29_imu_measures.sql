@@ -98,4 +98,6 @@ begin
   return pkg;
 end $$;
 
+-- ค่าเริ่มต้นของ Postgres ให้ PUBLIC เรียกฟังก์ชันได้ — ปิด anon ให้เหมือนฟังก์ชันอื่น (ข้างในมีด่าน cs_is_staff อยู่แล้ว)
+revoke all on function public.build_referral_package(uuid) from public, anon;
 grant execute on function public.build_referral_package(uuid) to authenticated;
