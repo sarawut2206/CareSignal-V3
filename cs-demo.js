@@ -610,7 +610,7 @@
       audit("followup.call", f.user_id, f.kind + ": " + result);
       return Promise.resolve(f);
     },
-    /* ---------- นัดตรวจทางวิดีโอคอล · แบบยืนยันผล · คำขอบริการป้องกัน (กฎเดียวกับ 27_teleconsult.sql) ---------- */
+    /* ---------- นัดตรวจทางวิดีโอคอล · แบบยืนยันผล · คำขออนุมัติบริการที่ผู้เชี่ยวชาญแนะนำ (กฎเดียวกับ 27_teleconsult.sql) ---------- */
     listAppointments: function () {
       ensureTele();
       if (ME.role === "insurer") return Promise.resolve({ rows: [] });
@@ -722,7 +722,7 @@
         destination: f.destination, domains: f.domains, services: (services || []).slice(), summary: text, consent_at: a.share_insurer_at, sent_by: ME.id, sent_at: iso(Date.now()),
         decision: "pending", approved: [], decision_note: null, decided_by: null, decided_at: null };
       S.prev.unshift(p); f.cm_status = "sent"; f.cm_by = ME.id; f.cm_at = iso(Date.now());
-      audit("prevention.send", f.user_id, "ส่งคำขอบริการป้องกัน " + p.code + " ให้บริษัทประกัน (ไม่ระบุชื่อ)");
+      audit("prevention.send", f.user_id, "ส่งคำขออนุมัติบริการที่ผู้เชี่ยวชาญแนะนำ " + p.code + " ให้บริษัทประกัน (ไม่ระบุชื่อ)");
       return Promise.resolve(p);
     },
     closeReport: function (reportId, status, note) {
@@ -735,7 +735,7 @@
     insurerPrevention: function () {
       ensureTele();
       if (["insurer", "admin"].indexOf(ME.role) < 0) return Promise.reject(new Error("เฉพาะบริษัทประกัน"));
-      audit("prevention.list", null, "เปิดดูคำขอบริการป้องกัน (ไม่ระบุชื่อ)");
+      audit("prevention.list", null, "เปิดดูคำขออนุมัติบริการที่ผู้เชี่ยวชาญแนะนำ (ไม่ระบุชื่อ)");
       return Promise.resolve({ rows: S.prev.map(function (p) {
         return { id: p.id, code: p.code, age_band: p.age_band, level: p.level, destination: p.destination, domains: p.domains, services: p.services,
           summary: p.summary, sent_at: p.sent_at, decision: p.decision, approved: p.approved, decision_note: p.decision_note, decided_at: p.decided_at };

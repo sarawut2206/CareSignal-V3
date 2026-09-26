@@ -15,7 +15,7 @@
   var REFERRAL = {
     urgent:  { nm: "ส่งต่อพยาบาลประเมินที่บ้าน", sla: "ภายใน 72 ชั่วโมง", need: true },
     decline: { nm: "Care Manager โทรติดตาม", sla: "ภายใน 7 วัน", need: true },
-    watch:   { nm: "แผนป้องกันด้วยตนเอง + เตือนประเมินซ้ำ", sla: "ไม่ต้องส่งต่อ", need: false },
+    watch:   { nm: "แผนดูแลตนเอง + เตือนประเมินซ้ำ", sla: "ไม่ต้องส่งต่อ", need: false },
     stable:  { nm: "ดูแลตนเองตามแผนปกติ", sla: "ไม่ต้องส่งต่อ", need: false }
   };
   /* ชุดสัญญาณเดียวกับ V2 (SIGNAL_DEFS) — ปลายทางที่เจ้าหน้าที่จะส่งต่อ */
@@ -181,7 +181,7 @@
     try { refs = await B.myReferrals(); } catch (e) {}
     /* นัดติดตามที่เจ้าหน้าที่ตั้งไว้ — แสดงในหน้านัดหมายของครอบครัว */
     try { fu = await B.listFollowUps(null, 30); } catch (e) {}
-    /* นัดวิดีโอคอลกับผู้เชี่ยวชาญ ผลยืนยันครั้งสุดท้าย และผลพิจารณาบริการป้องกัน (27_teleconsult.sql) */
+    /* นัดวิดีโอคอลกับผู้เชี่ยวชาญ ผลยืนยันครั้งสุดท้าย และผลพิจารณาบริการที่ผู้เชี่ยวชาญแนะนำ (27_teleconsult.sql) */
     var appts = [], prev = [];
     try { if (B.myAppointments) appts = await B.myAppointments(); } catch (e) {}
     try { if (B.myPrevention) prev = await B.myPrevention(); } catch (e) {}

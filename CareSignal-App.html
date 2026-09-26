@@ -311,10 +311,10 @@ var KEY = "cs3:data";
 /* คำแนะนำทุกข้อต้องมีแหล่งอ้างอิงที่ตรวจสอบได้ — ห้ามเพิ่มข้อที่ไม่มีที่มา
    รอบการวัดซ้ำเป็นกติกาของโปรแกรม จึงติดป้ายว่าไม่ใช่คำแนะนำทางการแพทย์ */
 var EVID = {
-  edu:   { t: "ให้ความรู้เรื่องการป้องกันการหกล้มกับผู้สูงอายุและคนในบ้าน ถ้าล้มให้บันทึกในแอปแล้ววัดซ้ำ", src: "CDC STEADI — Algorithm for Fall Risk Screening, Assessment, and Intervention (2019)" },
+  edu:   { t: "ให้ความรู้เรื่องการลดความเสี่ยงหกล้มกับผู้สูงอายุและคนในบ้าน ถ้าล้มให้บันทึกในแอปแล้ววัดซ้ำ", src: "CDC STEADI — Algorithm for Fall Risk Screening, Assessment, and Intervention (2019)" },
   ex:    { t: "ออกกำลังกายที่เน้นการทรงตัวและกำลังกล้ามเนื้อ อย่างน้อย 3 วันต่อสัปดาห์ โดยมีคนดูแลความปลอดภัย", src: "WHO Guidelines on Physical Activity and Sedentary Behaviour (2020)" },
   exwhy: { t: "การออกกำลังกายลดอัตราการหกล้มในผู้สูงอายุที่อยู่บ้านได้ประมาณร้อยละ 23", src: "Sherrington C. et al. Cochrane Database of Systematic Reviews 2019 (CD012424)" },
-  prog:  { t: "ปรึกษานักกายภาพบำบัด หรือเข้าโปรแกรมออกกำลังกายเพื่อป้องกันการล้ม เช่น Otago Exercise Programme", src: "World Guidelines for Falls Prevention and Management (Montero-Odasso M. et al. Age and Ageing 2022) · CDC STEADI" },
+  prog:  { t: "ปรึกษานักกายภาพบำบัด หรือเข้าโปรแกรมออกกำลังกายเพื่อลดความเสี่ยงหกล้ม เช่น Otago Exercise Programme", src: "World Guidelines for Falls Prevention and Management (Montero-Odasso M. et al. Age and Ageing 2022) · CDC STEADI" },
   home:  { t: "สำรวจบ้าน เก็บของบนพื้นทางเดิน เพิ่มแสงสว่างทางเดินและบันได ติดราวจับในห้องน้ำ", src: "CDC — Check for Safety: A Home Fall Prevention Checklist for Older Adults" },
   meds:  { t: "นำยาทุกรายการไปให้เภสัชกรหรือแพทย์ทบทวน ห้ามหยุดหรือปรับยาเอง", src: "CDC STEADI-Rx · STOPPFall (Seppala L.J. et al. Age and Ageing 2021)" },
   multi: { t: "ผลระดับนี้ควรได้รับการประเมินปัจจัยเสี่ยงหลายด้านโดยบุคลากรสุขภาพ ทีมดูแลจะติดต่อเพื่อส่งต่อผู้เชี่ยวชาญ", src: "World Guidelines for Falls Prevention and Management 2022 (กลุ่มความเสี่ยงสูง)" },
@@ -690,7 +690,7 @@ function chooseCardHTML(a) {
     (a.options || []).map(function (o, i) {
       return '<label class="vopt"><input type="radio" name="vo_' + a.id + '" value="' + esc(o) + '"' + (i ? '' : ' checked') + '>' + esc(window.CSTele ? CSTele.when(o) : o) + '</label>';
     }).join("") +
-    '<label class="vck"><input type="checkbox" id="vs_' + a.id + '"><span>ยินยอมให้ส่ง<b>สรุปผลแบบไม่ระบุชื่อ</b>ให้บริษัทประกัน เพื่อพิจารณาอนุมัติบริการป้องกัน เช่น กายภาพบำบัด ราวจับ ' +
+    '<label class="vck"><input type="checkbox" id="vs_' + a.id + '"><span>ยินยอมให้ส่ง<b>สรุปผลแบบไม่ระบุชื่อ</b>ให้บริษัทประกัน เพื่อพิจารณาอนุมัติบริการที่ผู้เชี่ยวชาญแนะนำ เช่น กายภาพบำบัด ราวจับ ' +
       '— ไม่ใช้ปรับเบี้ยหรือพิจารณาสินไหม · <b>ไม่ติ๊กก็ได้รับการตรวจตามปกติ</b></span></label>' +
     '<button class="btn" style="margin-top:4px" onclick="chooseVisit(\'' + a.id + '\')">ยืนยันเวลานัด</button></div>';
 }
@@ -708,9 +708,9 @@ function visitResultsHTML() {
     var f = Array.isArray(a.final_reports) ? a.final_reports[0] : a.final_reports, p = prev.filter(function (x) { return x.report_id === f.id; })[0];
     var ok = p && (p.decision === "approved" || p.decision === "partial");
     return '<div class="card">' + CSTele.reportHTML(f) +
-      (ok ? '<div class="okbox">✅ <b>บริษัทประกันอนุมัติบริการป้องกัน</b><br>' + (p.approved || []).map(function (k) { return "• " + esc(CSTele.svcName(k)); }).join("<br>") +
+      (ok ? '<div class="okbox">✅ <b>บริษัทประกันอนุมัติบริการที่ผู้เชี่ยวชาญแนะนำ</b><br>' + (p.approved || []).map(function (k) { return "• " + esc(CSTele.svcName(k)); }).join("<br>") +
         '<br><span class="sub" style="font-size:13px">เจ้าหน้าที่จะโทรนัดบริการให้</span></div>'
-        : p ? '<p class="sub" style="margin:8px 0 0">คำขอบริการป้องกัน: ' + esc(CSTele.DECISION[p.decision] || p.decision) + '</p>' : '') + '</div>';
+        : p ? '<p class="sub" style="margin:8px 0 0">คำขออนุมัติบริการที่ผู้เชี่ยวชาญแนะนำ: ' + esc(CSTele.DECISION[p.decision] || p.decision) + '</p>' : '') + '</div>';
   }).join("");
 }
 function apptSection() {
@@ -1456,7 +1456,7 @@ function bodyStates(r) {
     tug: { nm: "การเดิน", ok: "ลุกเดินและหมุนตัวได้คล่อง", warn: "เดินช้าลง — ระวังตอนหมุนตัวและเดินเข้าห้องน้ำตอนกลางคืน", none: "วันนี้ยังไม่ได้วัด" },
     bal: { nm: "การทรงตัว", ok: "ยืนได้มั่นคง", warn: "ยืนต่อเท้าได้ไม่นาน — ควรมีราวหรือที่จับใกล้ตัว", none: "วันนี้ยังไม่ได้วัด" },
     meds: { nm: "ยาที่ใช้", ok: "ไม่พบยาที่ต้องระวังเรื่องการล้ม", warn: "มียาที่อาจทำให้ง่วงหรือเวียนหัว — ถามเภสัชกรหรือแพทย์ได้ ห้ามหยุดยาเอง", none: "ยังไม่ได้บันทึกยา" },
-    falls: { nm: "การล้ม", ok: "ไม่ได้ล้มในปีนี้", warn: (fallsN ? "ปีนี้ล้ม " + fallsN + " ครั้ง" : r.worried ? "กังวลว่าจะล้ม" : "เคยล้ม") + " — ทีมดูแลจะช่วยหาสาเหตุและวิธีป้องกัน", none: "ยังไม่ได้ตอบ" },
+    falls: { nm: "การล้ม", ok: "ไม่ได้ล้มในปีนี้", warn: (fallsN ? "ปีนี้ล้ม " + fallsN + " ครั้ง" : r.worried ? "กังวลว่าจะล้ม" : "เคยล้ม") + " — ทีมดูแลจะช่วยหาสาเหตุและวิธีลดความเสี่ยง", none: "ยังไม่ได้ตอบ" },
     adl: { nm: "การดูแลตัวเอง", ok: "ทำกิจวัตรประจำวันเองได้ครบ", warn: "ต้องมีคนช่วยบางเรื่อง — ช่วยเท่าที่จำเป็น ให้ท่านได้ทำเองบ้าง", none: "ยังไม่ได้ประเมิน" },
     home: { nm: "บ้าน", ok: "ไม่พบจุดเสี่ยงในบ้าน", warn: "พบจุดเสี่ยง " + hz + " จุด — แก้ได้ เช่น เอาพรมออก เพิ่มไฟ ติดราวจับ", none: "ยังไม่ได้สำรวจ" }
   };

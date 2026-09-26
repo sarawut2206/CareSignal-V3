@@ -162,7 +162,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("ปิดแถบชวนติดตั้งแล้วจำไว้", /localStorage\.setItem\(A2HS\.key, "no"\)/.test(app));
   ok("ทางลัด ?go= เปิดหน้าที่ต้องการได้", /\["fall", "test", "history", "meds", "video", "appts"\]\.indexOf\(goto\)/.test(app));
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
-  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-25/.test(sw));
+  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-26/.test(sw));
 }
 
 /* ใบส่งต่อแบบเอกสารทางการ: ทุกสัญญาณต้องมีเกณฑ์ เหตุผล และเอกสารอ้างอิง */
@@ -333,6 +333,13 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("สคริปต์ทุกหน้าคอมไพล์ผ่าน และไม่มีอักขระควบคุมแฝง", !bad.length, bad);
 }
 
+/* บทบาท: คัดกรอง · เฝ้าระวัง · ส่งต่อ — ไม่อ้างว่าระบบป้องกันการล้มเอง (กฎเดียวกับ audit X-141) */
+{
+  const BANNED = /บริการป้องกัน|แผนป้องกัน|โปรแกรมป้องกัน|ป้องกันก่อน(เกิด)?เคลม|คำขอป้องกัน|ป้องกันการหกล้ม|ป้องกันการล้ม|ป้องกันหกล้ม|ป้องกันล้ม/;
+  const hitsP = ["index.html", "CareSignal-App.html", "testkit.html", "cs-cloud.js", "CareSignal-Staff.html", "CareSignal-Portfolio-Dashboard.html", "cs-teleconsult.js", "cs-demo.js", "cs-roi.js", "cs-referral-forms.js"]
+    .map((f) => [f, readFileSync(new URL("../" + f, import.meta.url), "utf8").replace(/\/\*[\s\S]*?\*\//g, "").match(BANNED)]).filter((x) => x[1]).map((x) => x[0] + ":" + x[1][0]);
+  ok("ข้อความบอกบทบาทเป็นการคัดกรองและส่งต่อ ไม่อ้างว่าระบบป้องกันการล้มเอง", !hitsP.length, hitsP);
+}
 /* หุ่นร่างกาย 7 ด้าน (cs-body.js) — ใช้ร่วมคอนโซลกับแอปครอบครัว */
 {
   const require2 = (await import("node:module")).createRequire(import.meta.url);

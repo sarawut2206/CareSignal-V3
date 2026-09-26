@@ -1,7 +1,7 @@
 /* ============================================================
-   cs-teleconsult.js — นัดตรวจทางวิดีโอคอล · แบบยืนยันผลครั้งสุดท้าย · คำขอบริการป้องกัน
+   cs-teleconsult.js — นัดตรวจทางวิดีโอคอล · แบบยืนยันผลครั้งสุดท้าย · คำขออนุมัติบริการที่ผู้เชี่ยวชาญแนะนำ
    ------------------------------------------------------------
-   แหล่งเดียวของชื่อสถานะ รายการบริการป้องกัน แบบฟอร์มยืนยันผล และหน้าตารายงาน
+   แหล่งเดียวของชื่อสถานะ รายการบริการที่แนะนำ แบบฟอร์มยืนยันผล และหน้าตารายงาน
    ใช้ร่วมกันใน CareSignal-Staff.html (ผู้เชี่ยวชาญ ผู้ประสานงาน บริษัทประกัน)
    CareSignal-App.html ของ V3 (ครอบครัว) และ CareSignal-Visit.html (ห้องวิดีโอคอล)
    กฎเดียวกับ supabase/27_teleconsult.sql:
@@ -10,7 +10,7 @@
      · แบบยืนยันผลต้องลงชื่อ เลขใบอนุญาต และรับรองว่าตรวจเอง แก้ไขไม่ได้หลังส่ง
      · ห้ามคำสั่งหยุดยา — ใช้ถ้อยคำ "ทบทวนกับผู้สั่งใช้ยา"
      · ส่งบริษัทประกันได้เฉพาะผลที่ยืนยันว่าเสี่ยงจริง และครอบครัวยินยอม
-       บริษัทประกันเห็นแบบไม่ระบุชื่อ ใช้อนุมัติบริการป้องกันเท่านั้น
+       บริษัทประกันเห็นแบบไม่ระบุชื่อ ใช้อนุมัติบริการที่ผู้เชี่ยวชาญแนะนำเท่านั้น
    ============================================================ */
 (function (g) {
   var DEST = { doctor: "แพทย์", pharmacist: "เภสัชกร", physio: "นักกายภาพบำบัด", nurse: "พยาบาล" };
@@ -23,9 +23,9 @@
   var DOMAINS = [["falls", "ประวัติหกล้ม"], ["strength", "กำลังขา"], ["gait", "การเดิน"], ["balance", "การทรงตัว"],
     ["meds", "ยาที่เพิ่มความเสี่ยง"], ["bp", "ความดันตกเมื่อลุกยืน"], ["vision", "สายตา"], ["home", "ความปลอดภัยในบ้าน"],
     ["adl", "กิจวัตรประจำวัน"], ["cognition", "ความจำและการรับรู้"]];
-  var SERVICES = [["physio_program", "โปรแกรมฝึกกำลังขาและการทรงตัวกับนักกายภาพบำบัด"], ["exercise_group", "กลุ่มออกกำลังกายป้องกันล้ม (Otago · ไทชิ)"],
+  var SERVICES = [["physio_program", "โปรแกรมฝึกกำลังขาและการทรงตัวกับนักกายภาพบำบัด"], ["exercise_group", "กลุ่มออกกำลังกายลดความเสี่ยงล้ม (Otago · ไทชิ)"],
     ["med_review", "ทบทวนยากับแพทย์ผู้สั่งใช้ยา"], ["doctor_followup", "ติดตามกับแพทย์"], ["home_mod", "ปรับบ้าน: ราวจับ พื้นกันลื่น ไฟกลางคืน"],
-    ["assistive", "อุปกรณ์ช่วยเดิน"], ["vision", "ตรวจสายตาและแว่น"], ["caregiver_training", "สอนผู้ดูแลเรื่องการพยุงและป้องกันล้ม"],
+    ["assistive", "อุปกรณ์ช่วยเดิน"], ["vision", "ตรวจสายตาและแว่น"], ["caregiver_training", "สอนผู้ดูแลเรื่องการพยุงและลดความเสี่ยงล้ม"],
     ["alarm", "อุปกรณ์แจ้งเหตุฉุกเฉิน"]];
   var DEFAULT_SERVICES = { doctor: ["doctor_followup", "med_review"], pharmacist: ["med_review"], physio: ["physio_program", "assistive"], nurse: ["home_mod", "caregiver_training"] };
   var APPT_ST = { proposed: "รอครอบครัวเลือกเวลา", confirmed: "ยืนยันนัดแล้ว", in_call: "กำลังตรวจ", done: "ตรวจแล้ว", cancelled: "ยกเลิก", no_show: "ไม่มาตามนัด" };
@@ -93,7 +93,7 @@
       '<h4>๓. ด้านที่พบปัญหา</h4>' + chk("tcDom", DOMAINS, []) +
       '<h4>๔. ข้อค้นพบจากการตรวจ <span class="tc-req">*</span></h4><textarea id="tcFind" rows="3" placeholder="สิ่งที่ตรวจพบระหว่างวิดีโอคอล เช่น ท่าลุกนั่ง การเดินในบ้าน ยาที่ใช้จริง"></textarea>' +
       '<h4>๕. คำแนะนำ <span class="tc-req">*</span></h4><textarea id="tcRec" rows="3" placeholder="' + (dest === "pharmacist" ? "เรื่องยาใช้ถ้อยคำ &quot;เสนอให้ผู้สั่งใช้ยาทบทวน&quot; — ไม่สั่งหยุดยาเอง" : "สิ่งที่ครอบครัวและทีมดูแลควรทำต่อ") + '"></textarea>' +
-      '<h4>๖. บริการป้องกันที่แนะนำ</h4>' + chk("tcSvc", SERVICES, pre) +
+      '<h4>๖. บริการที่ผู้เชี่ยวชาญแนะนำ</h4>' + chk("tcSvc", SERVICES, pre) +
       '<div class="tc-row"><label>นัดติดตามภายใน <select id="tcDays"><option value="7">7 วัน</option><option value="14">14 วัน</option><option value="30" selected>30 วัน</option><option value="90">90 วัน</option></select></label>' +
       '<label class="tc-chk"><input type="checkbox" id="tcInPerson"> ต้องพบตัวจริงที่หน่วยบริการ</label></div>' +
       '<h4>๗. ผู้ยืนยันผล <span class="tc-req">*</span></h4><div class="tc-row">' +
@@ -149,7 +149,7 @@
       (fr.domains && fr.domains.length ? '<div class="tc-line"><span>ด้านที่พบปัญหา</span><b>' + fr.domains.map(function (k) { return esc(nm(DOMAINS, k)); }).join(" · ") + '</b></div>' : '') +
       '<div class="tc-line"><span>ข้อค้นพบ</span><b>' + esc(fr.findings) + '</b></div>' +
       '<div class="tc-line"><span>คำแนะนำ</span><b>' + esc(fr.recommend) + '</b></div>' +
-      (fr.services && fr.services.length ? '<div class="tc-line"><span>บริการป้องกันที่แนะนำ</span><b>' + fr.services.map(function (k) { return "• " + esc(nm(SERVICES, k)); }).join("<br>") + '</b></div>' : '') +
+      (fr.services && fr.services.length ? '<div class="tc-line"><span>บริการที่ผู้เชี่ยวชาญแนะนำ</span><b>' + fr.services.map(function (k) { return "• " + esc(nm(SERVICES, k)); }).join("<br>") + '</b></div>' : '') +
       '<div class="tc-line"><span>ติดตาม</span><b>' + (fr.follow_days ? "ภายใน " + fr.follow_days + " วัน" : "—") + (fr.in_person ? " · ต้องพบตัวจริงที่หน่วยบริการ" : "") + '</b></div>' +
       (o.hideSigner ? '' : '<div class="tc-sign">ลงชื่อ ' + esc(fr.signer_name) + ' · ใบอนุญาตเลขที่ ' + esc(fr.license_no) + ' · ' + esc(when(fr.signed_at)) +
         '<br><small>รับรองว่าตรวจผ่านวิดีโอคอลด้วยตนเอง · ยืนยันแล้วแก้ไขไม่ได้</small></div>') +
@@ -160,7 +160,7 @@
     var dom = (fr.domains || []).map(function (k) { return nm(DOMAINS, k); });
     return "ผู้เอาประกัน" + (ageBand ? " อายุ " + ageBand : "") + " ได้รับการตรวจทางวิดีโอคอลโดย" + (DEST[fr.destination] || "ผู้เชี่ยวชาญ") +
       " ยืนยันความเสี่ยงหกล้มระดับ" + (LEVEL[fr.level] || "—") + (dom.length ? " ด้าน" + dom.join(" ") : "") +
-      " · แนะนำบริการป้องกันตามรายการ เพื่อลดโอกาสหกล้มและการบาดเจ็บ · ติดตามผลภายใน " + (fr.follow_days || 30) + " วัน";
+      " · แนะนำบริการตามรายการ เพื่อลดความเสี่ยงหกล้มและการบาดเจ็บ · ติดตามผลภายใน " + (fr.follow_days || 30) + " วัน";
   }
   function ageBand(birthYearBE) {
     if (!birthYearBE) return null;
