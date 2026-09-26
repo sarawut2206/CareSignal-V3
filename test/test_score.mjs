@@ -162,7 +162,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("ปิดแถบชวนติดตั้งแล้วจำไว้", /localStorage\.setItem\(A2HS\.key, "no"\)/.test(app));
   ok("ทางลัด ?go= เปิดหน้าที่ต้องการได้", /\["fall", "test", "history", "meds", "video", "appts"\]\.indexOf\(goto\)/.test(app));
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
-  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-26/.test(sw));
+  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-27/.test(sw));
 }
 
 /* ใบส่งต่อแบบเอกสารทางการ: ทุกสัญญาณต้องมีเกณฑ์ เหตุผล และเอกสารอ้างอิง */
@@ -324,7 +324,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("อ่านรูป: PaddleOCR ก่อน แล้ว Tesseract ภาษาไทย · ฐานในเครื่องไม่รู้จัก → ทะเบียน อย. → คิวเภสัชกร", /<script src="\.\/cs-ocr\.js"><\/script>/.test(app) && /CSOcr\.read\(img, say\)/.test(app) && /CSBackend\.lookupDrug\(toks\[i\]\.token\)/.test(app) && /CSBackend\.queueUnknownDrug\(/.test(app) && /cs-ocr\.js/.test(readFileSync(new URL("../sw.js", import.meta.url), "utf8")));
   /* สคริปต์ในหน้าต้องคอมไพล์ผ่าน — กันตัวอักษรขึ้นบรรทัดหลุดเข้าไปในสตริงแล้วทั้งแอปใช้ไม่ได้ */
   const vm = await import("node:vm"), bad = [];
-  for (const f of ["CareSignal-App.html", "index.html"]) {
+  for (const f of ["CareSignal-App.html", "index.html", "sensor-lab.html"]) {
     const src = readFileSync(new URL("../" + f, import.meta.url), "utf8");
     [...src.matchAll(/<script>([\s\S]*?)<\/script>/g)].forEach((m, i) => { try { new vm.Script(m[1]); } catch (e) { bad.push(f + "#" + i + " " + e.message); } });
     if (/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(src)) bad.push(f + " มีอักขระควบคุมแฝง");
@@ -339,6 +339,13 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   const hitsP = ["index.html", "CareSignal-App.html", "testkit.html", "cs-cloud.js", "CareSignal-Staff.html", "CareSignal-Portfolio-Dashboard.html", "cs-teleconsult.js", "cs-demo.js", "cs-roi.js", "cs-referral-forms.js"]
     .map((f) => [f, readFileSync(new URL("../" + f, import.meta.url), "utf8").replace(/\/\*[\s\S]*?\*\//g, "").match(BANNED)]).filter((x) => x[1]).map((x) => x[0] + ":" + x[1][0]);
   ok("ข้อความบอกบทบาทเป็นการคัดกรองและส่งต่อ ไม่อ้างว่าระบบป้องกันการล้มเอง", !hitsP.length, hitsP);
+}
+/* ห้องทดสอบเซ็นเซอร์ (โหมดวิจัย) */
+{
+  const lab = readFileSync(new URL("../sensor-lab.html", import.meta.url), "utf8");
+  ok("ห้องทดสอบเซ็นเซอร์: ครบ 5 ท่ามาตรฐาน ใช้รหัสแทนชื่อ บันทึกเวลาอ้างอิงเจ้าหน้าที่ และส่งออก CSV",
+     /<script src="\.\/cs-imu\.js"><\/script>/.test(lab) && ["ftsst", "tug", "chair30", "walk4", "balance"].every((k) => lab.includes('data-k="' + k + '"')) &&
+     /ห้ามใช้ชื่อ/.test(lab) && /"staff_ref"/.test(lab) && /"diff_sensor_minus_staff"/.test(lab) && /ไม่ใช่เครื่องมือแพทย์/.test(lab) && /"\.\/sensor-lab\.html"/.test(readFileSync(new URL("../sw.js", import.meta.url), "utf8")));
 }
 /* หุ่นร่างกาย 7 ด้าน (cs-body.js) — ใช้ร่วมคอนโซลกับแอปครอบครัว */
 {

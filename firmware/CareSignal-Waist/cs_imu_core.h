@@ -44,14 +44,18 @@
 #define CS_TUG_M      3       /* เมตร · ระยะเดิน TUG */
 #define CS_CAL_N      100     /* ตัวอย่างนิ่งก่อนเริ่ม */
 #define CS_CAL_W      30      /* องศา/วิ · นิ่งพอสำหรับตั้งศูนย์ */
+#define CS_CHAIR_SEC  30      /* วินาที · 30-Second Chair Stand (CDC STEADI) */
+#define CS_WALK_M     4       /* เมตร · ทดสอบความเร็วเดิน 4 เมตร (World Guidelines 2022) */
+#define CS_WALK_END_MS 1500   /* ไม่มีก้าวนานเท่านี้ = หยุดเดินแล้ว */
+#define CS_WALK_MIN_STEPS 4   /* ก้าวขั้นต่ำจึงนับว่าเดินครบ */
 
 #define CS_RESULT_BYTES 84
 #define CS_STATE_BYTES  16
-#define CS_MAX_REPS  6
+#define CS_MAX_REPS  40     /* ลุกยืน 30 วินาทีได้ไม่เกินราว 30 ครั้ง */
 #define CS_MAX_TURNS 3
 #define CS_MAX_STEPS 240
 
-enum { CS_KIND_NONE = 0, CS_KIND_FTSST = 1, CS_KIND_TUG = 2, CS_KIND_BALANCE = 3 };
+enum { CS_KIND_NONE = 0, CS_KIND_FTSST = 1, CS_KIND_TUG = 2, CS_KIND_BALANCE = 3, CS_KIND_CHAIR30 = 4, CS_KIND_WALK4 = 5 };
 enum { CS_PH_IDLE = 0, CS_PH_CAL = 1, CS_PH_READY = 2, CS_PH_RUN = 3, CS_PH_DONE = 4 };
 enum { CS_EV_NONE = 0, CS_EV_READY = 1, CS_EV_HOLD = 2, CS_EV_ONSET = 3, CS_EV_STAND = 4, CS_EV_SIT = 5, CS_EV_TURN = 6, CS_EV_STEP = 7, CS_EV_IMPACT = 8, CS_EV_DONE = 9 };
 enum { CS_ST_OK = 0, CS_ST_INCOMPLETE = 1, CS_ST_ABORTED = 2 };
@@ -64,7 +68,7 @@ typedef struct {
   uint8_t kind, stage, phase, done, status;
   uint32_t n; uint32_t tPrev; uint8_t hasPrev; float fsSum;
   float g[3], v0[3]; uint8_t hasG;
-  int calN; float calSum[3], calMag, calMove; uint16_t holds;
+  int calN; float calSum[3], calMag, calMove, calW[3], wB[3]; uint16_t holds; uint8_t half;
   uint32_t t0, onset; uint8_t hasOnset; int moveRun;
   float vv, avB, quietRun; uint32_t lastLowT; uint8_t hasLow;
   uint8_t trDir; uint32_t trStart; float trD;      /* trDir: 0 ไม่มี · 1 ขึ้น · 2 ลง */
@@ -89,7 +93,8 @@ static inline void cs_unit(const float *a, float *o) { float n = cs_norm(a); if 
 static inline float cs_clampf(float v, float a, float b) { return v < a ? a : v > b ? b : v; }
 
 static void cs_imu_init(cs_imu_t *s, uint8_t kind, uint8_t stage) { memset(s, 0, sizeof(*s)); s->kind = kind; s->stage = stage; s->phase = CS_PH_IDLE; }
-static void cs_imu_arm(cs_imu_t *s) { s->phase = CS_PH_CAL; s->calN = 0; s->calSum[0] = s->calSum[1] = s->calSum[2] = 0; s->calMag = 0; s->calMove = 0; s->hasPrev = 0; }
+static void cs_imu_arm(cs_imu_t *s) { s->phase = CS_PH_CAL; s->calN = 0; s->calSum[0] = s->calSum[1] = s->calSum[2] = 0; s->calMag = 0; s->calMove = 0;
+  s->calW[0] = s->calW[1] = s->calW[2] = 0; s->wB[0] = s->wB[1] = s->wB[2] = 0; s->hasPrev = 0; }
 static void cs_bal_begin(cs_imu_t *s) {
   float ax[3] = { 1, 0, 0 }, ay[3] = { 0, 1, 0 }, tmp[3];
   const float *pick = fabsf(s->g[0]) < 0.9f ? ax : ay;
@@ -155,8 +160,10 @@ static int cs_bal_step(cs_imu_t *s, uint32_t t, float dt, float av, const float 
 }
 
 /* ป้อนตัวอย่าง 1 ชุด: a = ความเร่ง (g) · w = อัตราหมุน (องศา/วิ) · t = มิลลิวินาที · คืนรหัสเหตุการณ์ */
-static int cs_imu_push(cs_imu_t *s, uint32_t t, const float *a, const float *w) {
+static int cs_imu_push(cs_imu_t *s, uint32_t t, const float *a, const float *w0) {
   if (s->phase == CS_PH_IDLE || s->done) return 0;
+  /* ชดเชยค่าคลาดไจโร (bias) ที่วัดได้ระหว่างนิ่ง 1 วินาทีตอนตั้งศูนย์ — ก่อนตั้งศูนย์ wB = 0 */
+  const float w[3] = { w0[0] - s->wB[0], w0[1] - s->wB[1], w0[2] - s->wB[2] };
   float dt = !s->hasPrev ? 0.01f : cs_clampf((float)(int32_t)(t - s->tPrev) / 1000.0f, 0.002f, 0.05f); s->tPrev = t; s->hasPrev = 1; s->n++; s->fsSum += dt;
   float an = cs_norm(a); if (an > s->maxG) s->maxG = an;
   int ev = CS_EV_NONE;
@@ -169,9 +176,10 @@ static int cs_imu_push(cs_imu_t *s, uint32_t t, const float *a, const float *w) 
   mix[0] = gu[0] * (1 - CS_K_G) + au[0] * CS_K_G; mix[1] = gu[1] * (1 - CS_K_G) + au[1] * CS_K_G; mix[2] = gu[2] * (1 - CS_K_G) + au[2] * CS_K_G; cs_unit(mix, s->g);
   if (s->phase == CS_PH_CAL) {
     s->calSum[0] += a[0]; s->calSum[1] += a[1]; s->calSum[2] += a[2]; s->calMag += an; s->calN++; float wn = cs_norm(w); if (wn > s->calMove) s->calMove = wn;
+    s->calW[0] += w0[0]; s->calW[1] += w0[1]; s->calW[2] += w0[2];
     if (s->calN >= CS_CAL_N) {
-      if (s->calMove < CS_CAL_W) { cs_unit(s->calSum, s->v0); s->g[0] = s->v0[0]; s->g[1] = s->v0[1]; s->g[2] = s->v0[2]; s->avB = s->calMag / s->calN - 1; s->phase = CS_PH_READY; ev = CS_EV_READY; }
-      else { s->calN = 0; s->calSum[0] = s->calSum[1] = s->calSum[2] = 0; s->calMag = 0; s->calMove = 0; s->holds++; ev = CS_EV_HOLD; }
+      if (s->calMove < CS_CAL_W) { cs_unit(s->calSum, s->v0); s->g[0] = s->v0[0]; s->g[1] = s->v0[1]; s->g[2] = s->v0[2]; s->avB = s->calMag / s->calN - 1; s->wB[0] = s->calW[0] / s->calN; s->wB[1] = s->calW[1] / s->calN; s->wB[2] = s->calW[2] / s->calN; s->phase = CS_PH_READY; ev = CS_EV_READY; }
+      else { s->calN = 0; s->calSum[0] = s->calSum[1] = s->calSum[2] = 0; s->calMag = 0; s->calMove = 0; s->calW[0] = s->calW[1] = s->calW[2] = 0; s->holds++; ev = CS_EV_HOLD; }
     }
     s->lastEvent = ev; return ev;
   }
@@ -206,6 +214,15 @@ static int cs_imu_push(cs_imu_t *s, uint32_t t, const float *a, const float *w) 
     int e3 = cs_turn_step(s, t, dt, yawRate); if (e3) ev = e3;
     int e4 = cs_step_step(s, t, dt, avd); if (e4) ev = e4;
   }
+  if (s->kind == CS_KIND_WALK4 && !s->done) {
+    int e5 = cs_step_step(s, t, dt, avd); if (e5) ev = e5;
+    if (s->nSteps >= CS_WALK_MIN_STEPS && (int32_t)(t - s->lastStepT) > CS_WALK_END_MS) { cs_imu_finish(s, t, CS_ST_OK); ev = CS_EV_DONE; }
+  }
+  if (s->kind == CS_KIND_CHAIR30 && !s->done && el >= (uint32_t)CS_CHAIR_SEC * 1000u) {
+    /* กติกา CDC: ครบ 30 วินาทีขณะกำลังลุกขึ้นเกินครึ่งทาง นับเป็น 1 ครั้ง */
+    s->half = (s->trDir == 1 && s->trD >= CS_D_MIN / 2) ? 1 : 0;
+    cs_imu_finish(s, t, CS_ST_OK); ev = CS_EV_DONE;
+  }
   s->lastEvent = ev; return ev;
 }
 
@@ -221,29 +238,45 @@ static void cs_imu_finish(cs_imu_t *s, uint32_t t, uint8_t status) {
   s->done = 1; s->phase = CS_PH_DONE; s->status = status;
   uint8_t *b = s->result; memset(b, 0xFF, CS_RESULT_BYTES);
   float fs = s->n > 1 ? (float)(s->n - 1) / s->fsSum : 0;
-  uint8_t flags = (s->impact ? 1 : 0) | (s->bal.stepped ? 2 : 0) | (s->nTurns ? 4 : 0);
-  b[0] = 0xC5; b[1] = 1; b[2] = s->kind; b[4] = 0; b[5] = flags;
+  uint8_t flags = (s->impact ? 1 : 0) | (s->bal.stepped ? 2 : 0) | (s->nTurns ? 4 : 0) | (s->half ? 8 : 0);
+  b[0] = 0xC5; b[1] = 2; b[2] = s->kind; b[4] = 0; b[5] = flags;
   cs_put16(b, 6, cs_u16(fs, 10, s->n > 1)); cs_put32(b, 8, t - s->t0); cs_put32(b, 12, s->hasOnset ? s->onset - s->t0 : 0xFFFFFFFFu);
   float peakW = 0, peakAv = 0; for (int i = 0; i < s->nReps; i++) { if (s->reps[i].peakW > peakW) peakW = s->reps[i].peakW; if (s->reps[i].peakAv > peakAv) peakAv = s->reps[i].peakAv; }
   cs_puti16(b, 20, cs_i16(peakW, 10, 1)); cs_puti16(b, 22, cs_i16(peakAv, 1000, 1)); cs_puti16(b, 24, cs_i16(s->tiltMax, 10, 1));
   b[52] = 0; b[53] = 0; cs_put16(b, 74, cs_u16(s->maxG, 100, 1)); cs_put32(b, 76, s->impact ? s->impactAt - s->t0 : 0xFFFFFFFFu); cs_put16(b, 80, (uint16_t)(s->n > 65535 ? 65535 : s->n)); cs_put16(b, 82, 0);
   if (s->kind == CS_KIND_FTSST) {
-    float durs[CS_MAX_REPS], stsSum = 0; int nf = 0;
+    static float durs[CS_MAX_REPS]; float stsSum = 0; int nf = 0;
     for (int i = 0; i < s->nReps; i++) if (s->reps[i].hasSit) { durs[nf] = s->reps[i].dur; stsSum += s->reps[i].sts; if (nf < 5) cs_put16(b, 26 + nf * 2, cs_u16(s->reps[i].dur, 1, 1)); nf++; }
     b[4] = (uint8_t)nf; cs_put16(b, 16, cs_u16(nf ? stsSum / nf : 0, 1, nf > 0)); float cv = cs_cv(durs, nf); cs_put16(b, 18, cs_u16(cv, 10, cv >= 0));
     if (status == CS_ST_OK && nf < 5) status = CS_ST_INCOMPLETE;
+  } else if (s->kind == CS_KIND_CHAIR30) {
+    uint32_t el = t - s->t0;
+    b[4] = (uint8_t)(s->nReps + (s->half ? 1 : 0));
+    cs_put32(b, 8, el > (uint32_t)CS_CHAIR_SEC * 1000u ? (uint32_t)CS_CHAIR_SEC * 1000u : el);
+    if (status == CS_ST_OK && el + 50 < (uint32_t)CS_CHAIR_SEC * 1000u) status = CS_ST_INCOMPLETE;
+  } else if (s->kind == CS_KIND_WALK4) {
+    static float ivs[CS_MAX_STEPS]; int n = s->nSteps, ni = 0; float isum = 0;
+    for (int i = 1; i < n; i++) { float d = (float)(int32_t)(s->steps[i] - s->steps[i - 1]); if (d < 2000) { ivs[ni++] = d; isum += d; } }
+    float mi = ni ? isum / ni : 0, dur = (n >= 2 && ni) ? (float)(int32_t)(s->steps[n - 1] - s->steps[0]) + mi : 0;
+    int has = dur > 0;
+    cs_put32(b, 8, has ? (uint32_t)(dur + 0.5f) : 0xFFFFFFFFu);
+    b[52] = (uint8_t)(n > 255 ? 255 : n);
+    cs_put16(b, 54, cs_u16(has ? n / (dur / 60000.f) : 0, 10, has));
+    float scv = cs_cv(ivs, ni); cs_put16(b, 56, cs_u16(scv, 10, scv >= 0));
+    cs_put16(b, 58, cs_u16(has ? (float)CS_WALK_M / (dur / 1000.f) : 0, 100, has));
+    if (n < CS_WALK_MIN_STEPS) status = CS_ST_INCOMPLETE;
   } else if (s->kind == CS_KIND_TUG) {
     cs_turn_t *t1 = s->nTurns > 0 ? &s->turns[0] : 0, *t2 = s->nTurns > 1 ? &s->turns[1] : 0;
     int hasEnd = t2 || s->hasSitAt; uint32_t endWalk = t2 ? t2->start : s->descentAt;
     int hasOut = t1 && s->hasStsEnd, hasBack = t1 && hasEnd;
     float walkOut = hasOut ? (float)(int32_t)(t1->start - s->stsEnd) : 0, walkBack = hasBack ? (float)(int32_t)(endWalk - t1->end) : 0;
     /* ก้าวในช่วงเดิน (ไม่นับช่วงหมุนและช่วงนั่งลง) */
-    uint32_t stepsW[CS_MAX_STEPS]; int nw = 0;
+    static uint32_t stepsW[CS_MAX_STEPS]; int nw = 0;   /* static: ไม่กินสแตกของเธรดหลัก */
     for (int i = 0; i < s->nSteps; i++) { uint32_t st = s->steps[i]; if (!s->hasStsEnd) continue;
       int inOut = t1 ? (int32_t)(st - t1->start) < 0 : (!hasEnd || (int32_t)(st - endWalk) < 0);
       int inBack = t1 && (int32_t)(st - t1->end) >= 0 && (!hasEnd || (int32_t)(st - endWalk) < 0);
       if (inOut || inBack) stepsW[nw++] = st; }
-    float ivs[CS_MAX_STEPS]; int ni = 0; for (int i = 1; i < nw; i++) { float d = (float)(int32_t)(stepsW[i] - stepsW[i - 1]); if (d < 2000) ivs[ni++] = d; }
+    static float ivs[CS_MAX_STEPS]; int ni = 0; for (int i = 1; i < nw; i++) { float d = (float)(int32_t)(stepsW[i] - stepsW[i - 1]); if (d < 2000) ivs[ni++] = d; }
     int hasWalk = hasOut && hasBack; float walkMs = walkOut + walkBack;
     cs_put16(b, 36, cs_u16(s->hasStsEnd && s->hasOnset ? (float)(int32_t)(s->stsEnd - s->onset) : 0, 1, s->hasStsEnd && s->hasOnset));
     cs_put16(b, 38, cs_u16(walkOut, 1, hasOut)); cs_put16(b, 40, cs_u16(t1 ? (float)(int32_t)(t1->end - t1->start) : 0, 1, t1 != 0)); cs_put16(b, 42, cs_u16(walkBack, 1, hasBack));
@@ -265,14 +298,14 @@ static void cs_imu_finish(cs_imu_t *s, uint32_t t, uint8_t status) {
   s->status = status; b[3] = status;
 }
 static void cs_imu_stop(cs_imu_t *s, uint32_t t) {
-  if (s->phase == CS_PH_RUN && !s->done) cs_imu_finish(s, t, s->kind == CS_KIND_BALANCE ? CS_ST_OK : CS_ST_INCOMPLETE);
+  if (s->phase == CS_PH_RUN && !s->done) cs_imu_finish(s, t, (s->kind == CS_KIND_BALANCE || s->kind == CS_KIND_WALK4) ? CS_ST_OK : CS_ST_INCOMPLETE);
   else if (!s->done) { s->done = 1; s->phase = CS_PH_DONE; s->status = CS_ST_ABORTED; memset(s->result, 0xFF, CS_RESULT_BYTES); s->result[0] = 0xC5; s->result[1] = 1; s->result[2] = s->kind; s->result[3] = CS_ST_ABORTED; }
 }
 /* สถานะสด 16 ไบต์สำหรับแอป (ส่งทุก 100 ms) */
 static void cs_imu_state(const cs_imu_t *s, uint32_t now, uint8_t *o) {
   memset(o, 0, CS_STATE_BYTES); o[0] = 0xC5; o[1] = s->kind; o[2] = s->phase;
   uint8_t cnt = 0; for (int i = 0; i < s->nReps; i++) if (s->reps[i].hasSit) cnt++;
-  o[3] = s->kind == CS_KIND_TUG ? s->nTurns : cnt;
+  o[3] = s->kind == CS_KIND_TUG ? s->nTurns : s->kind == CS_KIND_CHAIR30 ? s->nReps : cnt;
   cs_put32(o, 4, s->phase == CS_PH_RUN || s->phase == CS_PH_DONE ? now - s->t0 : 0);
   cs_puti16(o, 8, cs_i16(s->tilt, 10, 1)); cs_puti16(o, 10, cs_i16(s->wh, 10, 1));
   float yaw = fmodf(s->yawInt, 360.f); cs_puti16(o, 12, cs_i16(yaw, 10, 1));

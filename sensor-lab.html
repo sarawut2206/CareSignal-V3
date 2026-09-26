@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CareSignal · ห้องทดสอบเซ็นเซอร์</title>
+<meta name="description" content="โหมดวิจัย: ทดสอบมาตรฐาน 5 ท่าด้วยเซ็นเซอร์คาดเอว บันทึกเวลาอ้างอิงของเจ้าหน้าที่ และส่งออก CSV">
+<link rel="icon" href="./icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ห้องทดสอบเซ็นเซอร์ — โหมดวิจัยสำหรับการศึกษานำร่อง (ไม่ใช่หน้าของครอบครัว)
+   · 5 ท่ามาตรฐาน: ลุกนั่ง 5 ครั้ง · ลุกเดิน 3 เมตร · ทรงตัว 4 ท่า · ลุกยืน 30 วินาที · เดิน 4 เมตร
+   · ทุกครั้งกรอกเวลาที่เจ้าหน้าที่จับได้ (ค่าอ้างอิง) และค่าจากกล้องถ้ามี → ส่งออก CSV ไปวิเคราะห์ Bland–Altman
+   · ใช้รหัสผู้เข้าร่วมเท่านั้น ไม่มีชื่อ · เก็บในเบราว์เซอร์เครื่องนี้จนกว่าจะส่งออก
+   ============================================================ */
+:root{--bg:#EEF2F7;--surf:#fff;--surf2:#F5F8FB;--ink:#16233B;--ink2:#4F5F78;--ink3:#7B8AA1;--line:#E3E9F1;--brand:#1D4E9A;--brand2:#143A74;--brandt:#E8F0FB;--c1:#DC2626;--c3:#D97706;--c4:#16A34A}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F172A;--surf:#16223A;--surf2:#1C2A45;--ink:#E6ECF5;--ink2:#A9B6C9;--ink3:#7E8BA0;--line:#2A3A57;--brandt:#1C2F52}}
+:root[data-theme="dark"]{--bg:#0F172A;--surf:#16223A;--surf2:#1C2A45;--ink:#E6ECF5;--ink2:#A9B6C9;--ink3:#7E8BA0;--line:#2A3A57;--brandt:#1C2F52}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Prompt","Noto Sans Thai",system-ui,sans-serif;font-size:15px;line-height:1.55}
+.phone{position:relative;max-width:980px;margin:0 auto;min-height:100vh;padding:16px 16px 60px}
+h1{font-size:22px;margin:4px 0 2px}.sub{color:var(--ink2);font-size:13.5px;margin:0 0 12px}
+.kick{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--brand);font-weight:700}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:12px}
+.card h3{margin:0 0 8px;font-size:16px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--ink2);min-width:120px;flex:1}
+input,select{font:inherit;font-size:15px;padding:9px 11px;border:1.5px solid var(--line);border-radius:10px;background:var(--surf);color:var(--ink);width:100%}
+button{font:inherit;cursor:pointer}
+.btn{border:0;border-radius:12px;background:var(--brand);color:#fff;font-weight:700;padding:11px 16px}
+.btn.sec{background:var(--surf2);color:var(--ink);border:1px solid var(--line)}
+.btn:disabled{opacity:.5;cursor:default}
+.tests{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.tbtn{border:1.5px solid var(--line);background:var(--surf);color:var(--ink);border-radius:14px;padding:12px;text-align:left}
+.tbtn b{display:block;font-size:15px}.tbtn small{color:var(--ink3);font-size:12px;line-height:1.4;display:block;margin-top:2px}
+.tbtn:hover{border-color:var(--brand)}
+.st{font-size:13px;color:var(--ink2);margin-top:8px}.st b.ok{color:var(--c4)}.st b.no{color:var(--c1)}
+.warn{background:#FEF3C7;border:1px solid #FDE68A;color:#78350F;border-radius:12px;padding:10px 12px;font-size:13.5px;margin-bottom:12px}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;vertical-align:top;white-space:nowrap}
+th{font-size:11.5px;color:var(--ink2);background:var(--surf2)}
+td input{width:78px;padding:5px 7px;font-size:13px}
+td.num{font-variant-numeric:tabular-nums}
+.pill{display:inline-block;border-radius:99px;padding:1px 8px;font-size:11.5px;font-weight:700}
+.pill.bad{background:#FEE2E2;color:#991B1B}.pill.ok{background:#DCFCE7;color:#166534}.pill.warn{background:#FEF3C7;color:#92400E}
+.tiny{font-size:12px;color:var(--ink3)}
+</style></head><body>
+<div class="phone" id="host">
+  <div class="kick">CareSignal · โหมดวิจัย</div>
+  <h1>ห้องทดสอบเซ็นเซอร์คาดเอว</h1>
+  <p class="sub">5 ท่ามาตรฐาน · กรอกเวลาที่เจ้าหน้าที่จับได้เป็นค่าอ้างอิงทุกครั้ง · ส่งออก CSV ไปวิเคราะห์ความสอดคล้อง</p>
+  <div class="warn" id="notice">เครื่องมือวิจัย ไม่ใช่เครื่องมือแพทย์ · ใช้หลังคณะกรรมการจริยธรรมอนุมัติ · ใช้รหัสผู้เข้าร่วมเท่านั้น ห้ามพิมพ์ชื่อ · ต้องมีคนประคองทุกท่า</div>
+
+  <div class="card"><h3>1 · อุปกรณ์</h3>
+    <div class="row"><button class="btn" id="bConn">🔗 เชื่อมต่อเซ็นเซอร์</button><button class="btn sec" id="bSelf" disabled>🧪 ตรวจเครื่อง (วางนิ่งบนโต๊ะ)</button></div>
+    <div class="st" id="devSt">ยังไม่เชื่อมต่อ</div>
+  </div>
+
+  <div class="card"><h3>2 · ผู้เข้าร่วม</h3>
+    <div class="row">
+      <label class="f">รหัส (ไม่ใช่ชื่อ)<input id="pCode" placeholder="P-001" maxlength="12" autocomplete="off"></label>
+      <label class="f">อายุ (ปี)<input id="pAge" type="number" min="40" max="110" inputmode="numeric"></label>
+      <label class="f">เพศ<select id="pSex"><option value="">—</option><option value="m">ชาย</option><option value="f">หญิง</option></select></label>
+    </div>
+    <p class="tiny" style="margin:8px 0 0">อายุและเพศใช้เทียบเกณฑ์ลุกยืน 30 วินาทีของ CDC เท่านั้น</p>
+  </div>
+
+  <div class="card"><h3>3 · เลือกท่าทดสอบ</h3>
+    <div class="tests">
+      <button class="tbtn" data-k="ftsst"><b>ลุกนั่ง 5 ครั้ง</b><small>5×STS · เวลา + ช่วงลุกแต่ละครั้ง</small></button>
+      <button class="tbtn" data-k="tug"><b>ลุกเดิน 3 เมตร</b><small>TUG (CDC STEADI) · แยกช่วงแบบ iTUG</small></button>
+      <button class="tbtn" data-k="chair30"><b>ลุกยืน 30 วินาที</b><small>30-s Chair Stand (CDC STEADI)</small></button>
+      <button class="tbtn" data-k="walk4"><b>เดิน 4 เมตร</b><small>ความเร็วเดิน (World Guidelines 2022)</small></button>
+      <button class="tbtn" data-k="balance"><b>ทรงตัว</b><small>4-Stage Balance · <select id="bStage" onclick="event.stopPropagation()" style="width:auto;padding:2px 6px;font-size:12px"><option value="0">1 เท้าชิด</option><option value="1">2 กึ่งต่อเท้า</option><option value="2">3 ต่อเท้า</option><option value="3">4 ขาเดียว</option></select></small></button>
+    </div>
+  </div>
+
+  <div class="card"><div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">4 · ผลการทดสอบ</h3>
+    <span><button class="btn sec" id="bCsv">⬇ ส่งออก CSV</button> <button class="btn sec" id="bClear">ล้างตาราง</button></span></div>
+    <div class="tw" style="margin-top:10px"><table><thead><tr><th>รหัส</th><th>ท่า</th><th>ครั้งที่</th><th>เซ็นเซอร์</th><th>เจ้าหน้าที่ (วิ)</th><th>กล้อง (วิ)</th><th>ต่าง</th><th>รายละเอียด</th><th>สถานะ</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+    <p class="tiny" id="sum" style="margin:8px 0 0"></p>
+  </div>
+  <p class="tiny">ข้อมูลเก็บในเบราว์เซอร์เครื่องนี้จนกว่าจะส่งออก · สัญญาณดิบดาวน์โหลดได้จากหน้าจอวัดแต่ละครั้ง (ติ๊ก "บันทึกสัญญาณดิบ")</p>
+</div>
+<script src="./cs-imu.js"></script>
+<script>
+(function () {
+  var KEY = "cs-lab:rows", NM = { ftsst: "ลุกนั่ง 5 ครั้ง", tug: "ลุกเดิน 3 เมตร", balance: "ทรงตัว", chair30: "ลุกยืน 30 วินาที", walk4: "เดิน 4 เมตร" };
+  var STG = ["เท้าชิด", "กึ่งต่อเท้า", "ต่อเท้า", "ขาเดียว"];
+  var ROWS = []; try { ROWS = JSON.parse(localStorage.getItem(KEY) || "[]") || []; } catch (e) { ROWS = []; }
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function persist() { try { localStorage.setItem(KEY, JSON.stringify(ROWS)); } catch (e) {} }
+  function code() { return ($("pCode").value || "").trim().toUpperCase(); }
+  function f1(v) { return v == null || isNaN(v) ? "" : (+v).toFixed(1); }
+  /* ค่าหลักของแต่ละท่า: วินาที (ท่าจับเวลา) หรือจำนวนครั้ง (ลุกยืน 30 วินาที) */
+  function mainVal(r) { return r.test === "chair30" ? r.count : r.test === "balance" ? r.held : r.sec; }
+  function detail(r) {
+    var m = r.imu || {}, o = [];
+    if (m.ftsst) o.push("แต่ละครั้ง " + (m.ftsst.repMs || []).map(function (x) { return (x / 1000).toFixed(1); }).join("/") + " · CV " + (m.ftsst.stsCv == null ? "–" : m.ftsst.stsCv + "%"));
+    if (m.tug) o.push("ลุก " + f1(m.tug.stsMs / 1000) + " · ไป " + f1(m.tug.walkOutMs / 1000) + " · หมุน " + f1(m.tug.turnMs / 1000) + " · กลับ " + f1(m.tug.walkBackMs / 1000) + " · นั่ง " + f1(m.tug.sitMs / 1000) + (m.tug.speed != null ? " · " + m.tug.speed.toFixed(2) + " ม./วิ" : ""));
+    if (m.walk4) o.push((m.walk4.speed != null ? m.walk4.speed.toFixed(2) + " ม./วิ" : "–") + " · " + (m.walk4.cadence == null ? "–" : Math.round(m.walk4.cadence)) + " ก้าว/นาที");
+    if (m.chair30) o.push("ยืนสุด " + m.chair30.full + (m.chair30.half ? " + ครึ่งทาง 1" : ""));
+    if (m.balance) o.push("RMS " + m.balance.rms + " · ความถี่ " + m.balance.freq + " Hz" + (m.balance.stepped ? " · ขยับมาก" : ""));
+    return o.join(" · ");
+  }
+  function flag(r) {
+    var m = r.imu || {};
+    if (r.test === "tug" && r.sec != null) return r.sec >= 12 ? ["bad", "≥ 12 วิ"] : ["ok", "< 12 วิ"];
+    if (r.test === "walk4" && m.walk4 && m.walk4.speed != null) return CSImu.slowGait(m.walk4.speed) ? ["bad", "< 0.8 ม./วิ"] : ["ok", "≥ 0.8 ม./วิ"];
+    if (r.test === "chair30") { var c = CSImu.chairBelow(r.count, r.age, r.sex); return c ? (c.below ? ["bad", "ต่ำกว่าเกณฑ์ " + c.cut] : ["ok", "ถึงเกณฑ์ " + c.cut]) : ["warn", "ไม่ทราบอายุ/เพศ"]; }
+    if (r.test === "balance") return r.pass ? ["ok", "ผ่าน"] : ["bad", "ไม่ผ่าน"];
+    return null;
+  }
+  function render() {
+    var tb = $("rows"); tb.innerHTML = ROWS.map(function (r, i) {
+      var v = mainVal(r), fl = flag(r), ref = r.staff != null && r.staff !== "" ? +r.staff : null, d = ref != null && v != null && r.test !== "chair30" ? v - ref : ref != null && r.test === "chair30" ? v - ref : null;
+      return '<tr><td>' + esc(r.code) + '</td><td>' + esc(NM[r.test] + (r.test === "balance" ? " " + STG[r.stage] : "")) + '</td><td class="num">' + r.trial + '</td>' +
+        '<td class="num"><b>' + (v == null ? "–" : r.test === "chair30" ? v + " ครั้ง" : (+v).toFixed(1) + " วิ") + '</b></td>' +
+        '<td><input data-i="' + i + '" data-f="staff" type="number" step="0.1" value="' + esc(r.staff == null ? "" : r.staff) + '"></td>' +
+        '<td><input data-i="' + i + '" data-f="camera" type="number" step="0.1" value="' + esc(r.camera == null ? "" : r.camera) + '"></td>' +
+        '<td class="num">' + (d == null ? "" : (d > 0 ? "+" : "") + d.toFixed(r.test === "chair30" ? 0 : 1)) + '</td>' +
+        '<td style="white-space:normal;min-width:220px;font-size:12px">' + esc(detail(r)) + '</td>' +
+        '<td>' + (fl ? '<span class="pill ' + fl[0] + '">' + esc(fl[1]) + '</span>' : '') + (r.status !== "ok" ? ' <span class="pill warn">' + esc(r.status) + '</span>' : '') + '</td>' +
+        '<td><button class="btn sec" style="padding:4px 9px;font-size:12px" data-del="' + i + '">ลบ</button></td></tr>';
+    }).join("") || '<tr><td colspan="10" class="tiny">ยังไม่มีผล</td></tr>';
+    var withRef = ROWS.filter(function (r) { return r.staff != null && r.staff !== "" && mainVal(r) != null && r.test !== "chair30"; });
+    if (withRef.length) {
+      var ds = withRef.map(function (r) { return mainVal(r) - r.staff; }), m = ds.reduce(function (a, b) { return a + b; }, 0) / ds.length;
+      var sd = ds.length > 1 ? Math.sqrt(ds.reduce(function (a, b) { return a + (b - m) * (b - m); }, 0) / (ds.length - 1)) : 0;
+      $("sum").textContent = "เทียบกับเจ้าหน้าที่ " + ds.length + " ครั้ง (ท่าจับเวลา): ความต่างเฉลี่ย " + (m > 0 ? "+" : "") + m.toFixed(2) + " วิ · ขอบเขตความสอดคล้อง 95% " + (m - 1.96 * sd).toFixed(2) + " ถึง " + (m + 1.96 * sd).toFixed(2) + " วิ (ดูเบื้องต้น — วิเคราะห์จริงแยกตามท่าและวิธี)";
+    } else $("sum").textContent = "";
+  }
+  $("rows").addEventListener("input", function (e) { var t = e.target; if (!t.dataset.f) return; var r = ROWS[+t.dataset.i]; r[t.dataset.f] = t.value === "" ? null : +t.value; persist(); });
+  $("rows").addEventListener("change", render);
+  $("rows").addEventListener("click", function (e) { var b = e.target.closest("[data-del]"); if (!b || !confirm("ลบแถวนี้?")) return; ROWS.splice(+b.dataset.del, 1); persist(); render(); });
+  $("bClear").addEventListener("click", function () { if (!ROWS.length || !confirm("ล้างตารางทั้งหมด? (ส่งออก CSV ก่อน)")) return; ROWS = []; persist(); render(); });
+  $("bCsv").addEventListener("click", function () {
+    var H = ["code", "age", "sex", "test", "stage", "trial", "recorded_at", "status", "sensor_value", "staff_ref", "camera", "diff_sensor_minus_staff", "reaction_s",
+             "sts_s", "walk_out_s", "turn_s", "turn_deg", "walk_back_s", "sit_s", "steps", "cadence", "step_cv", "speed_mps", "reps_ms", "stands_full", "half_counted",
+             "bal_rms", "bal_major", "bal_minor", "bal_freq", "bal_jerk", "bal_stepped", "bal_pass", "impact", "max_g", "fs_hz", "gyro_bias_dps", "engine", "fw"];
+    function q(v) { v = v == null ? "" : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+    var lines = [H.join(",")].concat(ROWS.map(function (r) {
+      var m = r.imu || {}, t = m.tug || {}, w = m.walk4 || {}, f = m.ftsst || {}, c = m.chair30 || {}, b = m.balance || {}, v = mainVal(r), ms = function (x) { return x == null ? "" : (x / 1000).toFixed(2); };
+      var gait = r.test === "walk4" ? w : t;
+      return [r.code, r.age, r.sex, r.test, r.test === "balance" ? r.stage + 1 : "", r.trial, r.at, r.status, v, r.staff, r.camera,
+        r.staff != null && v != null ? (v - r.staff).toFixed(r.test === "chair30" ? 0 : 2) : "", ms(m.reactionMs),
+        ms(t.stsMs), ms(t.walkOutMs), ms(t.turnMs), t.turnDeg, ms(t.walkBackMs), ms(t.sitMs), gait.steps, gait.cadence, gait.stepCv, gait.speed,
+        (f.repMs || []).join("|"), c.full, c.half == null ? "" : c.half ? 1 : 0,
+        b.rms, b.major, b.minor, b.freq, b.jerk, b.stepped == null ? "" : b.stepped ? 1 : 0, r.test === "balance" ? (r.pass ? 1 : 0) : "",
+        m.impact ? 1 : 0, m.maxG, m.fsHz, m.gyroBias, m.engine, r.fw].map(q).join(",");
+    }));
+    var a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + lines.join("\n")], { type: "text/csv;charset=utf-8" }));
+    a.download = "caresignal-sensor-lab-" + new Date().toISOString().slice(0, 10) + ".csv"; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  });
+
+  /* อุปกรณ์ */
+  function devStatus(html) { $("devSt").innerHTML = html; }
+  if (!CSImu.supported()) { devStatus('<b class="no">เบราว์เซอร์นี้ใช้บลูทูธไม่ได้</b> — ใช้ Chrome บน Android หรือคอมพิวเตอร์'); $("bConn").disabled = true; }
+  $("bConn").addEventListener("click", async function () {
+    devStatus("กำลังค้นหา CareSignal-Waist…");
+    try { await CSImu.connect(); devStatus('<b class="ok">เชื่อมต่อแล้ว</b> · ' + esc(CSImu.fw() || "")); $("bSelf").disabled = false; }
+    catch (e) { devStatus('<b class="no">เชื่อมต่อไม่ได้</b> · ' + esc(e && e.message || e)); }
+  });
+  $("bSelf").addEventListener("click", async function () {
+    devStatus("กำลังตรวจเครื่อง 2 วินาที — วางบอร์ดนิ่งบนโต๊ะ…");
+    try {
+      var r = await CSImu.selfTest(), c = r.checks || {};
+      function mk(ok, t) { return '<b class="' + (ok ? "ok" : "no") + '">' + (ok ? "✓ " : "✗ ") + t + '</b>'; }
+      devStatus(!r.fs ? '<b class="no">อ่านผลไม่ได้</b> ' + esc(r.raw) :
+        (r.ok ? '<b class="ok">ผ่านทุกข้อ</b> · ' : '<b class="no">ไม่ผ่านบางข้อ</b> · ') + mk(c.fs, "อัตราสุ่ม " + r.fs + " Hz") + " · " + mk(c.g, "แรงโน้มถ่วง " + r.g.toFixed(3) + " g") + " · " +
+        mk(c.bias, "ค่าคลาดไจโร " + r.gyroBias.map(function (x) { return x.toFixed(2); }).join("/") + " °/วิ") + " · " + mk(c.noise, "สัญญาณรบกวน " + r.gyroNoise + " °/วิ"));
+    } catch (e) { devStatus('<b class="no">ตรวจเครื่องไม่ได้</b> · ' + esc(e && e.message || e)); }
+  });
+
+  /* เริ่มท่า */
+  document.querySelectorAll(".tbtn").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var cd = code(); if (!/^[A-Z0-9-]{2,12}$/.test(cd)) { alert("ใส่รหัสผู้เข้าร่วม (ตัวอักษรอังกฤษ ตัวเลข ขีด) ก่อน — ห้ามใช้ชื่อ"); $("pCode").focus(); return; }
+      var k = b.dataset.k, stage = k === "balance" ? +$("bStage").value : 0;
+      var trial = ROWS.filter(function (r) { return r.code === cd && r.test === k && (k !== "balance" || r.stage === stage); }).length + 1;
+      window.scrollTo(0, 0);   /* หน้าจอวัดซ้อนเต็มกรอบ — เลื่อนขึ้นบนก่อน */
+      CSImu.open({ kind: k, stage: stage, stageNames: STG.map(function (x) { return "ยืน" + x; }),
+        onDone: function (res) {
+          var m = res.imu || {};
+          ROWS.push({ code: cd, age: +$("pAge").value || null, sex: $("pSex").value || null, test: k, stage: stage, trial: trial, at: new Date().toISOString(),
+            status: m.status || (res.incomplete ? "incomplete" : "ok"), sec: m.totalMs != null ? Math.round(m.totalMs / 100) / 10 : null,
+            count: m.chair30 ? m.chair30.stands : null, held: res.held != null ? res.held : null, pass: res.pass, staff: null, camera: null, imu: m, fw: CSImu.fw() });
+          persist(); render();
+        },
+        onManual: function () {}, onCancel: function () {} });
+    });
+  });
+  render();
+})();
+</script>
+</body></html>

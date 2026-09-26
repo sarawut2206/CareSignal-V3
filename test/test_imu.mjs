@@ -32,7 +32,8 @@ function run(kind, world, opt = {}) {
     const w = world(ts < 0 ? -1 : ts);   /* ก่อนเริ่ม: นิ่ง */
     const theta = w.theta * D2R, psi = w.psi * D2R, Rs = mm(mm(Rz(psi), Ry(theta)), Rm);
     const aW = [w.ah[0], w.ah[1], w.zdd / 9.81 + 1], wW = [0, 0, w.psiDot]; const ay = mv(Rz(psi), [0, w.thetaDot, 0]); wW[0] += ay[0]; wW[1] += ay[1]; wW[2] += ay[2];
-    const a = mtv(Rs, aW).map((v) => v + rnd() * noise), g = mtv(Rs, wW).map((v) => v + rnd() * noise * 20);
+    const gb = opt.bias || [0, 0, 0];
+    const a = mtv(Rs, aW).map((v) => v + rnd() * noise), g = mtv(Rs, wW).map((v, i) => v + gb[i] + rnd() * noise * 20);
     const ev = I.push(st, tms, a, g); if (ev) evs.push([ev, tms]);
     if (st.phase === "ready" && tGo == null && (opt.goAt == null || tms >= t0ms + opt.goAt * 1000)) { tGo = tms + 10; I.go(st, tGo); }
     if (opt.stopAt != null && tGo != null && tms - tGo >= opt.stopAt * 1000) { I.stop(st, tms); break; }
@@ -148,7 +149,7 @@ function swayWorld(o = {}) { const A = o.ap == null ? 0.02 : o.ap, B = o.ml == n
 }
 /* ค่าคงที่ต้องตรงกับเฟิร์มแวร์ (อ่านจากไฟล์ .h) */
 { const h = fs.readFileSync(new URL("../firmware/CareSignal-Waist/cs_imu_core.h", import.meta.url), "utf8");
-  const P = I.P, want = { K_G: "0.02", TAU_V: "1.0", TAU_MOVE: "10", MOVE_W: "15", V_UP: "0.20", V_END: "0.06", D_MIN: "0.12", QUIET_S: "0.3", YAW_ON: "25", YAW_OFF_MS: "250", TURN_MIN: "90", TURN2_MIN: "60", STEP_TH: "0.06", STEP_MIN_MS: "250", IMPACT_G: "3.0", BAL_SEC: "10", TUG_M: "3", CAL_N: "100", CAL_W: "30" };
+  const P = I.P, want = { CHAIR_SEC: "30", WALK_M: "4", WALK_END_MS: "1500", WALK_MIN_STEPS: "4", K_G: "0.02", TAU_V: "1.0", TAU_MOVE: "10", MOVE_W: "15", V_UP: "0.20", V_END: "0.06", D_MIN: "0.12", QUIET_S: "0.3", YAW_ON: "25", YAW_OFF_MS: "250", TURN_MIN: "90", TURN2_MIN: "60", STEP_TH: "0.06", STEP_MIN_MS: "250", IMPACT_G: "3.0", BAL_SEC: "10", TUG_M: "3", CAL_N: "100", CAL_W: "30" };
   const miss = Object.keys(want).filter((k) => !new RegExp("#define\\s+CS_" + k + "\\s+" + want[k].replace(".", "\\.") + "f?\\b").test(h) || String(P[k]) !== String(+want[k]));
   ok("ค่าคงที่ใน cs_imu_core.h ตรงกับ cs-imu.js ทุกตัว", miss.length === 0, miss);
   ok("เฟิร์มแวร์ไม่แตะไมโครโฟน (PDM) — ระบบไม่มีเสียงสั่งการ", !/PDM\.h|PDM\.begin/.test(h + fs.readFileSync(new URL("../firmware/CareSignal-Waist/CareSignal-Waist.ino", import.meta.url), "utf8")));
@@ -159,6 +160,55 @@ function swayWorld(o = {}) { const A = o.ap == null ? 0.02 : o.ap, B = o.ml == n
   ok("สรุปสั้น ลุกเดิน: มีช่วงย่อย ก้าว และความเร็ว", lines.some((l) => /หมุนตัว/.test(l)) && lines.some((l) => /ก้าว\/นาที/.test(l)) && lines.some((l) => /ม\.\/วิ/.test(l)), lines);
   const b = I.briefLines({ kind: "balance", status: "ok", balance: { heldSec: 10, rms: 0.15, major: 0.1, minor: 0.05, freq: 0.5, stepped: true } });
   ok("สรุปสั้น ทรงตัว: บอกว่าเห็นการขยับให้ลูกหลานยืนยัน", b.some((l) => /ยืนยัน/.test(l)), b);
+}
+/* ---------- รุ่น 1.1: ลุกยืน 30 วินาที (CDC) · เดิน 4 เมตร (WFG 2022) · ชดเชยค่าคลาดไจโร · ตรวจเครื่อง ---------- */
+{ /* ลุกยืน 30 วินาที: รอบละ 2.4 วิ เริ่มขยับหลังสัญญาณ 0.4 วิ → ยืนสุดครบ 12 ครั้งก่อน 30 วิ ครั้งที่ 13 กำลังลุกเกินครึ่งทางตอนครบเวลา */
+  const W = ftsstWorld(2.4, 14); const r = run("chair30", W.f, { T: 45 }), c = r.res && r.res.chair30;
+  ok("ลุกยืน 30 วินาที: จบเองที่ 30 วินาที", r.res && r.res.status === "ok" && Math.abs(r.res.totalMs - 30000) <= 20, r.res && r.res.totalMs);
+  ok("ลุกยืน 30 วินาที: ยืนสุดครบ 12 ครั้ง + นับครั้งที่ลุกเกินครึ่งทางตามกติกา CDC = 13", c && c.full === 12 && c.half === true && c.stands === 13, c);
+  const W2 = ftsstWorld(3.0, 12); const r2 = run("chair30", W2.f, { T: 45 }), c2 = r2.res && r2.res.chair30;
+  /* รอบละ 3 วิ: ยืนสุดที่ 0.4+1.5+3k → k ≤ 9 = 10 ครั้ง · ครั้งที่ 11 เริ่ม 30.4 วิ (ยังไม่ลุก) → ไม่นับครึ่ง */
+  ok("ลุกยืน 30 วินาที (ช้า รอบละ 3 วิ): 10 ครั้ง ไม่นับครึ่ง", c2 && c2.stands === 10 && c2.half === false, c2);
+  const r3 = run("chair30", W.f, { T: 45, stopAt: 12 }); ok("ลุกยืน 30 วินาที: หยุดก่อนครบ = incomplete พร้อมจำนวนที่ทำได้", r3.res && r3.res.status === "incomplete" && r3.res.chair30.stands >= 4 && r3.res.chair30.stands <= 5, r3.res && r3.res.chair30);
+  ok("เกณฑ์ CDC 30-Second Chair Stand: ชาย 72 ปี 11 ครั้ง = ต่ำกว่าค่าเฉลี่ย (เกณฑ์ 12) · หญิง 72 ปี 11 ครั้ง = ไม่ต่ำ (เกณฑ์ 10)",
+     I.chairBelow(11, 72, "m").below === true && I.chairBelow(11, 72, "f").below === false && I.chairBelow(11, 55, "m") === null);
+}
+function walkWorld(speed, cad, amp = 0.15, delay = 0.5) {
+  const dur = 4 / speed;
+  return { dur, f: (t) => { if (t < 0) return still; const on = t > delay && t < delay + dur; const step = on ? amp * Math.sin(2 * Math.PI * cad / 60 * (t - delay) - Math.PI / 2) : 0;
+    return { theta: 0, thetaDot: 0, zdd: step * 9.81, psi: 0, psiDot: 0, ah: [on ? 0.05 * Math.sin(2 * Math.PI * cad / 120 * t) : 0, 0] }; } };
+}
+for (const [sp, cad] of [[1.0, 110], [0.6, 90], [1.3, 120]]) {
+  const W = walkWorld(sp, cad); const r = run("walk4", W.f, { T: 20 }), w = r.res && r.res.walk4;
+  ok(`เดิน 4 เมตร ${sp} ม./วิ: ความเร็วคลาดไม่เกิน 12% · จังหวะก้าวคลาดไม่เกิน 10%`, w && Math.abs(w.speed - sp) / sp <= 0.12 && Math.abs(w.cadence - cad) / cad <= 0.10 && r.res.status === "ok", w);
+}
+{ const W = walkWorld(0.6, 90); const r = run("walk4", W.f, { T: 20 });
+  ok("เดิน 4 เมตรช้ากว่า 0.8 ม./วิ = เดินช้า (World Guidelines 2022)", I.slowGait(r.res.walk4.speed) === true && I.slowGait(1.0) === false);
+  const r2 = run("walk4", (t) => still, { T: 6, stopAt: 4 }); ok("เดิน 4 เมตร: ไม่เดินเลย = incomplete ไม่มีความเร็ว", r2.res && r2.res.status === "incomplete" && r2.res.walk4.speed === null, r2.res && r2.res.walk4); }
+{ /* ค่าคลาดไจโร 1.5 / −1.0 / 0.8 องศา/วิ (ระดับจริงของ BMI270 ที่ยังไม่ปรับเทียบ) */
+  const W = tugWorld(), bias = [1.5, -1.0, 0.8];
+  const r = run("tug", W.f, { bias }), t = r.res && r.res.tug, est = r.st.wB;
+  ok("ประมาณค่าคลาดไจโรจากช่วงนิ่งได้ใกล้ค่าจริง (คลาด < 0.2 องศา/วิ ทุกแกน)", est.every((v, i) => Math.abs(v - bias[i]) < 0.2), est);
+  ok("มีค่าคลาดไจโรแล้ว ลุกเดินยังวัดได้: รวมคลาด ≤ 0.3 วิ · หมุนตัว 180° ± 15°", r.res && Math.abs(r.res.totalMs / 1000 - (W.tEnd + 0.4)) <= 0.3 && t.turnSeen && Math.abs(t.turnDeg - 180) <= 15, t);
+  ok("ผลบอกขนาดค่าคลาดไจโรเพื่อใช้ตรวจคุณภาพ", r.res.gyroBias > 1.5 && r.res.gyroBias < 2.2, r.res.gyroBias);
+  const rs = run("balance", swayWorld(), { react: 0, bias }), b = rs.res.balance;
+  ok("ค่าคลาดไจโรไม่ทำให้การแกว่งขณะยืนเพี้ยน (RMS ใกล้ค่าไม่มีค่าคลาด ±15%)", Math.abs(b.rms - run("balance", swayWorld(), { react: 0 }).res.balance.rms) / b.rms < 0.15, b);
+}
+{ /* แพ็กเก็ตรุ่น 2 */
+  const c = run("chair30", ftsstWorld(2.4, 14).f, { T: 45 }).res, cu = I.unpack(I.pack(c));
+  ok("แพ็ก/แกะ ลุกยืน 30 วินาที: จำนวนครั้งและธงครึ่งทาง", cu && cu.kind === "chair30" && cu.chair30.stands === 13 && cu.chair30.half === true && cu.engine === "fw-2", cu && cu.chair30);
+  const w = run("walk4", walkWorld(1.0, 110).f, { T: 20 }).res, wu = I.unpack(I.pack(w));
+  ok("แพ็ก/แกะ เดิน 4 เมตร: เวลา ความเร็ว ก้าว", wu && wu.kind === "walk4" && wu.walk4.durMs === w.walk4.durMs && Math.abs(wu.walk4.speed - w.walk4.speed) < 0.011 && wu.walk4.steps === w.walk4.steps, wu && wu.walk4);
+}
+{ /* ตรวจเครื่องก่อนใช้ (self-test) — ข้อความจากเฟิร์มแวร์ */
+  const good = I.parseSelfTest("ST fs=99.8 g=1.004 gb=0.31,-0.22,0.12 gn=0.06 an=0.003");
+  const bad = I.parseSelfTest("ST fs=52.0 g=1.210 gb=4.1,0.2,0.1 gn=0.9 an=0.02");
+  ok("ตรวจเครื่อง: ค่าปกติผ่านทุกข้อ", good.ok && good.checks.fs && good.checks.g && good.checks.bias && good.checks.noise, good);
+  ok("ตรวจเครื่อง: อัตราสุ่มต่ำ/แรงโน้มถ่วงเพี้ยน/ค่าคลาดสูง ไม่ผ่าน", !bad.ok && !bad.checks.fs && !bad.checks.g && !bad.checks.bias && !bad.checks.noise, bad);
+  const h = fs.readFileSync(new URL("../firmware/CareSignal-Waist/CareSignal-Waist.ino", import.meta.url), "utf8");
+  ok("เฟิร์มแวร์: มีคำสั่งตรวจเครื่อง รูปแบบข้อความตรงกับตัวอ่าน และบันทึกผ่านสาย USB ได้", /CMD_SELFTEST\s*=\s*6/.test(h) && /"ST fs="/.test(h) && /" gb="/.test(h) && /Serial\.print/.test(h));
+  const core = fs.readFileSync(new URL("../firmware/CareSignal-Waist/cs_imu_core.h", import.meta.url), "utf8");
+  ok("แกน C: มีท่า ลุกยืน 30 วินาที/เดิน 4 เมตร และชดเชยค่าคลาดไจโร", /CS_KIND_CHAIR30 = 4/.test(core) && /CS_KIND_WALK4 = 5/.test(core) && /s->wB\[0\] = s->calW\[0\] \/ s->calN/.test(core) && /b\[1\] = 2;/.test(core));
 }
 console.log(`cs-imu: ผ่าน ${pass} · ตก ${fail}`);
 process.exit(fail ? 1 : 0);
