@@ -626,7 +626,7 @@ var CSBackend = (function () {
     var out = {};
     var q = await Promise.all([
       sb.from("cm_worklist").select("*").eq("id", caseId).limit(1),
-      sb.from("assessments").select("assessed_at,score,tier,ftsst_seconds,tug_seconds,parts,falls_detail,meds_detail,safety_gate,not_tested")
+      sb.from("assessments").select("assessed_at,score,score_max,tier,method,ftsst_seconds,tug_seconds,parts,falls_detail,meds_detail,home_detail,detail,safety_gate,not_tested")
         .eq("user_id", userId).order("assessed_at", { ascending: true }).limit(12),
       sb.from("care_events").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(10),
       sb.from("referrals").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(6),
