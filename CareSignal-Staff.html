@@ -489,6 +489,48 @@ td.num{font-family:var(--mono);white-space:nowrap}
 .pthead .sp{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .pthead .ghostb{width:auto;margin:0;padding:7px 12px;font-size:13px}
 
+/* ---------- กระดานผู้เชี่ยวชาญ (งานของฉัน): การ์ดสรุปแถบขีด · แท็บ · การ์ดเคส ---------- */
+.skpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:1100px){.skpis{grid-template-columns:repeat(2,1fr)}}
+.skpi{background:var(--surf);border:1px solid var(--line);border-radius:18px;padding:16px 16px 12px;box-shadow:var(--sh);min-width:0}
+.skpi .kh{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.skpi .l{font-size:12.5px;color:var(--ink2);font-weight:600;padding-top:3px}
+.skpi .ic{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;flex:none;color:var(--ink)}
+.skpi .ic svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.skpi .n{font-size:32px;font-weight:700;letter-spacing:-.03em;line-height:1.1;margin-top:2px;font-variant-numeric:tabular-nums}
+.skpi .sl,.skpi .sv{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink3);margin-top:10px}
+.skpi .sv{margin-top:3px;font-weight:600;color:var(--ink2);font-variant-numeric:tabular-nums}
+.skpi .bars{display:flex;gap:2px;height:30px;margin-top:5px}
+.skpi .bars i{flex:1;border-radius:2px;background:var(--line);min-width:1px}
+.skpi .bars i.f{background:var(--k,var(--brand))}
+.stabs{display:flex;gap:4px 22px;flex-wrap:wrap;align-items:center;margin:4px 0 12px;border-bottom:1px solid var(--line)}
+.stabs button{border:0;background:none;font:inherit;font-size:15px;color:var(--ink3);padding:8px 0 10px;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1px}
+.stabs button[aria-pressed="true"]{color:var(--ink);font-weight:700;border-bottom-color:var(--brand)}
+.stabs .sp{margin-left:auto;display:flex;gap:4px;padding-bottom:6px}
+.stabs .sp button{font-size:12.5px;padding:5px 12px;border:1px solid var(--line);border-radius:99px;margin:0;color:var(--ink2)}
+.stabs .sp button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.scards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;margin-bottom:14px}
+.scard{position:relative;background:var(--surf);border:1px solid var(--line);border-radius:20px;padding:16px 18px 14px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:10px;min-height:250px;cursor:pointer;overflow:hidden;transition:box-shadow .15s,border-color .15s}
+.scard:hover{border-color:var(--brand);box-shadow:0 8px 24px rgba(22,35,59,.10)}
+.scard[data-late="1"]{border-color:#FCA5A5}
+.scard .sh{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;position:relative;z-index:1}
+.scard .nm{font-size:19px;font-weight:700;letter-spacing:-.01em;line-height:1.25;max-width:62%}
+.scard .nm small{display:block;font-size:12.5px;font-weight:500;color:var(--ink3);margin-top:3px;letter-spacing:0}
+.scard .go{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surf);color:var(--ink);display:grid;place-items:center;cursor:pointer;flex:none;font-size:16px}
+.scard .go:hover{border-color:var(--brand);color:var(--brand)}
+.scard .por{position:absolute;right:14px;top:58px;width:118px;height:118px;border-radius:50%;display:grid;place-items:center;font-size:46px;font-weight:800;color:var(--lv);
+  background:radial-gradient(circle at 35% 30%,#fff,var(--lvt) 70%);box-shadow:inset 0 0 0 5px var(--lvt),0 0 0 3px var(--surf),0 0 0 5px var(--lv)}
+.scard .task{font-size:13px;color:var(--ink2);line-height:1.5;max-width:56%;position:relative;z-index:1}
+.scard .task b{display:block;color:var(--ink);font-size:13.5px;margin-bottom:2px}
+.scard .sf{margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:12px;border-top:1px solid var(--line2);position:relative;z-index:1;background:linear-gradient(transparent,var(--surf) 30%)}
+.scard .sf b{display:block;font-size:17px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.25}
+.scard .sf span{font-size:12px;color:var(--ink3);display:inline-flex;align-items:center;gap:4px}
+.scard .sf .ar{font-weight:800}.scard .sf .ar.up{color:var(--c4)}.scard .sf .ar.dn{color:var(--c1)}
+.scard .acts{display:flex;gap:6px;position:relative;z-index:1}
+.scard .acts button{flex:1;border-radius:12px;font:inherit;font-size:13px;font-weight:700;padding:9px;cursor:pointer;border:1px solid var(--line);background:var(--surf);color:var(--brand)}
+.scard .acts button.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.scard .acts button:disabled{opacity:.55}
+
 /* ---------- หน้ารายละเอียดเคสแบบแดชบอร์ดผู้ป่วย: หัวเวชระเบียน · การ์ดตัวเลข · กราฟ · แผนที่ร่างกาย · นัดถัดไป ---------- */
 .pthead .av{width:48px;height:48px;border-radius:50%;background:var(--brandt);color:var(--brand2);display:grid;place-items:center;font-weight:800;font-size:19px;flex:none}
 .cdgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}
@@ -1890,7 +1932,7 @@ async function caseDetailV(caseId,userId){
 
   /* สามคำถามที่หน้าเคสต้องตอบทันที: พบอะไร · ใครต้องทำอะไร · ภายในเมื่อไร
      วางไว้บนสุดก่อนรายละเอียดทั้งหมด เพื่อไม่ต้องเลื่อนหาว่าต้องทำอะไร */
-  var profCard='<div class="card"><div class="prof"><span class="av">'+esc(String(c.display_name||"?").replace(/^สาธิต\s*/,"").charAt(0))+'</span><div><b>'+esc(c.display_name||"—")+'</b><small>'+esc(c.pseudonym||"—")+'</small></div></div>'+
+  var profCard='<div class="card"><div class="prof"><span class="av">'+esc(iniOf(c.display_name))+'</span><div><b>'+esc(c.display_name||"—")+'</b><small>'+esc(c.pseudonym||"—")+'</small></div></div>'+
     '<div class="profgrid">'+
       '<div><span>อายุ / เพศ</span>'+(c.age||"—")+' ปี · '+(c.sex==="f"?"หญิง":c.sex==="m"?"ชาย":"—")+'</div>'+
       '<div><span>โทรศัพท์</span>'+(c.phone?'<a href="tel:'+esc(c.phone)+'" style="color:var(--brand)">'+esc(c.phone)+'</a>':'—')+'</div>'+
@@ -1904,7 +1946,7 @@ async function caseDetailV(caseId,userId){
   V.innerHTML=
     /* แถบผู้ป่วยแบบหัวเวชระเบียน: รหัส ชื่อ อายุ/เพศ ระดับ ขั้นตอน กำหนด — เห็นครบก่อนอ่านรายละเอียด */
     '<div class="pthead" style="border-left-color:'+(LV_C[c.level]||"#5B77B4")+'">'+
-      '<span class="av">'+esc(String(c.display_name||"?").replace(/^สาธิต\s*/,"").charAt(0))+'</span>'+
+      '<span class="av">'+esc(iniOf(c.display_name))+'</span>'+
       '<span class="code">'+esc(c.pseudonym||"—")+'</span>'+
       '<span class="nm">'+esc(c.display_name||"—")+'</span>'+
       '<span class="meta">'+(c.age?'<span>อายุ <b>'+c.age+'</b> ปี</span>':'')+(c.sex?'<span>'+(c.sex==="f"?"หญิง":"ชาย")+'</span>':'')+
@@ -2748,6 +2790,38 @@ function timelineHTML(rows){
 }
 
 
+/* ---------- ชิ้นส่วนกระดานผู้เชี่ยวชาญ ---------- */
+var SK_IC={
+  inbox:'<svg viewBox="0 0 24 24"><path d="M4 13l2.5-7h11L20 13v6H4z"/><path d="M4 13h5l1 2h4l1-2h5"/></svg>',
+  clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  cal:'<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>',
+  alert:'<svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg>'
+};
+/* การ์ดสรุป: ตัวเลขใหญ่ + แถบขีด 36 ช่องแสดงสัดส่วน ซ้าย/ขวา */
+function skpiHTML(o){
+  var a=Math.max(0,o.a||0), b=Math.max(0,o.b||0), N=36, k=(a+b)?Math.round(a/(a+b)*N):0, bars="";
+  for(var i=0;i<N;i++)bars+='<i'+(i<k?' class="f"':'')+'></i>';
+  return '<div class="skpi" style="--k:'+o.color+'"><div class="kh"><div><div class="l">'+esc(o.l)+'</div><div class="n">'+o.n+'</div></div><span class="ic">'+SK_IC[o.ic]+'</span></div>'+
+    '<div class="sl"><span>'+esc(o.la)+'</span><span>'+esc(o.lb)+'</span></div><div class="bars">'+bars+'</div>'+
+    '<div class="sv"><span>'+a+'</span><span>'+b+'</span></div></div>';
+}
+/* อักษรย่อ: ข้ามคำว่า "สาธิต" และสระหน้า (เ แ โ ใ ไ) ให้ได้พยัญชนะตัวแรก */
+function iniOf(nm){ var t=String(nm||"").replace(/^สาธิต\s*/,"").replace(/^[เแโใไ]+/,""); return t.charAt(0)||"?" }
+var LV_T={urgent:"var(--c1t)",decline:"var(--c2t)",watch:"var(--c3t)",stable:"var(--c4t)"};
+/* การ์ดเคส: ชื่อ · รหัส · วงกลมอักษรย่อสีตามระดับ (แทนรูปถ่าย) · งาน · กำหนด · ระดับ */
+function scardHTML(r,dt){
+  var ini=iniOf(r.display_name), p=PRIO[r.level]||PRIO.watch;
+  var ok=!r.overdue;
+  return '<div class="scard" data-late="'+(r.overdue?1:0)+'" data-goopen="'+esc(r.kind)+':'+esc(r.ref_id)+'" style="--lv:'+(LV_C[r.level]||"var(--brand)")+';--lvt:'+(LV_T[r.level]||"var(--brandt)")+'">'+
+    '<div class="sh"><div class="nm">'+esc(r.display_name||"—")+'<small>'+esc(r.pseudonym||"—")+' · '+(r.kind==="referral"?"รายการส่งต่อ":"เคส")+(r.unclaimed?' · <span class="newtag">ยังไม่มีผู้รับ</span>':'')+'</small></div>'+
+      '<button class="go" type="button" aria-label="เปิด" data-goopen="'+esc(r.kind)+':'+esc(r.ref_id)+'">↗</button></div>'+
+    '<div class="por" aria-hidden="true">'+esc(ini)+'</div>'+
+    '<div class="task"><b>'+esc(p.ic+" "+p.nm)+'</b>'+esc(r.task||"ทบทวนและบันทึกผล")+'</div>'+
+    '<div class="sf"><div><b style="color:'+dt.c+'">'+esc(dt.t)+'</b><span>กำหนดตอบ <i class="ar '+(ok?"up":"dn")+'">'+(ok?"↗":"↘")+'</i></span></div>'+
+      '<div><b>'+esc(LV_NM[r.level]||"—")+'</b><span>ระดับ <i class="ar '+(r.level==="urgent"||r.level==="decline"?"dn":"up")+'">'+(r.level==="urgent"||r.level==="decline"?"↘":"↗")+'</i></span></div></div>'+
+    '<div class="acts">'+(r.unclaimed&&r.kind==="referral"?'<button class="pri" data-claim="'+esc(r.ref_id)+'">รับเคสนี้</button>':'')+
+      '<button data-goopen="'+esc(r.kind)+':'+esc(r.ref_id)+'">'+(r.kind==="case"?"เปิดเคส":"ดูการส่งต่อ")+'</button></div></div>';
+}
 async function mineV(){
   var rn=ROLE_NM[ST.role]||ST.role, bd=board();
   head(bd?bd.nm:"งานของฉัน", isClinician()
@@ -2787,17 +2861,26 @@ async function mineV(){
   rows.forEach(function(r){r._due=r.due_at?new Date(r.due_at).getTime():null});
   var LVR={urgent:0,decline:1,watch:2,stable:3};
 
-  var html=roleBarHTML()+orgBarHTML()+kpiRow([
-    {id:"late",n:late.length,label:"เกินกำหนด",tone:"c1"},
-    {id:"today",n:today.length,label:"ครบกำหนดวันนี้",tone:"c2"},
-    {id:"mine",n:mine.length,label:"ที่ท่านรับไว้",tone:"brand"},
-    {id:"free",n:free.length,label:"ยังไม่มีผู้รับ",tone:"c3"}
-  ],WL.mineFilter||null);
+  var hot=rows.filter(function(r){return r.level==="urgent"||r.level==="decline"});
+  var html=roleBarHTML()+orgBarHTML()+
+    '<div class="skpis">'+
+      skpiHTML({l:"งานที่ส่งถึงฉัน",n:rows.length,ic:"inbox",a:mine.length,b:free.length,la:"รับไว้แล้ว",lb:"ยังไม่มีผู้รับ",color:"var(--brand)"})+
+      skpiHTML({l:"เกินกำหนด",n:late.length,ic:"clock",a:late.length,b:rows.length-late.length,la:"เกินกำหนด",lb:"อยู่ในกำหนด",color:"var(--c1)"})+
+      skpiHTML({l:"ครบกำหนดใน 24 ชม.",n:today.length,ic:"cal",a:today.length,b:rows.length-today.length-late.length,la:"ภายในวันนี้",lb:"หลังจากนั้น",color:"var(--c3)"})+
+      skpiHTML({l:"ระดับแดง/ส้ม",n:hot.length,ic:"alert",a:hot.length,b:rows.length-hot.length,la:"ต้องทบทวนเร็ว",lb:"เฝ้าสังเกต/คงที่",color:"var(--c2)"})+
+    '</div>';
+  var TABS=[[null,"ทั้งหมด",rows.length],["late","เกินกำหนด",late.length],["today","วันนี้",today.length],["mine","ที่ฉันรับไว้",mine.length],["free","ยังไม่มีผู้รับ",free.length]];
+  var mode=WL.mineView||"cards";
+  html+='<div class="stabs">'+TABS.map(function(t){return '<button type="button" data-f="'+(t[0]||"")+'" aria-pressed="'+((WL.mineFilter||null)===t[0])+'">'+esc(t[1])+' ('+t[2]+')</button>'}).join("")+
+    '<span class="sp"><button type="button" data-view="cards" aria-pressed="'+(mode==="cards")+'">การ์ด</button><button type="button" data-view="table" aria-pressed="'+(mode==="table")+'">ตาราง</button></span></div>';
   var list=rows;
   if(WL.mineFilter==="late")list=late; else if(WL.mineFilter==="today")list=today;
   else if(WL.mineFilter==="mine")list=mine; else if(WL.mineFilter==="free")list=free;
 
-  html+=dashTable({id:"mine",rows:list,sort:{k:"_due",dir:"asc"},
+  if(mode==="cards") html+=list.length
+    ? '<div class="scards">'+list.slice().sort(function(a,b){return (a._due||9e15)-(b._due||9e15)}).map(function(r){return scardHTML(r,dueTxt(r))}).join("")+'</div>'
+    : '<div class="card"><div class="empty">ไม่มีงานในกลุ่มนี้</div></div>';
+  else html+=dashTable({id:"mine",rows:list,sort:{k:"_due",dir:"asc"},
     empty:rows.length?"ไม่มีงานในกลุ่มนี้":(isClinician()?"ไม่มีงานค้าง — เมื่อผู้ประสานงานส่งเคสมาถึง"+rn+" รายการจะขึ้นที่นี่":"ไม่มีงานค้างในความรับผิดชอบของท่าน — ดูเคสทั้งพอร์ตได้ที่เมนู คิวงาน"),
     rowClass:function(r){return r.overdue?"late":""},
     rowAttr:function(r){return 'data-late="'+(r.overdue?1:0)+'" data-open="'+esc(r.kind)+':'+esc(r.ref_id)+'"'},
@@ -2834,8 +2917,11 @@ async function mineV(){
     });
   }
   bindDash(rebind); rebind();
-  V.querySelectorAll(".kpirow [data-f]").forEach(function(b){b.addEventListener("click",function(){
-    WL.mineFilter=(WL.mineFilter===b.dataset.f)?null:b.dataset.f; mineV();
+  V.querySelectorAll(".stabs [data-f]").forEach(function(b){b.addEventListener("click",function(){
+    WL.mineFilter=b.dataset.f||null; mineV();
+  })});
+  V.querySelectorAll(".stabs [data-view]").forEach(function(b){b.addEventListener("click",function(){
+    WL.mineView=b.dataset.view; mineV();
   })});
 }
 
