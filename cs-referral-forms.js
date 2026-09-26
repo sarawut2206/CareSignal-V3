@@ -190,22 +190,35 @@
      ส่วนแสดงผล — เอกสารสไตล์ CDC: หัวเรื่อง · แถบหัวข้อฟ้า · ตารางสองคอลัมน์ · ช่อง ใช่/ไม่ใช่
      ============================================================ */
   var CSS = [
-    ".rfdoc{background:#fff;color:#16233B;border:1px solid #D9E1EC;border-radius:10px;padding:0;font-size:13.5px;line-height:1.55;overflow:hidden}",
-    ".rfdoc .rfhead{padding:18px 22px 12px;border-bottom:3px solid #1D4E9A;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}",
-    ".rfdoc .rfhead .kk{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#1D4E9A;font-weight:700}",
-    ".rfdoc .rfhead h2{margin:2px 0 4px;font-size:22px;letter-spacing:-.01em;color:#143A74;line-height:1.2}",
-    ".rfdoc .rfhead .sub{margin:0;color:#4F5F78;font-size:13px}",
-    ".rfdoc .rfhead .meta{margin-left:auto;text-align:right;font-size:12px;color:#4F5F78;min-width:180px}",
-    ".rfdoc .rfhead .meta b{display:block;color:#16233B;font-family:ui-monospace,Menlo,monospace;font-size:13px}",
-    ".rfdoc .rfbar{background:#DCEBFB;color:#143A74;font-weight:700;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;padding:7px 22px;border-top:2px solid #1D4E9A;margin-top:14px}",
-    ".rfdoc .rfbar small{font-weight:500;letter-spacing:0;text-transform:none;color:#4F5F78;margin-left:8px}",
+    ".rfdoc{background:#fff;color:#111827;border:1px solid #D1D5DB;border-radius:6px;padding:0;font-size:13.5px;line-height:1.6;overflow:hidden}",
+    ".rfdoc .rfhead{padding:18px 22px 12px;border-bottom:2px solid #111827;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}",
+    ".rfdoc .rfhead .kk{font-size:12px;color:#374151;font-weight:700;letter-spacing:.02em}",
+    ".rfdoc .rfhead h2{margin:2px 0 2px;font-size:21px;color:#111827;line-height:1.25}",
+    ".rfdoc .rfhead .sub{margin:0;color:#4B5563;font-size:13px}",
+    ".rfdoc .rfhead .meta{margin-left:auto;display:grid;grid-template-columns:auto auto;gap:1px 10px;font-size:12px;color:#4B5563;text-align:right}",
+    ".rfdoc .rfhead .meta b{color:#111827;font-size:12.5px}",
+    ".rfdoc table.rfid{width:100%;border-collapse:collapse;margin:0}",
+    ".rfdoc table.rfid td{border-bottom:1px solid #D1D5DB;border-right:1px solid #E5E7EB;padding:8px 12px;vertical-align:top;font-size:13px}",
+    ".rfdoc table.rfid td:last-child{border-right:0}.rfdoc table.rfid span{display:block;font-size:11px;color:#6B7280}",
+    ".rfdoc b.mono{font-family:ui-monospace,Menlo,monospace}.rfdoc b.bad{color:#B91C1C}.rfdoc b.warn{color:#B45309}",
+    ".rfdoc .rfbar{background:none;color:#111827;font-weight:700;font-size:14px;padding:12px 22px 4px;border-top:1px solid #D1D5DB;margin-top:6px}",
+    ".rfdoc .rfbar small{font-weight:400;color:#6B7280;margin-left:8px;font-size:12px}",
+    ".rfdoc .rfbody{padding:2px 22px 8px}.rfdoc .rfbody p{margin:4px 0}.rfdoc .dim{color:#6B7280}",
+    ".rfdoc ul.rfl{display:block;margin:4px 0 6px 20px;padding:0;list-style:disc}.rfdoc ul.rfl li{margin:1px 0;break-inside:avoid}.rfdoc ul.rfl.two{columns:2;column-gap:28px}",
+    ".rfdoc table.rfct{width:calc(100% - 44px);margin:4px 22px 8px;border-collapse:collapse;font-size:13px}",
+    ".rfdoc table.rfct th{background:#F3F4F6;color:#374151;font-weight:700;font-size:12px;text-align:left;padding:6px 8px;border:1px solid #D1D5DB}",
+    ".rfdoc table.rfct td{padding:6px 8px;border:1px solid #D1D5DB;vertical-align:top}",
+    ".rfdoc table.rfct td.v{font-weight:600}.rfdoc table.rfct td.v small{display:block;font-weight:400;color:#4B5563;font-size:12px}",
+    ".rfdoc table.rfct td.ref{color:#4B5563;font-size:12px}",
+    ".rfdoc table.rfct td.st{font-weight:700;white-space:nowrap;background:none}.rfdoc table.rfct td.st-bad{color:#B91C1C}.rfdoc table.rfct td.st-warn{color:#B45309}.rfdoc table.rfct td.st-ok{color:#15803D}",
+    ".rfdoc .rfnote{margin:6px 22px 8px;font-size:11.5px;color:#4B5563;line-height:1.55}.rfdoc .foot{padding:4px 22px 10px}",
     ".rfdoc .rfgrid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px;padding:6px 22px}",
     ".rfdoc .rfgrid.one{grid-template-columns:1fr}",
     ".rfdoc .rfrow{display:grid;grid-template-columns:150px 1fr auto;gap:8px;padding:6px 0;border-bottom:1px solid #EAEFF5;align-items:baseline}",
     ".rfdoc .rfrow .k{color:#4F5F78;font-size:12.5px}.rfdoc .rfrow .v{font-weight:600}.rfdoc .rfrow .v.mono{font-family:ui-monospace,Menlo,monospace}",
     ".rfdoc .rfrow .v.warn{color:#B45309}.rfdoc .rfrow .v.bad{color:#B91C1C}.rfdoc .rfrow .v.dim{color:#7B8AA1;font-weight:500}",
-    ".rfdoc .src{font-size:10.5px;color:#7B8AA1;border:1px solid #EAEFF5;border-radius:99px;padding:1px 7px;white-space:nowrap}",
-    ".rfdoc .src.sys{color:#1D4E9A;border-color:#C9DAF3}.rfdoc .src.self{color:#6B21A8;border-color:#E9D5FF}.rfdoc .src.pro{color:#166534;border-color:#BBF7D0}",
+    ".rfdoc .src{font-size:10.5px;color:#6B7280;border:1px solid #E5E7EB;border-radius:4px;padding:0 5px;white-space:nowrap}",
+    ".rfdoc .src.sys{color:#1E3A8A;border-color:#C7D2FE}.rfdoc .src.self{color:#6B21A8;border-color:#E9D5FF}.rfdoc .src.pro{color:#166534;border-color:#BBF7D0}",
     ".rfdoc table.rft{width:100%;border-collapse:collapse;font-size:13px;margin:0}",
     ".rfdoc table.rft th{background:#F1F5F9;color:#4F5F78;font-size:11px;letter-spacing:.05em;text-transform:uppercase;text-align:left;padding:7px 10px;border-bottom:1px solid #D9E1EC}",
     ".rfdoc table.rft td{padding:7px 10px;border-bottom:1px solid #EAEFF5;vertical-align:top}",
@@ -238,8 +251,8 @@
     ".rfsum b.h{display:block;color:#15803D;margin-bottom:6px}.rfsum .row{display:grid;grid-template-columns:120px 1fr;gap:5px 10px;font-size:13px}",
     ".rfsum .row span:nth-child(odd){color:#7B8AA1}.rfsum .vd{display:inline-block;background:#DCFCE7;color:#166534;border-radius:99px;padding:2px 10px;font-weight:700;font-size:12px;margin-bottom:6px}",
     ".rfsum ul{margin:4px 0 0 18px;padding:0}.rfsum li{margin:2px 0}",
-    "@media(max-width:700px){.rfdoc .rfgrid{grid-template-columns:1fr}.rfdoc .rfrow{grid-template-columns:120px 1fr auto}.rfdoc .sig{grid-template-columns:1fr}.rfdoc .rfform .rec{grid-template-columns:1fr}}",
-    "@media print{.rfdoc{border:0;border-radius:0;font-size:11.5pt}.rfdoc .rfform,.rf-noprint{display:none!important}.rfdoc .rfbar{-webkit-print-color-adjust:exact;print-color-adjust:exact}}"
+    "@media(max-width:700px){.rfdoc ul.rfl.two{columns:1}.rfdoc table.rfid tr{display:grid;grid-template-columns:1fr 1fr}.rfdoc table.rfct{font-size:12.5px}.rfdoc .rfgrid{grid-template-columns:1fr}.rfdoc .rfrow{grid-template-columns:120px 1fr auto}.rfdoc .sig{grid-template-columns:1fr}.rfdoc .rfform .rec{grid-template-columns:1fr}}",
+    "@media print{.rfdoc{border:0;border-radius:0;font-size:10.5pt;line-height:1.45}.rfdoc .rfhead{padding:10px 14px 8px}.rfdoc .rfbar{padding:8px 14px 2px}.rfdoc .rfbody{padding:2px 14px 6px}.rfdoc table.rfct{width:calc(100% - 28px);margin:4px 14px 6px}.rfdoc table.rfct td,.rfdoc table.rfct th{padding:4px 7px}.rfdoc .rfnote{margin:4px 14px 6px}.rfdoc table.rfct th{-webkit-print-color-adjust:exact;print-color-adjust:exact}.rfdoc tr,.rfdoc .box{break-inside:avoid}.rfdoc .rfform,.rf-noprint{display:none!important}.rfdoc .rfbar{-webkit-print-color-adjust:exact;print-color-adjust:exact}}"
   ].join("\n");
 
   function srcTag(s) { return s ? '<span class="src ' + esc(s) + '">' + esc(L.src[s] || s) + '</span>' : ""; }
@@ -252,109 +265,121 @@
   function cls3(v) { return v === true ? "bad" : v === false ? "" : "dim"; }
 
   /* ---------- A · แกนกลาง ---------- */
+  /* รหัสสัญญาณ → ข้อความ (ธงจาก cs-score.js และสัญญาณเคส S1–S7) — ไม่ให้รหัสดิบหลุดไปในเอกสาร */
+  var FLAG_NM = {
+    B1: "หกล้มตั้งแต่ 2 ครั้งใน 12 เดือน", B2: "ล้มแล้วบาดเจ็บจนต้องพบแพทย์", B4: "ล้มแล้วลุกขึ้นเองไม่ได้",
+    B6: "ยาเสี่ยงหกล้มสูง ≥ 2 รายการ ร่วมกับทรงตัวได้ไม่เกิน 1 ท่า", B7: "หกล้ม 1 ครั้งใน 12 เดือน",
+    B8: "รู้สึกไม่มั่นคงหรือกังวลว่าจะล้ม", B9: "ลุกนั่ง 5 ครั้งช้ากว่าเกณฑ์อายุ", B10: "ลุกเดิน 3 เมตรใช้เวลา ≥ 12 วินาที",
+    B11: "ยืนต่อเท้าได้ไม่ครบ 10 วินาที", B12: "ใช้ยาประจำตั้งแต่ 4 รายการ", B13: "พบยาที่อาจเพิ่มความเสี่ยงหกล้ม",
+    B16: "ทำกิจวัตรประจำวันเองได้ไม่ครบ", R1: "ลุกนั่งช้าลงจากครั้งก่อนเกินค่าการเปลี่ยนแปลงที่มีความหมาย",
+    R3: "ลุกเดินช้าลงจากครั้งก่อน ≥ 2 วินาที", R8: "ทรงตัวได้น้อยท่ากว่าครั้งก่อน",
+    S1: "หกล้มครั้งใหม่", S2: "หกล้มซ้ำ/บาดเจ็บ", S3: "ความเสี่ยงจากยา", S4: "กำลังขาและการทรงตัวถดถอย",
+    S5: "เดินช้าลง", S6: "กิจวัตรประจำวันลดลง", S7: "ธงแดงด้านความปลอดภัย"
+  };
+  function reasonName(k, ctx) {
+    var f = REASONS.filter(function (z) { return z.k === k; })[0];
+    return f ? f.nm : FLAG_NM[k] || (ctx.sigNm && ctx.sigNm[k]) || k;
+  }
+  /* แถวตารางข้อมูลทางคลินิก: หัวข้อ · ผล · เกณฑ์อ้างอิง · แปลผล */
+  function crow(nm, val, ref, st) {
+    var S = { bad: ["ผิดปกติ", "st-bad"], warn: ["ควรติดตาม", "st-warn"], ok: ["ปกติ", "st-ok"] }[st] || ["—", ""];
+    return '<tr><td>' + esc(nm) + '</td><td class="v">' + val + '</td><td class="ref">' + esc(ref || "") + '</td><td class="st ' + S[1] + '">' + S[0] + '</td></tr>';
+  }
   function coreHTML(r, ctx) {
     ctx = ctx || {};
     var pkg = r.package || {}, d = derive(pkg), pr = r.profiles || ctx.profile || {};
-    var dest = r.destination, age = pr.age || (pr.birth_year_be ? (ctx.beNow || (new Date().getFullYear() + 543)) - pr.birth_year_be : null);
-    var reasons = (r.reasons || []).map(function (x) { return typeof x === "string" ? x : (x.k || x.id || x.text); });
-    var reasonNm = reasons.map(function (k) { var f = REASONS.filter(function (z) { return z.k === k; })[0]; return f ? f.nm : (ctx.sigNm && ctx.sigNm[k]) || k; });
+    var dest = r.destination, destNm = L.dest[dest] || dest;
+    var age = pr.age || (pr.birth_year_be ? (ctx.beNow || (new Date().getFullYear() + 543)) - pr.birth_year_be : null);
+    var cut = age == null ? 12.1 : age < 65 ? 10 : age < 75 ? 11.5 : 12.1;
+    var reasons = [], seen = {};
+    (r.reasons || []).forEach(function (x) { var k = typeof x === "string" ? x : (x.k || x.id || x.text); if (k && !seen[k]) { seen[k] = 1; reasons.push(k); } });
     var h = '';
-    h += '<div class="rfhead"><div><div class="kk">CareSignal · แบบฟอร์มส่งต่อสัญญาณความเสี่ยงหกล้ม</div>' +
-      '<h2>ส่งต่อถึง' + esc(L.dest[dest] || dest) + '</h2>' +
-      '<p class="sub">' + esc(ctx.title || "ทบทวนสัญญาณเสี่ยงและวางแผนดูแล — ไม่ใช่ใบส่งตัวรักษา") + '</p></div>' +
+
+    /* หัวเอกสาร */
+    h += '<div class="rfhead"><div><div class="kk">CareSignal · แบบสรุปข้อมูลเพื่อการส่งต่อ</div>' +
+      '<h2>ถึง ' + esc(destNm) + '</h2>' +
+      '<p class="sub">' + esc(ctx.title || "ขอความเห็นเพื่อทบทวนความเสี่ยงหกล้มและวางแผนดูแล") + '</p></div>' +
       '<div class="meta"><span>เลขที่</span><b>' + esc(String(r.id || "").slice(-8).toUpperCase() || "—") + '</b>' +
-      '<span>ส่งเมื่อ</span><b>' + esc(dt(r.created_at)) + '</b>' +
-      '<span>กำหนดตอบกลับ</span><b' + (r.reply_due && new Date(r.reply_due) < new Date() && !r.review ? ' style="color:#B91C1C"' : '') + '>' + esc(dt(r.reply_due)) + '</b></div></div>';
+      '<span>วันที่ส่ง</span><b>' + esc(dt(r.created_at)) + '</b>' +
+      '<span>ขอคำตอบภายใน</span><b' + (r.reply_due && new Date(r.reply_due) < new Date() && !r.review ? ' style="color:#B91C1C"' : '') + '>' + esc(dt(r.reply_due)) + '</b></div></div>';
 
-    /* ผู้เอาประกัน — เท่าที่จำเป็น (minimum necessary) ไม่มีเลขบัตร ไม่มีที่อยู่ */
-    h += bar("ข้อมูลผู้เอาประกัน", "แสดงเท่าที่จำเป็นตาม PDPA — เจ้าหน้าที่ที่ต้องการติดต่อใช้หน้าเคส") +
-      '<div class="rfgrid">' +
-      row("รหัส", pr.pseudonym || "—", { cls: "mono" }) + row("ส่งถึง", L.dest[dest] || dest) +
-      row("ชื่อที่แสดง", pr.display_name || "—") + row("ส่งโดย", (ctx.senderName || r.sent_by_name || "ผู้ประสานงาน") + (ctx.senderOrg ? " · " + ctx.senderOrg : "")) +
-      row("อายุ / เพศ", (age ? age + " ปี" : "—") + " · " + (pr.sex === "f" ? "หญิง" : pr.sex === "m" ? "ชาย" : "—")) +
-      row("ความยินยอม", (pkg.consent && pkg.consent.assessment) ? "ยินยอมให้ใช้ผลประเมินเพื่อการดูแล" : "ยังไม่พบบันทึกความยินยอม", { cls: (pkg.consent && pkg.consent.assessment) ? "" : "warn" }) +
-      row("อุปกรณ์ช่วยเดิน", pr.mobility_aid || ctx.mobilityAid || "ไม่ระบุ") +
-      row("ระดับสัญญาณ", L.level[r.level] || r.level || "—", { cls: r.level === "urgent" ? "bad" : r.level === "decline" ? "warn" : "" }) +
+    /* ผู้รับบริการ — เท่าที่จำเป็น (PDPA) */
+    h += '<table class="rfid"><tr>' +
+      '<td><span>รหัส</span><b class="mono">' + esc(pr.pseudonym || "—") + '</b></td>' +
+      '<td><span>ชื่อ</span><b>' + esc(pr.display_name || "—") + '</b></td>' +
+      '<td><span>อายุ / เพศ</span><b>' + (age ? age + " ปี" : "—") + ' · ' + (pr.sex === "f" ? "หญิง" : pr.sex === "m" ? "ชาย" : "—") + '</b></td>' +
+      '<td><span>อุปกรณ์ช่วยเดิน</span><b>' + esc(pr.mobility_aid || ctx.mobilityAid || "ไม่ระบุ") + '</b></td>' +
+      '<td><span>ระดับสัญญาณ</span><b class="' + (r.level === "urgent" ? "bad" : r.level === "decline" ? "warn" : "") + '">' + esc(L.level[r.level] || r.level || "—") + '</b></td>' +
+      '</tr></table>';
+
+    /* 1 · เหตุผลและคำถาม */
+    var qs = r.questions || [];
+    h += bar("1. เหตุผลการส่งต่อและคำถามถึง" + destNm) + '<div class="rfbody">' +
+      (reasons.length ? '<ul class="rfl two">' + reasons.map(function (k) { return '<li>' + esc(reasonName(k, ctx)) + '</li>'; }).join("") + '</ul>' : '<p class="dim">ไม่ได้ระบุเหตุผล</p>') +
+      (r.action ? '<p><b>สิ่งที่ขอให้ทำ:</b> ' + esc(r.action) + '</p>' : '') +
+      (qs.length ? '<p style="margin-bottom:2px"><b>คำถาม:</b></p><ol class="qs">' + qs.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join("") + '</ol>' : '') +
       '</div>';
 
-    /* เหตุผลส่งต่อ */
-    h += bar("เหตุผลการส่งต่อ", "เลือกได้มากกว่า 1 ข้อ ตามแบบ CDC Fall Prevention Patient Referral") +
-      '<div class="box"><div class="chips">' +
-      REASONS.filter(function (z) { return z.to.indexOf(dest) >= 0 || reasons.indexOf(z.k) >= 0; }).map(function (z) {
-        return '<span class="chip' + (reasons.indexOf(z.k) >= 0 ? " on" : "") + '">' + (reasons.indexOf(z.k) >= 0 ? "☑ " : "☐ ") + esc(z.nm) + '</span>';
-      }).join("") +
-      reasonNm.filter(function (nm, i) { return !REASONS.some(function (z) { return z.k === reasons[i]; }); }).map(function (nm) { return '<span class="chip on">☑ ' + esc(nm) + '</span>'; }).join("") +
-      '</div>' + (r.action ? '<div style="margin-top:8px"><b>สิ่งที่ขอให้ทำ:</b> ' + esc(r.action) + '</div>' : "") + '</div>';
-
-    /* ประวัติหกล้ม + คัดกรอง STEADI 3 ข้อ */
-    h += bar("ประวัติหกล้มและการคัดกรอง", "STEADI 3 ข้อ + รายละเอียดครั้งล่าสุด") + '<div class="rfgrid">' +
-      row("หกล้มใน 12 เดือน", d.fallCount === null ? "ไม่ได้ถาม" : (L.fallCount[d.fallCount] || d.fallCount), { src: "self", cls: d.fallCount >= 2 ? "bad" : d.fallCount === 1 ? "warn" : "" }) +
-      row("ครั้งล่าสุดเมื่อ", d.fallWhen === null ? "—" : L.fallWhen[d.fallWhen], { src: "self" }) +
-      row("บาดเจ็บ", d.fallInjury === null ? "—" : L.fallInjury[d.fallInjury], { src: "self", cls: d.fallInjury >= 2 ? "bad" : "" }) +
-      row("หมดสติ / จำเหตุการณ์ไม่ได้", d.fallLoc === null ? "—" : L.fallLoc[d.fallLoc], { src: "self", cls: d.fallLoc === 2 ? "bad" : d.fallLoc === 1 ? "warn" : "" }) +
-      row("ลุกขึ้นเองหลังล้ม", d.fallGetup === null ? "—" : L.fallGetup[d.fallGetup], { src: "self", cls: d.fallGetup >= 2 ? "bad" : "" }) +
-      row("รู้สึกไม่มั่นคงขณะยืน/เดิน", yesno(d.unsteady), { src: "self", cls: cls3(d.unsteady) }) +
-      row("กังวลหรือกลัวว่าจะล้ม", yesno(d.worried), { src: "self", cls: cls3(d.worried) }) +
-      '</div>';
-
-    /* อาการสำคัญวันที่ทดสอบ (ด่านความปลอดภัย) */
+    /* ฉุกเฉิน — แสดงเฉพาะเมื่อมี */
     var reds = (d.safetyVerdict && d.safetyVerdict.reds) || [];
-    h += bar("อาการสำคัญในวันที่ประเมิน", "ด่านความปลอดภัยก่อนทดสอบ — ถ้ามีข้อใด ระบบหยุดการทดสอบท่าทาง") + '<div class="rfgrid">' +
-      row("หน้ามืด เวียนศีรษะมาก เหมือนจะเป็นลม", d.faint === null ? "—" : L.yn3[d.faint], { src: "self", cls: d.faint === 2 ? "bad" : d.faint === 1 ? "warn" : "" }) +
-      row("เจ็บหน้าอก หายใจลำบาก ใจสั่น", d.chest === null ? "—" : L.yn3[d.chest], { src: "self", cls: d.chest === 2 ? "bad" : "" }) +
-      row("อ่อนแรงเฉียบพลัน หน้าเบี้ยว พูดไม่ชัด", d.stroke === null ? "—" : L.yn3[d.stroke], { src: "self", cls: d.stroke === 2 ? "bad" : "" }) +
-      row("เพิ่งล้ม/ผ่าตัด/ห้ามลงน้ำหนัก", d.injuryRecent === null ? "—" : L.yn3[d.injuryRecent], { src: "self", cls: d.injuryRecent === 2 ? "bad" : "" }) +
-      row("อาการหลังใช้ยา", d.medSym.length ? d.medSym.filter(function (k) { return k !== "none"; }).map(function (k) { return L.medSym[k] || k; }).join(" · ") || "ไม่มี" : "—", { src: "self", cls: d.orthoSym ? "warn" : "" }) +
-      row("ผลด่านความปลอดภัย", d.notTested ? "หยุดการทดสอบเพื่อความปลอดภัย" : (reds.length ? "มีข้อควรระวัง " + reds.length + " ข้อ" : "ผ่าน ทดสอบได้"), { src: "sys", cls: d.notTested || reds.length ? "bad" : "" }) +
-      '</div>' +
-      (reds.indexOf("chest") >= 0 || reds.indexOf("stroke") >= 0 ? '<div class="box red"><b class="t">สัญญาณฉุกเฉิน — ต้องมีคนติดต่อทันที ไม่รอรอบติดตาม</b>ผู้เอาประกันตอบว่ามีอาการ' + (reds.indexOf("chest") >= 0 ? "เจ็บหน้าอก/หายใจลำบาก " : "") + (reds.indexOf("stroke") >= 0 ? "อ่อนแรงเฉียบพลัน/หน้าเบี้ยว" : "") + ' ในวันที่ประเมิน</div>' : "");
+    if (reds.indexOf("chest") >= 0 || reds.indexOf("stroke") >= 0 || d.chest === 2 || d.stroke === 2)
+      h += '<div class="box red"><b class="t">อาการที่ต้องประเมินทันที</b>ผู้รับบริการตอบว่ามีอาการ' +
+        (reds.indexOf("chest") >= 0 || d.chest === 2 ? "เจ็บหน้าอก/หายใจลำบาก " : "") + (reds.indexOf("stroke") >= 0 || d.stroke === 2 ? "อ่อนแรงเฉียบพลัน/หน้าเบี้ยว/พูดไม่ชัด" : "") +
+        ' ในวันที่ประเมิน — ระบบหยุดการทดสอบท่าทาง</div>';
 
-    /* การทำหน้าที่และการทดสอบ */
-    h += bar("ผลการทดสอบสมรรถภาพ", "จากแอปที่บ้าน — ทุกค่ามีคุณภาพข้อมูลกำกับด้านล่าง") + '<div class="rfgrid">' +
-      row("ลุกเดิน 3 เมตร (TUG)", d.tugLast === null ? "ไม่ได้ทำ" : n1(d.tugLast) + " วินาที" + (d.tugFirst !== null && d.nAssess > 1 ? " (ครั้งแรก " + n1(d.tugFirst) + ")" : ""), { src: "sys", cls: d.tug12 ? "bad" : "", cls2: "mono" }) +
-      row("ลุกนั่ง 5 ครั้ง (FTSST)", d.ftsstLast === null ? "ไม่ได้ทำ" : n1(d.ftsstLast) + " วินาที" + (d.ftsstFirst !== null && d.nAssess > 1 ? " (ครั้งแรก " + n1(d.ftsstFirst) + ")" : ""), { src: "sys", cls: d.ftsstSlow ? "warn" : "" }) +
-      row("ทรงตัว 4 ท่า", d.balPassed === null ? "ไม่ได้ทำ" : "ผ่าน " + d.balPassed + " จาก 4 ท่า" + (d.tandem !== null ? " · ต่อเท้าเป็นเส้นตรง " + d.tandem + " วินาที" : "") + (d.balAloneSkip ? " · ข้ามท่ายืนขาเดียว (ทำคนเดียว)" : ""), { src: "sys", cls: d.tandemFail ? "bad" : "" }) +
-      row("กิจวัตรประจำวัน", d.barthel !== null ? "Barthel " + d.barthel + "/20" + (d.barthelBand ? " · " + d.barthelBand : "") : (d.adlLast !== null ? "คะแนนกิจวัตร " + d.adlLast + (d.adlFirst !== null && d.nAssess > 1 ? " (ครั้งแรก " + d.adlFirst + ")" : "") : "—"), { src: "self" }) +
-      row("จำนวนครั้งที่ประเมิน", d.nAssess + " ครั้ง" + (d.lastAt ? " · ล่าสุด " + d0(d.lastAt) : ""), { src: "sys" }) +
-      row("ระดับจากกฎที่ประกาศไว้", (d.level ? L.level[d.level] : "—") + (has(d.score) ? " · คะแนน " + d.score + "/" + (d.max || 12) : ""), { src: "sys", cls: d.level === "urgent" ? "bad" : d.level === "decline" ? "warn" : "" }) +
-      '</div>';
-    if (d.flags.length) h += '<div class="box"><b class="t">สัญญาณที่ระบบตั้งธง (ตรวจสอบย้อนหลังได้)</b>' +
-      d.flags.map(function (f) { return '<div>• <b>' + esc(f.id || "") + '</b> ' + esc(f.text || "") + (f.why ? ' <span style="color:#7B8AA1">— ' + esc(f.why) + '</span>' : "") + '</div>'; }).join("") + '</div>';
+    /* 2 · ข้อมูลทางคลินิกที่สำคัญ — แสดงเฉพาะที่มีข้อมูล */
+    var rows = [], miss = [];
+    if (d.fallCount !== null && d.fallCount !== 9) {
+      var fx = [];
+      if (d.fallInjury !== null && d.fallInjury > 0) fx.push(L.fallInjury[d.fallInjury]);
+      if (d.fallLoc === 2) fx.push("หมดสติ/จำเหตุการณ์ไม่ได้");
+      if (d.fallGetup !== null && d.fallGetup >= 2) fx.push(L.fallGetup[d.fallGetup]);
+      if (d.fallWhen !== null && d.fallCount > 0) fx.push("ครั้งล่าสุด " + L.fallWhen[d.fallWhen]);
+      if (d.unsteady === true) fx.push("รู้สึกไม่มั่นคง"); if (d.worried === true) fx.push("กลัวล้ม");
+      rows.push(crow("หกล้มใน 12 เดือน", (d.fallCount === 0 ? "ไม่เคย" : L.fallCount[d.fallCount]) + (fx.length ? '<small>' + esc(fx.join(" · ")) + '</small>' : ''),
+        "ล้ม ≥ 1 ครั้ง หรือไม่มั่นคง/กลัวล้ม = คัดกรองบวก (STEADI)", d.fallCount >= 2 || d.fallInjury >= 2 || d.fallLoc === 2 || d.fallGetup >= 2 ? "bad" : d.fallCount === 1 || d.unsteady === true || d.worried === true ? "warn" : "ok"));
+    } else if (d.fallCount === 9) rows.push(crow("หกล้มใน 12 เดือน", "จำไม่ได้", "", "warn"));
+    else miss.push("ประวัติหกล้ม");
+    if ((d.fallCount === null || d.fallCount === 9) && (d.unsteady === true || d.worried === true))
+      rows.push(crow("ไม่มั่นคงขณะยืน/เดิน หรือกลัวล้ม", [d.unsteady === true ? "ไม่มั่นคง" : "", d.worried === true ? "กลัวล้ม" : ""].filter(Boolean).join(" · "), "คำถามคัดกรอง STEADI", "warn"));
+    var sym = [];
+    if (d.faint >= 1) sym.push(d.faint === 2 ? "หน้ามืด/เวียนศีรษะมาก" : "หน้ามืดเล็กน้อย");
+    if (d.injuryRecent >= 1) sym.push("เพิ่งล้ม/ผ่าตัด/ห้ามลงน้ำหนัก");
+    d.medSym.filter(function (k) { return k !== "none"; }).forEach(function (k) { sym.push((L.medSym[k] || k) + " (หลังใช้ยา)"); });
+    if (sym.length) rows.push(crow("อาการวันที่ประเมิน", esc(sym.join(" · ")), "", d.orthoSym || d.faint === 2 ? "bad" : "warn"));
+    if (d.tugLast !== null) rows.push(crow("ลุกเดิน 3 เมตร (TUG)", n1(d.tugLast) + " วินาที" + (d.tugFirst !== null && d.nAssess > 1 ? '<small>ครั้งแรก ' + n1(d.tugFirst) + ' วินาที</small>' : ''), "< 12 วินาที (CDC STEADI)", d.tug12 ? "bad" : "ok"));
+    else miss.push("ลุกเดิน 3 เมตร");
+    if (d.ftsstLast !== null) rows.push(crow("ลุกนั่ง 5 ครั้ง (5×STS)", n1(d.ftsstLast) + " วินาที" + (d.ftsstFirst !== null && d.nAssess > 1 ? '<small>ครั้งแรก ' + n1(d.ftsstFirst) + ' วินาที</small>' : ''), "≤ " + cut + " วินาที ตามอายุ (Poncumhak 2014)", +d.ftsstLast > cut ? "warn" : "ok"));
+    else miss.push("ลุกนั่ง 5 ครั้ง");
+    if (d.balPassed !== null) rows.push(crow("ทรงตัว 4 ท่า", "ผ่าน " + d.balPassed + " จาก 4 ท่า" + (d.tandem !== null ? '<small>ยืนต่อเท้า ' + d.tandem + ' วินาที</small>' : ''), "ยืนต่อเท้าครบ 10 วินาที (4-Stage)", d.balPassed < 3 ? "warn" : "ok"));
+    else miss.push("ทรงตัว");
+    if (d.nMeds || d.high || d.mod) {
+      rows.push(crow("ยาที่ใช้ประจำ", (d.nMeds ? d.nMeds + " รายการ" : "—") + '<small>เสี่ยงหกล้ม: หลักฐานเข้ม ' + d.high + ' · ปานกลาง ' + d.mod + '</small>',
+        "STOPPFall 2021 · ยาประจำ ≥ 4 รายการ", d.high ? "bad" : d.mod || d.poly ? "warn" : "ok"));
+    } else miss.push("รายการยา");
+    if (d.barthel !== null) rows.push(crow("กิจวัตรประจำวัน (Barthel)", d.barthel + " / 20" + (d.barthelBand ? '<small>' + esc(d.barthelBand) + '</small>' : ''), "20 = ช่วยเหลือตัวเองได้ · < 12 พึ่งพิง", d.barthel < 12 ? "bad" : d.barthel < 20 ? "warn" : "ok"));
+    else if (d.adlLast !== null) rows.push(crow("กิจวัตรประจำวัน", ["พึ่งพามาก", "ต้องช่วยบางส่วน", "ทำเองได้"][d.adlLast] || String(d.adlLast), "", d.adlLast >= 2 ? "ok" : d.adlLast === 1 ? "warn" : "bad"));
+    else miss.push("กิจวัตรประจำวัน");
+    if (d.hazards.length || d.homeCount !== null || d.homeHelper)
+      rows.push(crow("ความปลอดภัยในบ้าน", (d.hazards.length ? esc(d.hazards.map(function (k) { return L.hazard[k] || k; }).join(" · ")) : (d.homeCount ? "จุดเสี่ยง " + d.homeCount + " จุด" : "ไม่พบจุดเสี่ยง")) +
+        (d.homeHelper === "alone" ? '<small>อยู่คนเดียว</small>' : ''), "CDC Check for Safety", d.hazards.length || d.homeCount ? "warn" : "ok"));
+    h += bar("2. ข้อมูลทางคลินิกที่สำคัญ") +
+      (rows.length ? '<table class="rfct"><thead><tr><th style="width:26%">หัวข้อ</th><th style="width:30%">ผล</th><th>เกณฑ์อ้างอิง</th><th style="width:12%">แปลผล</th></tr></thead><tbody>' + rows.join("") + '</tbody></table>'
+                   : '<div class="rfbody"><p class="dim">ยังไม่มีผลการทดสอบในระบบ</p></div>') +
+      (d.flagged.length ? '<div class="rfbody"><b>ยาที่ควรทบทวน:</b> ' +
+        d.flagged.map(function (x) { return esc(x.inn || x.brand_text || "ยังไม่ระบุตัวยา") + ' (' + esc(L.frid[x.frid_group] || x.frid_group || "") + (x.dose_text ? ', ' + esc(x.dose_text) : '') + ')'; }).join(" · ") +
+        ' <span class="dim">— ตั้งธงตามกลุ่มยา การปรับยาเป็นดุลยพินิจของผู้สั่งใช้</span></div>' : '') +
+      (miss.length ? '<div class="rfbody"><p class="dim">ยังไม่มีข้อมูล: ' + esc(miss.join(" · ")) + '</p></div>' : '');
 
-    /* ค่าวัดจากเซ็นเซอร์คาดเอว (ถ้ามี) — ตัวเลขแบบห้องตรวจการเคลื่อนไหวสำหรับแพทย์/นักกายภาพ */
+    /* ค่าจากเซ็นเซอร์คาดเอว — แสดงเฉพาะเมื่อมี */
     if (d.imu) h += imuHTML(d.imu);
 
-    /* คุณภาพข้อมูลและความปลอดภัยระหว่างทดสอบ */
-    h += bar("คุณภาพข้อมูลและความปลอดภัยระหว่างทดสอบ", "บอกว่าตัวเลขข้างบนเชื่อได้แค่ไหน") + '<div class="rfgrid">' +
-      row("วิธีวัด", d.method === "camera_aruco" ? "กล้อง + ป้ายสัญลักษณ์" : d.method === "camera-pose" || d.method === "camera" ? "กล้อง (ไม่มีป้าย)" : d.method === "imu" ? "เซ็นเซอร์คาดเอว (บางท่าอาจใช้กล้องหรือจับเวลา)" : d.method === "manual" ? "จับเวลาด้วยคน" : (d.method || "—"), { src: "sys" }) +
-      row("ยืนยันระยะ 3 เมตรด้วยป้าย", d.distanceOk === null ? "ไม่ทราบ" : d.distanceOk ? "ยืนยันแล้ว" : "ไม่ได้ยืนยัน — ประมาณจากขนาดตัวในภาพ", { src: "sys", cls: d.distanceOk === false ? "warn" : "" }) +
-      row("ใครกดจบ TUG", d.endedBy ? (L.endedBy[d.endedBy] || d.endedBy) : "—", { src: "sys" }) +
-      row("มีผู้ดูแลขณะทดสอบ", d.alone ? "ทำคนเดียว" : "มีผู้ดูแลอยู่ข้าง ๆ", { src: "self", cls: d.alone ? "warn" : "" }) +
-      row("ยืนยันตัวตนระหว่างทดสอบ", d.verified === true ? "ผ่าน (ใบหน้าต่อเนื่อง)" : d.verified === false ? "ไม่ผ่าน/ไม่ได้ทำ" : "—", { src: "sys" }) +
-      row("หยุดกลางคัน", d.notTested ? "ใช่ — ด่านความปลอดภัยสั่งหยุด" : "ไม่", { src: "sys", cls: d.notTested ? "warn" : "" }) +
-      '</div>';
-
-    /* ยาและโรค */
-    h += bar("ยาที่ใช้ประจำ", "ระบบตั้งธงเฉพาะ \"ยาที่ควรทบทวน\" ไม่สรุปว่าต้องหยุด") + '<div class="rfgrid">' +
-      row("จำนวนยาประจำ", d.nMeds ? d.nMeds + " รายการ" + (d.poly ? " (ตั้งแต่ 4 รายการ)" : "") : "ไม่มีข้อมูล", { src: "self", cls: d.poly ? "warn" : "" }) +
-      row("กลุ่มเสี่ยงหลักฐานเข้ม / ปานกลาง", d.high + " / " + d.mod + " รายการ", { src: "sys", cls: d.high ? "bad" : d.mod ? "warn" : "" }) +
-      row("ปรับยาเมื่อเร็ว ๆ นี้", d.medChanged.length ? d.medChanged.filter(function (k) { return k !== "none"; }).map(function (k) { return L.medChange[k] || k; }).join(" · ") || "ไม่มี" : "—", { src: "self" }) +
-      '</div>' +
-      (d.medItems.length ? '<div style="padding:0 22px 6px"><table class="rft"><thead><tr><th>ตัวยา</th><th>กลุ่ม</th><th>ระดับหลักฐาน</th><th>ยืนยันโดย</th></tr></thead><tbody>' +
-        d.medItems.map(function (x) { return '<tr><td>' + esc(x.inn || x.brand_text || "ยังไม่ระบุตัวยา") + '</td><td>' + esc(L.frid[x.frid_group] || x.frid_group || "—") + '</td><td class="c">' + (x.frid_level != null ? esc(L.fridLevel[x.frid_level] || x.frid_level) : "—") + '</td><td>' + esc(x.confirmed_by === "pharmacist" ? "เภสัชกร" : x.confirmed_by === "carer" ? "ผู้ดูแล" : "ผู้เอาประกัน") + '</td></tr>'; }).join("") +
-        '</tbody></table></div>' : "");
-
-    /* บ้าน */
-    h += bar("ปัจจัยในบ้าน", "จากแบบคัดกรองสั้นในแอป — ประเมินละเอียด (Thai-HFHAT) เมื่อพยาบาลเห็นสมควร") +
-      '<div class="box"><div class="chips">' +
-      (d.hazards.length ? d.hazards.map(function (k) { return '<span class="chip warn">' + esc(L.hazard[k] || k) + '</span>'; }).join("") : (d.homeCount ? '<span class="chip warn">พบจุดเสี่ยง ' + d.homeCount + ' ข้อ</span>' : '<span class="chip">ไม่พบจุดเสี่ยงที่ระบุ</span>')) +
-      (d.homeHelper ? '<span class="chip' + (d.homeHelper === "alone" ? " bad" : "") + '">' + esc(L.homeHelper[d.homeHelper] || d.homeHelper) + '</span>' : "") +
-      '</div></div>';
-
-    /* คำถามที่ต้องการคำตอบ */
-    var qs = r.questions || [];
-    h += bar("สิ่งที่ขอให้" + (L.dest[dest] || dest) + "ตอบ", "ตอบภายใน " + dt(r.reply_due)) +
-      '<div class="box blue">' + (qs.length ? '<ol class="qs">' + qs.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join("") + '</ol>' : '<em>ไม่ได้ระบุคำถาม</em>') + '</div>';
+    /* ที่มาของข้อมูล — บรรทัดเดียวแทนป้ายทุกแถว */
+    var MTH = { camera_aruco: "กล้อง + ป้ายสัญลักษณ์", "camera-pose": "กล้องมือถือ", camera: "กล้องมือถือ", manual: "ครอบครัวจับเวลา", imu: "เซ็นเซอร์คาดเอว" };
+    h += '<div class="rfnote"><b>ที่มาของข้อมูล</b> — ' + srcTag("sys") + ' ผลทดสอบวัดที่บ้าน' +
+      (d.method ? 'โดย' + esc(MTH[d.method] || d.method) : '') + (d.nAssess ? ' · ประเมิน ' + d.nAssess + ' ครั้ง ล่าสุด ' + esc(d0(d.lastAt)) : '') +
+      (d.alone ? ' · ทดสอบคนเดียว' : '') + ' · ' + srcTag("self") + ' ประวัติ อาการ และยาจากผู้รับบริการ/ครอบครัว' +
+      ' · ความยินยอมใช้ข้อมูลเพื่อการดูแล: ' + ((pkg.consent && pkg.consent.assessment) ? "มี" : "ยังไม่พบบันทึก") + '</div>';
     return h;
   }
 
@@ -521,12 +546,12 @@
       body += reviewDocHTML(r);
     } else if (ctx.mode === "readonly") {
       /* ผู้ประสานงานเปิดดูใบที่ส่งไปแล้ว — ไม่มีส่วนกรอก */
-      body += r.review ? reviewDocHTML(r) : bar("สถานะ") + '<div class="box">รอ' + esc(L.dest[r.destination] || r.destination) + 'ตอบกลับ' + (r.acknowledged_at ? ' · รับเรื่องแล้ว ' + esc(dt(r.acknowledged_at)) : ' · ยังไม่มีผู้รับเรื่อง') + '</div>';
+      body += r.review ? reviewDocHTML(r) : '<div class="rfnote rf-noprint"><b>สถานะ</b> — รอ' + esc(L.dest[r.destination] || r.destination) + 'ตอบกลับ' + (r.acknowledged_at ? ' · รับเรื่องแล้ว ' + esc(dt(r.acknowledged_at)) : ' · ยังไม่มีผู้รับเรื่อง') + '</div>';
     } else {
       body += mod(r, d);
       body += '<div class="sig"><div><b>ผู้ตอบ</b>' + esc(ctx.reviewerName || "—") + (ctx.reviewerOrg ? " · " + esc(ctx.reviewerOrg) : "") + '</div><div><b>วันที่ตอบ</b>บันทึกอัตโนมัติเมื่อกดส่ง · ชื่อท่านจะอยู่ในบันทึกตรวจสอบ</div></div>';
     }
-    body += '<div class="foot">แบบฟอร์มนี้ใช้เพื่อการเฝ้าระวังและประสานการดูแล ไม่ใช่การวินิจฉัย ไม่ใช่ใบสั่งยา และไม่ใช่เอกสารพิจารณาสินไหม · โครงจาก CDC STEADI (2017/2019) · NICE NG249 · ปรับให้เข้ากับบริบทไทย (Thai-FRAT · TUG · Thai-HFHAT)</div>';
+    body += '<div class="foot">เอกสารเพื่อการเฝ้าระวังและประสานการดูแล ไม่ใช่การวินิจฉัย ไม่ใช่ใบสั่งยา และไม่ใช้พิจารณาสินไหม · โครงจาก CDC STEADI · NICE NG249</div>';
     return '<div class="rfdoc" data-dest="' + esc(r.destination) + '">' + body + '</div>';
   }
 
