@@ -162,7 +162,7 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
   ok("ปิดแถบชวนติดตั้งแล้วจำไว้", /localStorage\.setItem\(A2HS\.key, "no"\)/.test(app));
   ok("ทางลัด ?go= เปิดหน้าที่ต้องการได้", /\["fall", "test", "history", "meds", "video", "appts"\]\.indexOf\(goto\)/.test(app));
   const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
-  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-24/.test(sw));
+  ok("sw แคชไอคอนและขึ้นเวอร์ชันใหม่", /icon-192\.png/.test(sw) && /apple-touch-icon\.png/.test(sw) && /cs3-site-25/.test(sw));
 }
 
 /* ใบส่งต่อแบบเอกสารทางการ: ทุกสัญญาณต้องมีเกณฑ์ เหตุผล และเอกสารอ้างอิง */
@@ -329,8 +329,25 @@ ok("index ลิงก์กลับไป V2", /CareSignal-V2\//.test(html));
     [...src.matchAll(/<script>([\s\S]*?)<\/script>/g)].forEach((m, i) => { try { new vm.Script(m[1]); } catch (e) { bad.push(f + "#" + i + " " + e.message); } });
     if (/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(src)) bad.push(f + " มีอักขระควบคุมแฝง");
   }
-  ["cs-meds.js", "cs-ocr.js", "cs-camera.js", "cs-install.js", "cs-imu.js", "cs-referral-forms.js", "cs-cloud.js"].forEach((f) => { const src = readFileSync(new URL("../" + f, import.meta.url), "utf8"); try { new vm.Script(src); } catch (e) { bad.push(f + " " + e.message); } if (/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(src)) bad.push(f + " มีอักขระควบคุมแฝง"); });
+  ["cs-meds.js", "cs-ocr.js", "cs-camera.js", "cs-install.js", "cs-imu.js", "cs-referral-forms.js", "cs-cloud.js", "cs-body.js"].forEach((f) => { const src = readFileSync(new URL("../" + f, import.meta.url), "utf8"); try { new vm.Script(src); } catch (e) { bad.push(f + " " + e.message); } if (/[\x00-\x08\x0B\x0C\x0E-\x1F]/.test(src)) bad.push(f + " มีอักขระควบคุมแฝง"); });
   ok("สคริปต์ทุกหน้าคอมไพล์ผ่าน และไม่มีอักขระควบคุมแฝง", !bad.length, bad);
+}
+
+/* หุ่นร่างกาย 7 ด้าน (cs-body.js) — ใช้ร่วมคอนโซลกับแอปครอบครัว */
+{
+  const require2 = (await import("node:module")).createRequire(import.meta.url);
+  const B = require2("../cs-body.js");
+  const svg = B.figure({ ftsst: "warn", tug: "ok", bal: "none", meds: "bad", falls: "ok", adl: "warn", home: "warn" });
+  ok("หุ่นร่างกาย: มีหมุดครบ 7 ด้าน เรียงเลข 1–7", B.KEYS.length === 7 && (svg.match(/class="pin /g) || []).length === 7 && [1,2,3,4,5,6,7].every((n) => svg.includes(">" + n + "</text>")));
+  ok("หุ่นร่างกาย: ด้านที่ไม่ส่งสถานะเป็นสีเทา (ยังไม่ได้ทดสอบ)", B.figure({}).includes('fill="' + B.FILL.none + '"') && !B.figure({}).includes(B.FILL.bad));
+  ok("หุ่นร่างกาย: สะท้อนซ้าย-ขวาถูกต้อง", B.mirror("M80 88 L52 168") === "M160 88 L188 168");
+  const app = readFileSync(new URL("../CareSignal-App.html", import.meta.url), "utf8");
+  const fam = (app.match(/function bodyStates\(r\)[\s\S]*?\n\}/) || [""])[0] + (app.match(/function bodyCard\(r\)[\s\S]*?\n\}/) || [""])[0];
+  ok("แอปครอบครัว: โหลด cs-body.js และวางหุ่นในหน้าผลทั้งแบบรอผู้เชี่ยวชาญและแบบปกติ",
+     /<script src="\.\/cs-body\.js"><\/script>/.test(app) && (app.match(/bodyCard\(r\)/g) || []).length >= 3);
+  ok("แอปครอบครัว: ไม่ใช้สีแดง (bad) ไม่แสดงเกณฑ์ตัวเลขทางคลินิก และไม่บอกให้หยุดยา",
+     fam.length > 500 && !/"bad"/.test(fam) && !/STEADI|Poncumhak|Barthel|≥|วินาที \(เกณฑ์/.test(fam) && /ห้ามหยุดยาเอง/.test(fam) && !/ให้หยุดยา/.test(fam));
+  ok("แอปครอบครัว: ผลที่รอผู้เชี่ยวชาญไม่บอกระดับหรือคำแนะนำในหุ่น", /pending\(r\) \? '<p class="sub"[^>]*>ผู้เชี่ยวชาญจะดูผลอีกครั้ง/.test(fam) && !/TIER|T\.nm|advice/.test(fam));
 }
 
 console.log("  " + pass + " ผ่าน / " + fail + " ตก");

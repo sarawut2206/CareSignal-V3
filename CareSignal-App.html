@@ -64,6 +64,14 @@ textarea{min-height:70px}
 .pri{display:inline-block;font-size:11.5px;font-weight:700;color:var(--c1);background:var(--c1b);border-radius:99px;padding:1px 8px;vertical-align:middle}
 .fixi{border-left:4px solid var(--c3);background:#FFFBEB;border-radius:0 12px 12px 0;padding:9px 12px;margin:8px 0;font-size:14.5px;line-height:1.55}.fixi.p1{border-left-color:var(--c1);background:var(--c1b)}
 .fixi b{display:block}.fixi div{margin-top:3px}.fixi .pill{margin-top:6px;border:0;background:#fff;color:var(--c4);font-weight:700}
+.bodyc .bfig{display:flex;justify-content:center;margin:4px 0 10px;background:radial-gradient(ellipse at 50% 92%,var(--surf2),transparent 62%)}
+.bodyc .bfig svg{width:100%;max-width:210px;height:auto}
+.bodyc .bfig .pin.on circle{r:14}
+.brow{display:flex;gap:12px;align-items:flex-start;padding:10px 4px;border-top:1px dashed var(--line);cursor:pointer;border-radius:10px}
+.brow.on{background:var(--surf2)}
+.brow .bpin{width:26px;height:26px;margin:0;padding:0;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:13px;flex:none;margin-top:1px}
+.brow b{display:block;font-size:16px;line-height:1.35}.brow div>span{display:block;font-size:14.5px;color:var(--ink2);line-height:1.5}
+.bleg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--ink2);margin-top:8px}.bleg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 .adlsum{text-align:center}.adlsum .big{font-size:40px;font-weight:700;line-height:1.1}.adlsum .big small{font-size:18px;color:var(--ink3)}
 .adlsum.ok{border:2px solid var(--c4)}.adlsum.watch{border:2px solid var(--c3)}.adlsum.dep{border:2px solid var(--c1)}
 .noteb{background:var(--surf2);border-radius:14px;padding:10px 14px;font-size:14px;color:var(--ink2);margin-bottom:10px}
@@ -287,6 +295,7 @@ body{font-size:18px}
 <script src="./cs-teleconsult.js"></script>
 <script src="./cs-camera.js"></script>
 <script src="./cs-imu.js"></script>
+<script src="./cs-body.js"></script>
 <script src="./cs-install.js"></script>
 <script src="./cs-assess.js"></script>
 <script src="./cs-incident.js"></script>
@@ -1418,6 +1427,64 @@ function cloudLine(r) {
   if (r.cloud) return '<div class="flag ' + (r.cloud.level === "stable" ? "good" : "") + '"><b>☁️ ส่งถึงระบบกลางแล้ว</b><small>' + (r.cloud.level === "stable" ? "ไม่เปิดเคส เพราะไม่พบสัญญาณเสี่ยง" : "เปิดเคสให้เจ้าหน้าที่แล้ว") + '</small></div>';
   return CSCloud.connected() ? '<p class="sub">กำลังส่งขึ้นระบบกลาง…</p>' : '';
 }
+/* ============================================================
+   ร่างกายวันนี้ — หุ่นเดียวกับคอนโซลเจ้าหน้าที่ (cs-body.js) แต่พูดภาษาครอบครัว
+   ------------------------------------------------------------
+   · 3 สีเท่านั้น: เขียว = ดี · เหลือง = ควรดูแลเพิ่ม · เทา = ยังไม่ได้ทำ
+     ไม่ใช้สีแดงกับครอบครัว และไม่แสดงเกณฑ์ตัวเลขทางคลินิก
+   · สถานะคิดจากกฎชุดเดียวกับธงของระบบ (cs-score.js) — ธงแดงของระบบขึ้นเป็นเหลืองที่นี่
+   · ผลที่รอผู้เชี่ยวชาญยืนยัน: แสดงหุ่นได้ แต่ไม่บอกระดับหรือคำแนะนำ (ตามกติกาเดิม)
+   · เรื่องยาแนะนำให้ถามเภสัชกรหรือแพทย์เท่านั้น
+   ============================================================ */
+function bodyStates(r) {
+  var e = elder(), cut = CSScore.ftsstCut(e.age), fl = recFlags(r, e), ids = {};
+  (fl.reds || []).concat(fl.yellows || []).forEach(function (x) { ids[x.id] = 1; });
+  var hz = r.home ? (r.home.none ? 0 : (r.home.count != null ? r.home.count : (r.home.hazards || []).length)) : null;
+  var bt = r.barthel && r.barthel.total != null ? r.barthel.total : null;
+  var hasFalls = r.fallsCount != null, fallsN = hasFalls && r.fallsCount !== 9 ? r.fallsCount : null;
+  var S = {
+    ftsst: r.ftsst == null ? "none" : r.ftsst > cut ? "warn" : "ok",
+    tug: r.tug == null ? "none" : ids.B10 ? "warn" : "ok",
+    bal: r.balPassed == null && r.balance == null ? "none" : ids.B11 ? "warn" : "ok",
+    meds: r.medsCount == null && r.fridTotal == null ? "none" : (ids.B6 || ids.B12 || ids.B13) ? "warn" : "ok",
+    falls: !hasFalls && !r.worried ? "none" : (ids.B1 || ids.B2 || ids.B4 || ids.B7 || ids.B8) ? "warn" : "ok",
+    adl: bt == null && r.adl == null ? "none" : (bt != null ? bt < 20 : r.adl <= 1) ? "warn" : "ok",
+    home: hz == null ? "none" : hz > 0 ? "warn" : "ok"
+  };
+  var T = {
+    ftsst: { nm: "แรงขา", ok: "แรงขาดี ลุกจากเก้าอี้ได้คล่อง", warn: "แรงขาเริ่มน้อยลง — ฝึกลุกนั่งจากเก้าอี้ทุกวันช่วยได้", none: "วันนี้ยังไม่ได้วัด" },
+    tug: { nm: "การเดิน", ok: "ลุกเดินและหมุนตัวได้คล่อง", warn: "เดินช้าลง — ระวังตอนหมุนตัวและเดินเข้าห้องน้ำตอนกลางคืน", none: "วันนี้ยังไม่ได้วัด" },
+    bal: { nm: "การทรงตัว", ok: "ยืนได้มั่นคง", warn: "ยืนต่อเท้าได้ไม่นาน — ควรมีราวหรือที่จับใกล้ตัว", none: "วันนี้ยังไม่ได้วัด" },
+    meds: { nm: "ยาที่ใช้", ok: "ไม่พบยาที่ต้องระวังเรื่องการล้ม", warn: "มียาที่อาจทำให้ง่วงหรือเวียนหัว — ถามเภสัชกรหรือแพทย์ได้ ห้ามหยุดยาเอง", none: "ยังไม่ได้บันทึกยา" },
+    falls: { nm: "การล้ม", ok: "ไม่ได้ล้มในปีนี้", warn: (fallsN ? "ปีนี้ล้ม " + fallsN + " ครั้ง" : r.worried ? "กังวลว่าจะล้ม" : "เคยล้ม") + " — ทีมดูแลจะช่วยหาสาเหตุและวิธีป้องกัน", none: "ยังไม่ได้ตอบ" },
+    adl: { nm: "การดูแลตัวเอง", ok: "ทำกิจวัตรประจำวันเองได้ครบ", warn: "ต้องมีคนช่วยบางเรื่อง — ช่วยเท่าที่จำเป็น ให้ท่านได้ทำเองบ้าง", none: "ยังไม่ได้ประเมิน" },
+    home: { nm: "บ้าน", ok: "ไม่พบจุดเสี่ยงในบ้าน", warn: "พบจุดเสี่ยง " + hz + " จุด — แก้ได้ เช่น เอาพรมออก เพิ่มไฟ ติดราวจับ", none: "ยังไม่ได้สำรวจ" }
+  };
+  return { S: S, T: T };
+}
+function bodyCard(r) {
+  if (!window.CSBody) return "";
+  var B = bodyStates(r), e = elder(), n = 0, titles = {};
+  CSBody.KEYS.forEach(function (k) { if (B.S[k] === "warn") n++; titles[k] = CSBody.NO[k] + ". " + B.T[k].nm; });
+  return '<div class="card bodyc" id="bodyCard"><h3>ร่างกายของ' + esc(e.name) + 'วันนี้</h3>' +
+    '<p class="sub" style="margin:0 0 4px">' + (n ? 'มี <b>' + n + ' เรื่อง</b>ที่ควรดูแลเพิ่ม · แตะตัวเลขเพื่อดูว่าเป็นส่วนไหน' : 'ทุกเรื่องที่วัดวันนี้อยู่ในเกณฑ์ดี') + '</p>' +
+    '<div class="bfig">' + CSBody.figure(B.S, { titles: titles, label: "ร่างกายของ" + e.name + "วันนี้" }) + '</div>' +
+    CSBody.KEYS.map(function (k) {
+      var s = B.S[k];
+      return '<div class="brow" data-cmp="' + k + '"><span class="bpin" style="background:' + CSBody.PIN[s] + '">' + CSBody.NO[k] + '</span><div><b>' + esc(B.T[k].nm) + '</b><span>' + esc(B.T[k][s]) + '</span></div></div>';
+    }).join("") +
+    '<div class="bleg"><span><i style="background:' + CSBody.FILL.ok + '"></i>ดี</span><span><i style="background:' + CSBody.FILL.warn + '"></i>ควรดูแลเพิ่ม</span><span><i style="background:' + CSBody.FILL.none + '"></i>ยังไม่ได้ทำ</span></div>' +
+    (pending(r) ? '<p class="sub" style="font-size:13.5px;margin:8px 0 0">ผู้เชี่ยวชาญจะดูผลอีกครั้ง แล้วทีมดูแลจะบอกว่าควรทำอะไรต่อ</p>' : '') +
+    '<p class="sub" style="font-size:12.5px;margin:6px 0 0">ภาพนี้สรุปจากการวัดที่บ้าน ไม่ใช่การวินิจฉัยโรค</p></div>';
+}
+function bindBody() {
+  var c = document.getElementById("bodyCard"); if (!c) return;
+  c.addEventListener("click", function (ev) {
+    var t = ev.target.closest("[data-cmp]"); if (!t) return; var k = t.getAttribute("data-cmp");
+    c.querySelectorAll("[data-cmp]").forEach(function (x) { x.classList.toggle("on", x.getAttribute("data-cmp") === k); });
+    var row = c.querySelector('.brow[data-cmp="' + k + '"]'); if (row && t.tagName !== "DIV") row.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  });
+}
 /* ความสามารถช่วยเหลือตัวเอง + จุดเสี่ยงในบ้าน (แสดงเมื่อผลไม่ได้รอผู้เชี่ยวชาญ) */
 function resultAdlHome(r) {
   var h = '';
@@ -1447,11 +1514,12 @@ function renderResult(v) {
     v.innerHTML = '<div class="pend"><b>⏳ รอผู้เชี่ยวชาญยืนยันผล</b><span>' +
         (r.moreInfo ? 'ผู้เชี่ยวชาญขอข้อมูลเพิ่ม เจ้าหน้าที่จะติดต่อคุณ' : CSCloud.connected() || r.cloud ? 'ส่งผลให้ทีมดูแลและผู้เชี่ยวชาญ (แพทย์ เภสัชกร พยาบาล นักกายภาพบำบัด) ตรวจสอบแล้ว เมื่อยืนยันแล้วแอปจะแจ้งเตือนและแสดงผลที่หน้านี้' : 'ผลครั้งนี้ต้องให้ผู้เชี่ยวชาญยืนยันก่อน กรุณาเชื่อมระบบกลางเพื่อส่งผล') + '</span></div>' +
       (CSCloud.connected() || r.cloud ? '' : '<button class="btn" onclick="go(\'cloud\')">☁️ เชื่อมระบบกลางเพื่อส่งให้ผู้เชี่ยวชาญ</button>') +
-      measuredCard(r) +
+      measuredCard(r) + bodyCard(r) +
       '<div class="card"><h3>ระหว่างรอ</h3><div class="steps">' + evidItem("multi") + evidItem("emerg") + '</div></div>' +
       cloudLine(r) +
       '<button class="btn sec" onclick="S.last=D.assessments.filter(function(x){return x.id===\'' + r.id + '\'})[0];go(\'doc\')">🩺 ใบสรุปสำหรับแพทย์</button>' +
       '<button class="btn ghost" onclick="go(\'history\')">ดูแนวโน้ม</button>';
+    bindBody();
     return;
   }
   head("ผลวันนี้", e.name + " · " + thDate(r.date), "คะแนน " + r.score + " จาก " + r.max + " · เกณฑ์ลุกนั่งตามอายุ " + CSScore.ftsstCut(e.age) + " วินาที", "home");
@@ -1471,6 +1539,7 @@ function renderResult(v) {
         (C.finding ? '<p style="margin:4px 0"><b>ข้อค้นพบ:</b> ' + esc(C.finding) + '</p>' : '') +
         (C.recommend ? '<p style="margin:4px 0"><b>คำแนะนำจากผู้เชี่ยวชาญ:</b> ' + esc(C.recommend) + '</p>' : '') + '</div>' : '') +
     (C && C.verdict === "not_confirm" ? '' : '<div class="tier ' + T.cls + '"><b>' + T.nm + '</b><span>' + T.advice + '</span></div>') +
+    bodyCard(r) +
     '<div class="card"><h3>ทำไมได้ผลนี้</h3>' + (items.length ? items.join("") : '<div class="flag good"><b>ไม่พบสัญญาณเสี่ยงจากการวัดครั้งนี้</b><small>เทียบกับเกณฑ์ CDC STEADI และค่าตัดประชากรไทย</small></div>') + '</div>' +
     '<div class="card"><h3>สิ่งที่ควรทำต่อ</h3><div class="steps">' + steps.join("") + '</div></div>' +
     resultAdlHome(r) +
@@ -1479,6 +1548,7 @@ function renderResult(v) {
     '<button class="btn sec" onclick="S.last=D.assessments.filter(function(x){return x.id===\'' + r.id + '\'})[0];go(\'doc\')">🩺 ใบสรุปสำหรับแพทย์</button>' +
     '<button class="btn ghost" onclick="go(\'history\')">ดูแนวโน้ม</button>' +
     '<p class="sub" style="font-size:12.5px;margin-top:12px">การคัดกรองเบื้องต้นโดยลูกหลานจับเวลา ไม่ใช่การวินิจฉัย · เกณฑ์: Poncumhak 2014 · Meretta 2006 · CDC STEADI</p>';
+  bindBody();
 }
 function summaryText(r) {
   var e = elder();

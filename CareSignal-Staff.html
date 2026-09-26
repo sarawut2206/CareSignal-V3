@@ -668,6 +668,7 @@ td.num{font-family:var(--mono);white-space:nowrap}
 <script src="./cs-demo.js?v=3"></script>
 <script src="./cs-referral-forms.js?v=1"></script>
 <script src="./cs-teleconsult.js?v=1"></script>
+<script src="./cs-body.js?v=1"></script>
 <script src="./cs-meds.js?v=4"></script>
 <script src="./cs-hospitals.js?v=2"></script>
 <script>
@@ -1952,29 +1953,10 @@ function insData(c,A,meds){
   ];
   return {L:L,P:P,C:C,cut:cut};
 }
-/* หุ่นร่างกาย (มองด้านหน้า) — ส่วนที่ผูกกับแต่ละด้านระบายสีตามผล · หมุดตัวเลขตรงกับการ์ดขวา */
+/* หุ่นร่างกาย (มองด้านหน้า) — วาดโดย cs-body.js (ใช้ร่วมกับแอปครอบครัว) · หมุดตัวเลขตรงกับการ์ดขวา */
 function insFigure(C){
-  var S={}; C.forEach(function(x){S[x.k]=x.s});
-  function rg(k,d){return '<path class="rg '+(S[k]||"none")+'" d="'+d+'"/>'}
-  function mir(d){return d.replace(/(-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)/g,function(_,x,y){return (240-(+x))+" "+y})}
-  var armU="M80 88 C66 92 60 104 58 118 L52 168 C56 174 64 174 68 168 L74 120 Z",
-      armF="M52 170 C48 190 44 212 42 230 C46 236 54 236 56 230 L66 172 Z",
-      hand="M40 232 C34 240 34 254 42 260 C50 262 56 254 56 244 L56 232 Z",
-      thigh="M88 256 L118 256 L117 300 C116 318 114 332 112 342 C106 346 98 346 94 342 C92 318 88 286 88 256 Z",
-      shin="M94 346 L112 346 C112 370 110 392 108 408 C104 412 99 412 96 408 C95 388 94 366 94 346 Z",
-      foot="M96 410 L108 410 C110 416 116 420 118 424 C112 428 98 428 90 425 C92 420 95 414 96 410 Z";
-  var pins={meds:[120,34],adl:[190,196],falls:[120,238],ftsst:[103,300],tug:[137,376],bal:[103,420],home:[196,432]};
-  var body=
-    '<ellipse class="plat '+(S.home==="warn"||S.home==="bad"?"warn":S.home==="ok"?"ok":"")+'" cx="120" cy="430" rx="96" ry="13"/>'+
-    rg("meds","M120 8 C136 8 146 22 146 38 C146 54 136 68 120 68 C104 68 94 54 94 38 C94 22 104 8 120 8 Z")+
-    '<path class="base" d="M110 66 L130 66 L132 80 L108 80 Z"/>'+
-    '<path class="base" d="M78 92 C82 80 102 76 120 76 C138 76 158 80 162 92 C167 112 164 142 158 168 C155 188 156 206 156 222 L84 222 C84 206 85 188 82 168 C76 142 73 112 78 92 Z"/>'+
-    '<path d="M104 104 C112 110 128 110 136 104 M120 118 L120 200" fill="none" stroke="#fff" stroke-width="1.2" opacity=".55"/>'+
-    rg("falls","M84 222 L156 222 C160 236 160 248 154 258 L86 258 C80 248 80 236 84 222 Z")+
-    rg("adl",armU)+rg("adl",mir(armU))+rg("adl",armF)+rg("adl",mir(armF))+rg("adl",hand)+rg("adl",mir(hand))+
-    rg("ftsst",thigh)+rg("ftsst",mir(thigh))+rg("tug",shin)+rg("tug",mir(shin))+rg("bal",foot)+rg("bal",mir(foot));
-  var pin=C.map(function(x){var p=pins[x.k];return '<g class="pin '+x.s+'" data-cmp="'+x.k+'"><title>'+esc(x.no+". "+x.nm)+'</title><circle cx="'+p[0]+'" cy="'+p[1]+'" r="11"/><text x="'+p[0]+'" y="'+(p[1]+.5)+'">'+x.no+'</text></g>'}).join("");
-  return '<svg viewBox="0 0 240 448" role="img" aria-label="หุ่นร่างกายแสดงผลการทดสอบ 7 ด้าน">'+body+pin+'</svg>';
+  var S={}, T={}; C.forEach(function(x){S[x.k]=x.s; T[x.k]=x.no+". "+x.nm});
+  return window.CSBody?CSBody.figure(S,{titles:T}):'';
 }
 function cdInsight(c,A,meds){
   if(!A.length)return '<div class="ins" style="display:block"><h2>ภาพรวมรายบุคคลหลังการทดสอบ</h2><div class="empty">ยังไม่มีผลการทดสอบของผู้เอาประกันรายนี้</div></div>';
